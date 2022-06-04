@@ -15,7 +15,7 @@ allprojects {
 <b>Step 2.</b> Add the dependency
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.0.0'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.0.1'
 }
 ```
 <table>
