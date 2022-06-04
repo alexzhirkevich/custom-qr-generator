@@ -49,8 +49,6 @@ class QRGenerator : QrCodeCreator {
 //                }
 //            }
 
-
-
             if (options.background != null){
                 val backgroundBitmap = options.background.drawable
                     .toBitmap(options.size,options.size,Bitmap.Config.ARGB_8888)
@@ -58,12 +56,14 @@ class QRGenerator : QrCodeCreator {
                     for (y in 0 until options.size){
 
                         val color =  backgroundBitmap[x,y].toColorLong()
-                            bmp[x, y] += Color.argb(
+                        if (color != Color.TRANSPARENT.toLong()) {
+                            bmp[x, y] = Color.argb(
                                 (options.background.alpha * 255).roundToInt(),
                                 (color.red * 255).roundToInt(),
                                 (color.green * 255).roundToInt(),
                                 (color.blue * 255).roundToInt()
                             )
+                        }
                     }
                 }
                 backgroundBitmap.recycle()
@@ -75,7 +75,7 @@ class QRGenerator : QrCodeCreator {
                     if (bitMatrix[x,y]){
                         bmp[x,y] = options.darkColor
                     } else {
-                        if ((x in offset until bmp.width - offset &&
+                        if (options.lightColor != Color.TRANSPARENT && (x in offset until bmp.width - offset &&
                             y in offset until bmp.height - offset)
 
                             && options.style.shape.isDark(x-offset,y-offset,

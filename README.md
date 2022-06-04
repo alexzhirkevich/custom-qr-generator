@@ -7,6 +7,8 @@ Android library for creating QR-codes with logo, custom pixel/eyes shapes, backg
   <tr>
     <td><img src="./screenshots/telegram.bmp" width="256" height="256"></td>
     <td><img src="./screenshots/github.bmp" width="256" height="256"></td>
+        <td><img src="./screenshots/snapchat.bmp" width="256" height="256"></td>
+
   </tr> 
 <table>
   
