@@ -38,11 +38,11 @@ interface QrPixelStyle : QrModifier {
         override fun isDark(
             i: Int, j: Int, elementSize: Int,
             pixelSize: Int, neighbors: Neighbors
-        ): Boolean = RoundedCornersHorizontal.isDark(i, j, elementSize, pixelSize, neighbors) ||
-                RoundedCornersVertical.isDark(i, j, elementSize, pixelSize, neighbors)
+        ): Boolean = RoundCornersHorizontal.isDark(i, j, elementSize, pixelSize, neighbors) ||
+                RoundCornersVertical.isDark(i, j, elementSize, pixelSize, neighbors)
     }
 
-    object RoundedCornersHorizontal : QrPixelStyle {
+    object RoundCornersHorizontal : QrPixelStyle {
         override fun isDark(
             i: Int, j: Int, elementSize: Int,
             pixelSize: Int, neighbors: Neighbors
@@ -72,7 +72,7 @@ interface QrPixelStyle : QrModifier {
             return sqrt((x-i)*(x-i) + (y-j)*(y-j)) < sub
         }
     }
-    object RoundedCornersVertical : QrPixelStyle {
+    object RoundCornersVertical : QrPixelStyle {
         override fun isDark(
             i: Int, j: Int, elementSize: Int,
             pixelSize: Int, neighbors: Neighbors

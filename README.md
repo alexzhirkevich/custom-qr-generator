@@ -54,7 +54,7 @@ val options = QrOptions.Builder(1024)
       QrStyle(
           pixel = QrPixelStyle.RoundCorners,
           ball = QrBallStyle.RoundCorners(.3f),
-          frame = QrFrameStyle.RoundedCorners(.3f),
+          frame = QrFrameStyle.RoundCorners(.3f),
           shape = QrShape.RoundCorners(.1f)
       )
   )

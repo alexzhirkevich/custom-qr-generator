@@ -34,7 +34,7 @@ interface QrFrameStyle : QrModifier {
         }
     }
 
-    class RoundedCorners(
+    class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         val outer: Boolean = true,
         val horizontalOuter: Boolean = true,
