@@ -52,7 +52,7 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId = 'io.github.alexzhirkevich'
+                groupId = 'com.github.alexzhirkevich'
                 artifactId = 'custom-qr-generator'
                 version = '1.0.8'
             }
