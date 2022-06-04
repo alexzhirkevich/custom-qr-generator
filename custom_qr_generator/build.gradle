@@ -4,7 +4,6 @@ plugins {
     id 'maven-publish'
 }
 
-group = 'com.github.alexzhirkevich'
 afterEvaluate {
     publishing {
         publications {
@@ -12,7 +11,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.alexzhirkevich'
                 artifactId = 'custom-qr-generator'
-                version = '1.0.1'
+                version = '1.0.0'
             }
         }
     }
