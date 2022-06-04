@@ -1,6 +1,15 @@
 # custom-qr-generator
 Android library for creating QR-codes with logo, custom pixel/eyes shapes, background image. Powerd by <a href="https://github.com/zxing/zxing">ZXing</a>.
 
+<table>
+  <tr>
+    <td><img src="./screenshots/telegram.bmp" width="256" height="256"></td>
+    <td><img src="./screenshots/github.bmp" width="256" height="256"></td>
+        <td><img src="./screenshots/snapchat.bmp" width="256" height="256"></td>
+
+  </tr> 
+<table>
+
 To get a Git project into your build:
 
 <b>Step 1.</b> Add the JitPack repository to your build file
@@ -18,14 +27,7 @@ dependencies {
     implementation 'com.github.alexzhirkevich:custom-qr-generator:1.0.1'
 }
 ```
-<table>
-  <tr>
-    <td><img src="./screenshots/telegram.bmp" width="256" height="256"></td>
-    <td><img src="./screenshots/github.bmp" width="256" height="256"></td>
-        <td><img src="./screenshots/snapchat.bmp" width="256" height="256"></td>
 
-  </tr> 
-<table>
   
 To create a QR Code Bitmap, first define the styling options:
   
