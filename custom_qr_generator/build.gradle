@@ -1,8 +1,22 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
 }
 
+group = 'com.github.alexzhirkevich'
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.alexzhirkevich'
+                artifactId = 'custom-qr-generator'
+                version = '1.0.1'
+            }
+        }
+    }
+}
 android {
     compileSdk 32
 
