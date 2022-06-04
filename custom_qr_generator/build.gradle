@@ -36,19 +36,6 @@ android {
     }
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = 'com.github.alexzhirkevich'
-                artifactId = 'custom-qr-generator'
-                version = '1.0.4'
-            }
-        }
-    }
-}
-
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.7.0'
@@ -58,4 +45,17 @@ dependencies {
 
     implementation 'com.google.zxing:core:3.3.3'
 
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.alexzhirkevich'
+                artifactId = 'custom-qr-generator'
+                version = '1.0.6'
+            }
+        }
+    }
 }
