@@ -54,7 +54,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'io.github.alexzhirkevich'
                 artifactId = 'custom-qr-generator'
-                version = '1.0.7'
+                version = '1.0.8'
             }
         }
         repositories {
