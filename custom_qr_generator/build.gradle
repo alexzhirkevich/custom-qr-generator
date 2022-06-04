@@ -4,18 +4,7 @@ plugins {
     id 'maven-publish'
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = 'com.github.alexzhirkevich'
-                artifactId = 'custom-qr-generator'
-                version = '1.0.3'
-            }
-        }
-    }
-}
+
 android {
     compileSdk 32
 
@@ -39,6 +28,24 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.alexzhirkevich'
+                artifactId = 'custom-qr-generator'
+                version = '1.0.4'
+            }
+        }
     }
 }
 
