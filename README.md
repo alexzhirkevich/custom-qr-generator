@@ -1,8 +1,23 @@
 # custom-qr-generator
-Android library for creating QR-codes with logo, custom pixel/eyes shapes, background image. Powerd by <a href="https://github.com/zxing/zxing">ZXing</a>
+Android library for creating QR-codes with logo, custom pixel/eyes shapes, background image. Powerd by <a href="https://github.com/zxing/zxing">ZXing</a>.
 
-<!-- <img src="./screenshots/telegram.bmp" width="256" height="256"> -->
-<!-- <img src="./screenshots/github.bmp" width="256" height="256"> -->
+To get a Git project into your build:
+
+<b>Step 1.</b> Add the JitPack repository to your build file
+```gradle
+allprojects {
+    repositories {
+      ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+<b>Step 2.</b> Add the dependency
+```gradle
+dependencies {
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.0.0'
+}
+```
 <table>
   <tr>
     <td><img src="./screenshots/telegram.bmp" width="256" height="256"></td>
@@ -10,8 +25,10 @@ Android library for creating QR-codes with logo, custom pixel/eyes shapes, backg
   </tr> 
 <table>
   
+To create a QR Code Bitmap, first define the styling options:
+  
 ```kotlin
-QrOptions.Builder(1024)
+val options = QrOptions.Builder(1024)
   .setPadding(6)
   .setBackground(
       QrBackground(
@@ -41,3 +58,12 @@ QrOptions.Builder(1024)
   )
   .build()
 ```
+Then create a QR code generator and pass your text and options into it (it is better to perform this in background thread):
+  
+```kotlin  
+val generator : QrCodeCreator = QRGenerator()
+  
+val bitmap = generator.createQrCode("Your text here", options)
+```
+
+
