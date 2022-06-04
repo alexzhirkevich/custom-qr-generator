@@ -34,16 +34,8 @@ QrOptions.Builder(1024)
   .setStyle(
       QrStyle(
           pixel = QrPixelStyle.RoundCorners,
-          ball = QrBallStyle.RoundCorners(
-              corner = .25f,
-              horizontalOuter = false,
-              verticalOuter = false
-          ),
-          frame = QrFrameStyle.RoundedCorners(
-              corner = .25f,
-              horizontalOuter = false,
-              verticalOuter = false
-          ),
+          ball = QrBallStyle.RoundCorners(.3f),
+          frame = QrFrameStyle.RoundedCorners(.3f),
           shape = QrShape.RoundCorners(.1f)
       )
   )
