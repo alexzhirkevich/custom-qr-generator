@@ -37,7 +37,7 @@ dependencies {
  
 ## Usage
 
-To create a QR Code Bitmap, first define the styling options:
+To create a QR Code Bitmap, first define styling options:
   
 ```kotlin
 val options = QrOptions.Builder(1024)
