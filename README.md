@@ -9,6 +9,7 @@ Android library for creating QR-codes with logo, custom pixel/eyes shapes, backg
   </tr> 
 <table>
   
+<!-- 
 ## Installation
 [![](https://jitpack.io/v/alexzhirkevich/custom-qr-generator.svg)](https://jitpack.io/#alexzhirkevich/custom-qr-generator)
 
@@ -29,7 +30,8 @@ dependencies {
     implementation 'com.github.alexzhirkevich:custom-qr-generator:1.0.0'
 }
 ```
-  
+ -->
+ 
 ## Usage
 
 To create a QR Code Bitmap, first define the styling options:
