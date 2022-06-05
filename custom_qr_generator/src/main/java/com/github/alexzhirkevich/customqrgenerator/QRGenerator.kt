@@ -14,14 +14,14 @@ import kotlin.math.roundToInt
 class QRGenerator : QrCodeCreator {
 
     override fun createQrCode(text: String, options: QrOptions): Bitmap {
-        val writer = StyledQRCodeWriter(options)
+
         try {
 
             val ecl = when{
                 options.logo == null -> options.errorCorrectionLevel
                 options.logo.size * (1+options.logo.padding) >= .4 ->
                     ErrorCorrectionLevel.H
-                options.logo.size * (1+options.logo.padding) in .2 .. .4
+                options.logo.size * (1+options.logo.padding) in .25 .. .4
                         && options.errorCorrectionLevel < ErrorCorrectionLevel.Q ->
                     ErrorCorrectionLevel.Q
                 options.errorCorrectionLevel < ErrorCorrectionLevel.M ->
@@ -29,31 +29,24 @@ class QRGenerator : QrCodeCreator {
                 else -> options.errorCorrectionLevel
             }
 
+            val writer = QrEncoder(options.copy(errorCorrectionLevel = ecl))
 
-            val bitMatrix = writer.encode(
-                text, BarcodeFormat.QR_CODE, options.size, options.size,
-                mapOf(
-                    EncodeHintType.ERROR_CORRECTION to ecl,
-                    EncodeHintType.MARGIN to options.padding
-                )
-            )
+            val padding = options.padding.coerceIn(0, options.size/2)
+
+            val (bitMatrix, pixelSize, shapeIncrease) =  writer.encode(text)
 
             val bmp = Bitmap.createBitmap(options.size, options.size, Bitmap.Config.ARGB_8888)
 
-//            for (i in 0 until bmp.width) {
-//                for (j in 0 until bmp.height) {
-                    bmp.setPixels(
-                        IntArray(bmp.width * bmp.height) { options.lightColor },
-                        0, bmp.width, 0, 0, bmp.width, bmp.height
-                    )
-//                }
-//            }
+            bmp.setPixels(
+                IntArray(bmp.width * bmp.height) { options.lightColor },
+                0, bmp.width, 0, 0, bmp.width, bmp.height
+            )
 
             if (options.background != null){
                 val backgroundBitmap = options.background.drawable
-                    .toBitmap(options.size,options.size,Bitmap.Config.ARGB_8888)
-                for (x in 0 until options.size){
-                    for (y in 0 until options.size){
+                    .toBitmap(bmp.width, bmp.height,Bitmap.Config.ARGB_8888)
+                for (x in 0 until bmp.width){
+                    for (y in 0 until bmp.height){
 
                         val color =  backgroundBitmap[x,y].toColorLong()
                         if (color != Color.TRANSPARENT.toLong()) {
@@ -69,18 +62,17 @@ class QRGenerator : QrCodeCreator {
                 backgroundBitmap.recycle()
             }
 
-            val offset = options.padding * writer.multiple
-            for (x in 0 until options.size) {
-                for (y in 0 until options.size) {
-                    if (bitMatrix[x,y]){
+            for (x in padding until bmp.width - padding) {
+                for (y in padding until bmp.height - padding) {
+                    if (bitMatrix[x-padding, y-padding]){
                         bmp[x,y] = options.darkColor
                     } else {
-                        if (options.lightColor != Color.TRANSPARENT && (x in offset until bmp.width - offset &&
-                            y in offset until bmp.height - offset)
+                        if (options.lightColor != Color.TRANSPARENT &&
+                            options.style.bgShape.isDark(
+                                x-padding, y-padding,options.size - 2 * padding,
+                                pixelSize,
+                                Neighbors.Empty,
 
-                            && options.style.shape.isDark(x-offset,y-offset,
-                                ((options.size-offset * 2f)/writer.multiple).roundToInt(),
-                                writer.multiple, Neighbors.Empty
                             )) {
                             bmp[x, y] = Color.rgb(
                                 (options.lightColor.red * 0.75 + bmp[x, y].red * 0.25).roundToInt(),
@@ -89,15 +81,13 @@ class QRGenerator : QrCodeCreator {
                             )
                         }
                     }
-//                    bmp.setPixel(x, y, if (bitMatrix[x, y])
-//                        options.darkColor else options.lightColor)
                 }
             }
             if (options.logo != null){
-                val logoSize = (options.size * options.logo.size ).roundToInt()
+                val logoSize = ((bmp.width - shapeIncrease*4) * options.logo.size).roundToInt()
                 val bitmapLogo = options.logo.drawable
                     .toBitmap(logoSize,logoSize, Bitmap.Config.ARGB_8888)
-                val logoTopLeft = (options.size - logoSize)/2
+                val logoTopLeft = (bmp.width - logoSize)/2
 
                 for (i in 0 until bitmapLogo.width){
                     for (j in 0 until bitmapLogo.height){

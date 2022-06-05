@@ -14,17 +14,20 @@ interface QrLogoShape : QrModifier {
     object Circle : QrLogoShape {
         override fun isDark(
             i: Int, j: Int, elementSize: Int,
-            pixelSize: Int, neighbors: Neighbors
-        ): Boolean = QrBallStyle.Circle.isDark(i, j, elementSize, pixelSize, neighbors)
+            qrPixelSize: Int,
+            neighbors: Neighbors
+        ): Boolean = QrBallStyle.Circle(1f)
+            .isDark(i, j,elementSize, qrPixelSize, neighbors)
     }
 
     object Rhombus : QrLogoShape {
         override fun isDark(
             i: Int, j: Int, elementSize: Int,
-            pixelSize: Int, neighbors: Neighbors
+            qrPixelSize: Int,
+            neighbors: Neighbors
         ): Boolean {
-            return QrBallStyle.Rhombus.isDark(i, j, elementSize, pixelSize, neighbors)
-
+            return QrBallStyle.Rhombus
+                .isDark(i, j,elementSize, qrPixelSize, neighbors)
         }
     }
 
@@ -37,8 +40,9 @@ interface QrLogoShape : QrModifier {
     ) : QrLogoShape {
         override fun isDark(
             i: Int, j: Int, elementSize: Int,
-            pixelSize: Int, neighbors: Neighbors
+            qrPixelSize: Int,
+            neighbors: Neighbors
         ): Boolean = QrBallStyle.RoundCorners(corner, outer, horizontalOuter, verticalOuter, inner)
-            .isDark(i, j, elementSize, pixelSize, neighbors)
+            .isDark(i, j,elementSize, qrPixelSize, neighbors)
     }
 }

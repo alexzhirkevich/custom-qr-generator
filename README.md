@@ -3,9 +3,11 @@ Android library for creating QR-codes with logo, custom pixel/eyes shapes, backg
 
 <table>
   <tr>
-    <td><img src="./screenshots/telegram.bmp" width="256" height="256"></td>
-    <td><img src="./screenshots/github.bmp" width="256" height="256"></td>
-    <td><img src="./screenshots/snapchat.bmp" width="256" height="256"></td>
+    <td><img src="./screenshots/telegram.png" width="256" height="256"></td>
+    <td><img src="./screenshots/github.png" width="256" height="256"></td>
+    <td><img src="./screenshots/snapchat.png" width="256" height="256"></td>
+  </tr> 
+    <td><img src="./screenshots/tiktok.png" width="256" height="256"></td>
   </tr> 
 <table>
   
@@ -38,34 +40,34 @@ To create a QR Code Bitmap, first define the styling options:
   
 ```kotlin
 val options = QrOptions.Builder(1024)
-  .setPadding(6)
-  .setBackground(
-      QrBackground(
-          drawable = ContextCompat
-              .getDrawable(this, R.drawable.frame)!!,
-          alpha = 1f
-  ))
-  .setLogo(
-      QrLogo(
-          drawable = ContextCompat
-              .getDrawable(this, R.drawable.tg)!!,
-          size = .2f,
-          padding = .2f,
-          shape = QrLogoShape
-              .Circle
-      )
-  )
-  .setLightColor(Color.WHITE)
-  .setDarkColor(Color.parseColor("#345288"))
-  .setStyle(
-      QrStyle(
-          pixel = QrPixelStyle.RoundCorners,
-          ball = QrBallStyle.RoundCorners(.3f),
-          frame = QrFrameStyle.RoundCorners(.3f),
-          shape = QrShape.RoundCorners(.1f)
-      )
-  )
-  .build()
+    .setPadding(150)
+    .setBackground(
+        QrBackground(
+            drawable = ContextCompat
+                .getDrawable(this, R.drawable.frame)!!,
+            alpha = 1f
+    ))
+    .setLogo(
+        QrLogo(
+            drawable = ContextCompat
+                .getDrawable(this, R.drawable.tg)!!,
+            size = .2f,
+            padding = .2f,
+            shape = QrLogoShape
+                .Circle
+        )
+    )
+    .setLightColor(Color.WHITE)
+    .setDarkColor(Color.parseColor("#345288"))
+    .setStyle(
+        QrStyle(
+            pixel = QrPixelStyle.RoundCorners(),
+            ball = QrBallStyle.RoundCorners(.3f),
+            frame = QrFrameStyle.RoundCorners(.3f),
+            bgShape  = QrBackgroundStyle.RoundCorners(.1f)
+        )
+    )
+    .build()
 ```
 Then create a QR code generator and pass your text and options into it (it is better to perform this in background thread):
   
@@ -79,7 +81,7 @@ val bitmap = generator.createQrCode("Your text here", options)
 You can easily implement your own shapes for QR Code elements using math formula to decide if bitmap pixel needs to be dark.
 For example, this is implementation of Circle QR-pixels:
   
-<img src="./screenshots/circlepixels.bmp" width="256" height="256">
+<img src="./screenshots/circlepixels.png" width="256" height="256">
  
 ```kotlin
 object Circle : QrPixelStyle {

@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
 
     private val qrOptions by lazy {
          QrOptions.Builder(1024)
-            .setPadding(6)
+            .setPadding(150)
             .setBackground(
                 QrBackground(
                     drawable = ContextCompat
@@ -42,10 +42,10 @@ class MainActivity : AppCompatActivity() {
             .setDarkColor(Color.parseColor("#345288"))
             .setStyle(
                 QrStyle(
-                    pixel = QrPixelStyle.RoundCorners,
+                    pixel = QrPixelStyle.RoundCorners(),
                     ball = QrBallStyle.RoundCorners(.3f),
                     frame = QrFrameStyle.RoundCorners(.3f),
-                    shape = QrShape.RoundCorners(.1f)
+                    bgShape  = QrBackgroundStyle.RoundCorners(.1f)
                 )
             )
             .build()

@@ -12,5 +12,5 @@ sealed interface QrModifier {
      * @param pixelSize size of 1 qr-code pixel in bitmap pixels
      * @param neighbors status of the neighbor qr-code pixels
      * */
-    fun isDark(i : Int, j : Int, elementSize: Int, pixelSize : Int, neighbors : Neighbors): Boolean = true
+    fun isDark(i: Int, j: Int, elementSize: Int, qrPixelSize: Int, neighbors: Neighbors): Boolean = true
 }

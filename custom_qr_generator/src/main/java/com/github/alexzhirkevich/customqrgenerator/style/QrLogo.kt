@@ -14,7 +14,7 @@ import androidx.annotation.FloatRange
  * */
 data class QrLogo(
     val drawable: Drawable,
-    @FloatRange(from = 0.0, to = .25)
+    @FloatRange(from = 0.0, to = .3334)
     val size : Float = 0.2f,
     val padding : Float = 0.15f,
     val shape: QrLogoShape = QrLogoShape.Default

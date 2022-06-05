@@ -1,77 +1,52 @@
 package com.github.alexzhirkevich.customqrgenerator
 
+import com.github.alexzhirkevich.customqrgenerator.style.AsPixels
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
-import kotlin.Throws
-import com.google.zxing.WriterException
-import com.google.zxing.BarcodeFormat
+import com.github.alexzhirkevich.customqrgenerator.style.QrFrameStyle
 import com.google.zxing.common.BitMatrix
-import com.google.zxing.EncodeHintType
-import com.google.zxing.Writer
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.ByteMatrix
-import com.google.zxing.qrcode.encoder.QRCode
 import com.google.zxing.qrcode.encoder.Encoder
-import java.lang.IllegalStateException
+import com.google.zxing.qrcode.encoder.QRCode
+import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
+import kotlin.random.Random
 
-internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
+
+data class QrRenderResult(
+    val bitMatrix: BitMatrix,
+    val pixelSize : Int,
+    val shapeIncrease : Int
+)
+
+internal class QrEncoder(private val options: QrOptions)  {
 
     companion object {
-        private const val QUIET_ZONE_SIZE = 4
+        private const val FRAME_SIZE = 7
+        private const val BALL_SIZE = 3
     }
 
-    @Throws(WriterException::class)
-    override fun encode(
+    fun encode(
         contents: String,
-        format: BarcodeFormat,
-        width: Int,
-        height: Int
-    ): BitMatrix {
-        return encode(contents, format, width, height, null)
-    }
-
-    var multiple : Int = 0
-    private set
-
-    @Throws(WriterException::class)
-    override fun encode(
-        contents: String,
-        format: BarcodeFormat,
-        width: Int,
-        height: Int,
-        hints: Map<EncodeHintType?, *>?
-    ): BitMatrix {
+    ): QrRenderResult {
         require(contents.isNotEmpty()) { "Found empty contents" }
-        require(format == BarcodeFormat.QR_CODE) { "Can only encode QR_CODE, but got $format" }
-        require(!(width < 0 || height < 0)) {
-            "Requested dimensions are too small: " + width + 'x' +
-                    height
-        }
-        var errorCorrectionLevel = ErrorCorrectionLevel.L
-        var quietZone = QUIET_ZONE_SIZE
-        if (hints != null) {
-            if (hints.containsKey(EncodeHintType.ERROR_CORRECTION)) {
-                errorCorrectionLevel =
-                    ErrorCorrectionLevel.valueOf(hints[EncodeHintType.ERROR_CORRECTION].toString())
-            }
-            if (hints.containsKey(EncodeHintType.MARGIN)) {
-                quietZone = hints[EncodeHintType.MARGIN].toString().toInt()
-            }
-        }
-        val code = Encoder.encode(contents, errorCorrectionLevel, hints)
-        return renderResult(code, width, height, quietZone, options)
+        val code = Encoder.encode(contents, options.errorCorrectionLevel, null)
+        return renderResult(code)
     }
 
 
         // Note that the input matrix uses 0 == white, 1 == black, while the output matrix uses
         // 0 == black, 255 == white (i.e. an 8 bit greyscale bitmap).
-        private fun renderResult(code: QRCode, width: Int, height: Int, quietZone: Int, options: QrOptions): BitMatrix {
-            val input = code.matrix ?: throw IllegalStateException()
-            val qrWidth = input.width + quietZone * 2
-            val qrHeight = input.height + quietZone * 2
-            val outputWidth = width.coerceAtLeast(qrWidth)
-            val outputHeight = height.coerceAtLeast(qrHeight)
-            multiple = (outputWidth / qrWidth).coerceAtMost(outputHeight / qrHeight)
+        private fun renderResult(code: QRCode): QrRenderResult {
+            val initialInput = (code.matrix ?: throw IllegalStateException())
+            val input = options.style.qrShape.apply(initialInput)
+            val diff = abs(input.width - initialInput.width)/2
+
+            val qrWidth = input.width
+            val qrHeight = input.height
+            val outputWidth = (options.size - options.padding * 2).coerceAtLeast(qrWidth)
+            val outputHeight = (options.size - options.padding * 2).coerceAtLeast(qrHeight)
+            val multiple = (outputWidth / qrWidth).coerceAtMost(outputHeight / qrHeight)
             // Padding includes both the quiet zone and the extra white pixels to accommodate the requested
             // dimensions. For example, if input is 25x25 the QR will be 33x33 including the quiet zone.
             // If the requested size is 200x160, the multiple will be 4, for a QR of 132x132. These will
@@ -81,43 +56,79 @@ internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
             val output = BitMatrix(outputWidth, outputHeight)
             var inputY = 0
             var outputY = topPadding
+
+
             while (inputY < input.height) {
 
                 var inputX = 0
                 var outputX = leftPadding
                 while (inputX < input.width) {
 
-                    val setFrameOrBall = { i : Int, j : Int ->
+                    val neighbors = input.neighbors(inputX,inputY)
+
+                    fun setFrameOrBall(i : Int, j : Int) {
                         output.set(
                             topPadding + inputX*multiple + i,
                             leftPadding + inputY*multiple + j
                         )
                     }
 
-                    val unsetFrameOrBall = { i : Int, j : Int ->
+                    fun unsetFrameOrBall(i : Int, j : Int) {
                         output.unset(
                             topPadding + inputX*multiple + i,
                             leftPadding + inputY*multiple + j
                         )
                     }
-                    val neighbors = input.neighbors(inputX,inputY)
+
+                    fun isBallAsPixel(i : Int, j : Int) : Boolean =
+                        if (options.style.ball is AsPixels) {
+                            val pixelStyle = options.style.ball.pixelStyle
+                            if (pixelStyle.isDark(i, j,multiple, multiple,neighbors )) {
+                                setFrameOrBall(i, j)
+                            } else {
+                                unsetFrameOrBall(i, j)
+                            }
+                            true
+                        } else false
+
+                    fun isFrameAsPixel(i : Int, j : Int, frameI : Int, frameJ : Int) : Boolean =
+                        if (options.style.frame is AsPixels) {
+                            val pixelStyle = options.style.frame.pixelStyle
+                            if (QrFrameStyle.Default
+                                    .isDark(frameI, frameJ, FRAME_SIZE*multiple,multiple, neighbors) &&
+                                pixelStyle
+                                    .isDark(i, j, multiple,multiple, neighbors)
+                            ) {
+                                setFrameOrBall(i, j)
+                            } else {
+                                unsetFrameOrBall(i, j)
+                            }
+                            true
+                        } else false
 
                     kotlin.run {
 
-                        if (inputX in 0..6 && inputY in 0..6) {
+                        if (inputX- diff in 0 until FRAME_SIZE &&
+                            inputY -diff in 0 until FRAME_SIZE) {
                             // top left eye
 
-                            if (inputX in 2..4 && inputY in 2..4) {
+                            if (inputX - diff in (FRAME_SIZE - BALL_SIZE)/2  until (FRAME_SIZE - BALL_SIZE)/2 + BALL_SIZE
+                                && inputY - diff in  (FRAME_SIZE - BALL_SIZE)/2  until (FRAME_SIZE - BALL_SIZE)/2 + BALL_SIZE) {
                                 //top left ball
                                 for (i in 0 until multiple) {
                                     for (j in 0 until multiple) {
+
+                                        if (isBallAsPixel(i,j)){
+                                            continue
+                                        }
+
                                         if (options.style.ball.isDark(
-                                            (inputX - 2) * multiple + i,
-                                            (inputY - 2) * multiple + j,
-                                            3,
-                                            multiple,
-                                            neighbors
-                                        )){
+                                                 (inputX -diff- (FRAME_SIZE - BALL_SIZE)/2 ) * multiple + i,
+                                                (inputY -diff- (FRAME_SIZE - BALL_SIZE)/2 ) * multiple + j,
+                                                BALL_SIZE*multiple,
+                                                multiple,
+                                                neighbors,
+                                            )){
                                             setFrameOrBall(i,j)
                                         } else {
                                             unsetFrameOrBall(i,j)
@@ -129,14 +140,16 @@ internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
                             // top left frame
                             for (i in 0 until multiple) {
                                 for (j in 0 until multiple) {
-                                    if (options.style.frame.isDark(
-                                            inputX * multiple + i,
-                                            inputY * multiple + j,
-                                            7,
-                                            multiple,
-                                            neighbors
-                                        )
-                                    ) {
+
+                                    val frameI = (inputX - diff) * multiple + i
+                                    val frameJ = (inputY - diff) * multiple + j
+
+                                    if (isFrameAsPixel(i,j,frameI, frameJ)){
+                                        continue
+                                    }
+
+                                    if (options.style.frame.isDark(frameI, frameJ,
+                                            FRAME_SIZE*multiple, multiple, neighbors)){
                                         setFrameOrBall(i,j)
                                     } else {
                                         unsetFrameOrBall(i,j)
@@ -146,19 +159,26 @@ internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
 
                             return@run
                         }
-                        if (input.width - inputX-1 in 0..6 && inputY in 0..6){
+                        if (input.width - inputX - 1 - diff in 0 until FRAME_SIZE &&
+                            inputY - diff in 0 until FRAME_SIZE){
                             // top right eye
 
-                            if (input.width - inputX-1 in 2..4 && inputY in 2..4){
+                            if (input.width - inputX-1 - diff in  (FRAME_SIZE - BALL_SIZE)/2 until (FRAME_SIZE - BALL_SIZE)/2 + BALL_SIZE
+                                && inputY - diff in (FRAME_SIZE - BALL_SIZE)/2 until (FRAME_SIZE - BALL_SIZE)/2 + BALL_SIZE){
                                 // top right ball
                                 for (i in 0 until multiple){
                                     for (j in 0 until multiple){
+
+                                        if (isBallAsPixel(i,j)){
+                                            continue
+                                        }
+
                                         if (options.style.ball.isDark(
-                                                (input.width - inputX-2) * multiple - i,
-                                                (inputY-2) * multiple + j,
-                                                3,
+                                                (input.width - inputX - diff - (FRAME_SIZE - BALL_SIZE)/2 ) * multiple - i,
+                                                (inputY-(FRAME_SIZE - BALL_SIZE)/2 - diff) * multiple + j,
+                                                BALL_SIZE*multiple,
                                                 multiple,
-                                                neighbors
+                                                neighbors,
                                             )
                                         ) {
                                             setFrameOrBall(i,j)
@@ -170,15 +190,18 @@ internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
                                 return@run
                             }
                             // top right frame
-                            for (i in 0 until multiple){
+                            for (i  in 0 until multiple){
                                 for (j in 0 until multiple){
-                                    if (options.style.frame.isDark(
-                                            (input.width - inputX) * multiple - i,
-                                            inputY * multiple + j,
-                                            7,
-                                            multiple,
-                                            neighbors
-                                        )
+
+                                    val frameI = (input.width - inputX - diff) * multiple - i
+                                    val frameJ = (inputY - diff) * multiple + j
+
+                                    if (isFrameAsPixel(i,j,frameI, frameJ)){
+                                        continue
+                                    }
+
+                                    if (options.style.frame.isDark(frameI, frameJ,
+                                            FRAME_SIZE*multiple, multiple, neighbors)
                                     ) {
                                         setFrameOrBall(i,j)
                                     } else {
@@ -190,20 +213,25 @@ internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
                             return@run
                         }
 
-                        if (inputX in 0..6 && input.height -inputY-1 in 0..6){
+                        if (inputX - diff in 0..6 && input.height -inputY-1-diff in 0..6){
                             // bottom left eye
 
-                            if (inputX in 2..4 && input.height- inputY-1 in 2..4){
+                            if (inputX - diff in 2..4 && input.height- inputY-1 -diff in 2..4){
                                 // bottom left ball
 
                                 for (i in 0 until multiple){
                                     for (j in 0 until multiple){
+
+                                        if (isBallAsPixel(i,j)){
+                                            continue
+                                        }
+
                                         if (options.style.ball.isDark(
-                                                (inputX-2) * multiple + i,
-                                                (input.height - inputY-2) * multiple - j,
-                                                3,
+                                                (inputX-2 - diff) * multiple + i,
+                                                (input.height - inputY-2 - diff) * multiple - j,
+                                                BALL_SIZE*multiple,
                                                 multiple,
-                                                neighbors
+                                                neighbors,
                                             )
                                         ) {
                                             setFrameOrBall(i,j)
@@ -217,13 +245,16 @@ internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
                             // bottom left frame
                             for (i in 0 until multiple){
                                 for (j in 0 until multiple){
-                                    if (options.style.frame.isDark(
-                                            inputX * multiple + i,
-                                            (input.height- inputY) * multiple - j,
-                                            7,
-                                            multiple,
-                                            neighbors
-                                        )
+
+                                    val frameI = (inputX - diff) * multiple + i
+                                    val frameJ = (input.height - inputY - diff) * multiple - j
+
+                                    if (isFrameAsPixel(i,j, frameI, frameJ)){
+                                        continue
+                                    }
+
+                                    if (options.style.frame.isDark(frameI,frameJ,
+                                            FRAME_SIZE*multiple, multiple, neighbors)
                                     ) {
                                         setFrameOrBall(i,j)
                                     } else {
@@ -241,9 +272,10 @@ internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
                                     if (options.style.pixel.isDark(
                                             i - outputX,
                                             j - outputY,
-                                            1,
                                             multiple,
-                                            neighbors)){
+                                            multiple,
+                                            neighbors
+                                        )){
                                         output.set(i,j)
                                     }
                                 }
@@ -258,24 +290,63 @@ internal class StyledQRCodeWriter(private val options: QrOptions) : Writer {
             }
             //logo
             if (options.logo != null){
-                val logoSize = (options.size * options.logo.size * (1 + options.logo.padding))
+                val logoSize = ((options.size- 4*diff*multiple) * options.logo.size * (1 + options.logo.padding))
                     .roundToInt()
 
-                val logoTopLeft = (options.size - logoSize)/2
+                val padding = options.padding.coerceIn(0,options.size/2)
+                val logoTopLeft = (options.size - logoSize - padding * 2)/2
 
                 for (i in 0 until logoSize){
                     for (j in 0 until logoSize){
                         if (options.logo.shape.isDark(
-                                i,j,(logoSize.toDouble() / multiple).roundToInt(),
-                                multiple, Neighbors.Empty
+                                i, j,
+                                logoSize,
+                                multiple,
+                                Neighbors.Empty,
                             )){
                             output.unset(logoTopLeft + i, logoTopLeft + j)
                         }
                     }
                 }
             }
-            return output
+            return QrRenderResult(output,multiple,diff*multiple)
         }
+}
+
+internal fun ByteMatrix.extendToRound(random: Random?) : ByteMatrix {
+    if (width != height)
+        throw IllegalStateException("Non-square ByteMatrix can not be extended to round")
+
+    val added = (width *1.05 * sqrt(2.0)).roundToInt()/4
+
+    val newSize = width + 2*added
+    val newMatrix = ByteMatrix(newSize,newSize)
+    if (random != null) {
+
+        val center = newSize / 2f
+
+        for (i in 0 until newSize) {
+            for (j in 0 until newSize) {
+                if (random.nextBoolean() &&
+                    (i < added-1 ||
+                            j < added-1 ||
+                            i > added + width ||
+                            j > added + width ) &&
+                            sqrt((center-i) *(center-i)+(center-j)*(center-j))<center
+                ){
+                    newMatrix.set(i, j, 1)
+
+                }
+            }
+        }
+    }
+
+    for(i in 0 until width){
+        for(j in 0 until height){
+            newMatrix[added+i,added+j] = this[i,j]
+        }
+    }
+    return newMatrix
 }
 
 internal fun ByteMatrix.neighbors(i : Int, j : Int) : Neighbors {
