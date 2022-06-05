@@ -89,7 +89,7 @@ object Circle : QrPixelStyle {
         i: Int, j: Int, elementSize: Int,
         pixelSize: Int, neighbors: Neighbors
     ): Boolean {
-        val center = elementSize*pixelSize/2.0
+        val center = elementSize/2.0
         return (sqrt((center-i)*(center-i) + (center-j)*(center-j)) < center)
     }
 }
