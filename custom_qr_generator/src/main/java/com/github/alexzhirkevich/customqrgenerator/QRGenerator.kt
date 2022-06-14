@@ -4,104 +4,220 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.core.graphics.*
 import androidx.core.graphics.drawable.toBitmap
+import com.github.alexzhirkevich.customqrgenerator.encoder.QrEncoder
+import com.github.alexzhirkevich.customqrgenerator.encoder.QrRenderResult
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.EncodeHintType
+import com.github.alexzhirkevich.customqrgenerator.style.QrColor
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
 
-class QRGenerator : QrCodeCreator {
+class QrGenerator : QrCodeGenerator {
 
-    override fun createQrCode(text: String, options: QrOptions): Bitmap {
+    override fun generateQrCode(text: String, options: QrOptions): Bitmap =
+        kotlin.runCatching {
+            createQrCodeInternal(text,options) { true }
+        }.getOrElse {
+            throw QrCodeCreationException(it)
+        }
 
-        try {
-
-            val ecl = when{
-                options.logo == null -> options.errorCorrectionLevel
-                options.logo.size * (1+options.logo.padding) >= .4 ->
-                    ErrorCorrectionLevel.H
-                options.logo.size * (1+options.logo.padding) in .25 .. .4
-                        && options.errorCorrectionLevel < ErrorCorrectionLevel.Q ->
-                    ErrorCorrectionLevel.Q
-                options.errorCorrectionLevel < ErrorCorrectionLevel.M ->
-                    ErrorCorrectionLevel.M
-                else -> options.errorCorrectionLevel
+    override suspend fun generateQrCodeSuspend(text: String, options: QrOptions): Bitmap =
+        withContext(Dispatchers.Default) {
+            kotlin.runCatching {
+                coroutineScope {
+                    createQrCodeInternal(text, options, coroutineContext::isActive)
+                }
+            }.getOrElse {
+                if (it is CancellationException)
+                    throw it
+                else throw QrCodeCreationException(cause = it)
             }
+        }
 
-            val writer = QrEncoder(options.copy(errorCorrectionLevel = ecl))
+    private fun createQrCodeInternal(
+        text: String, options: QrOptions, isActive : () -> Boolean
+    ) : Bitmap {
 
-            val padding = options.padding.coerceIn(0, options.size/2)
+        val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
+        val result = encoder.encode(text)
 
-            val (bitMatrix, pixelSize, shapeIncrease) =  writer.encode(text)
+        val bmp = Bitmap.createBitmap(
+            options.size, options.size,
+            Bitmap.Config.ARGB_8888
+        )
 
-            val bmp = Bitmap.createBitmap(options.size, options.size, Bitmap.Config.ARGB_8888)
+        return bmp.apply {
+            drawBackground(result, options, isActive)
+            drawQr(result, options, isActive)
+            drawLogo(result, options, isActive)
+        }
+    }
 
-            bmp.setPixels(
-                IntArray(bmp.width * bmp.height) { options.lightColor },
-                0, bmp.width, 0, 0, bmp.width, bmp.height
-            )
+    private fun Bitmap.drawBackground(
+        renderResult: QrRenderResult, options: QrOptions, isActive : () -> Boolean
+    ) = with(renderResult){
+        if (options.background != null) {
+            val backgroundBitmap = options.background.drawable
+                .toBitmap(width, height, Bitmap.Config.ARGB_8888)
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    if (!isActive()){
+                        throw CancellationException()
+                    }
+                    val color = backgroundBitmap[x, y].toColorLong()
 
-            if (options.background != null){
-                val backgroundBitmap = options.background.drawable
-                    .toBitmap(bmp.width, bmp.height,Bitmap.Config.ARGB_8888)
-                for (x in 0 until bmp.width){
-                    for (y in 0 until bmp.height){
+                    val bgImageColor = Color.argb(
+                        (color.alpha * options.background.alpha * 255).roundToInt(),
+                        (color.red * 255).roundToInt(),
+                        (color.green * 255).roundToInt(),
+                        (color.blue * 255).roundToInt())
 
-                        val color =  backgroundBitmap[x,y].toColorLong()
-                        if (color != Color.TRANSPARENT.toLong()) {
-                            bmp[x, y] = Color.argb(
-                                (options.background.alpha * 255).roundToInt(),
-                                (color.red * 255).roundToInt(),
-                                (color.green * 255).roundToInt(),
-                                (color.blue * 255).roundToInt()
+                    val bgColor = options.colors.bitmapBackground.invoke(
+                        x, y, options.size, pixelSize)
+
+                    kotlin.runCatching {
+                        this@drawBackground[x, y] = if (color.alpha >= 0.0001f)
+                            bgImageColor else bgColor
+                    }
+                }
+            }
+            backgroundBitmap.recycle()
+        } else {
+            for(i in 0 until width){
+                for (j in 0 until height){
+                    if (!isActive()){
+                        throw CancellationException()
+                    }
+                    kotlin.runCatching {
+                        this@drawBackground[i + error / 2, j + error / 2] =
+                            options.colors.bitmapBackground.invoke(
+                                i, j, options.size, pixelSize
                             )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun Bitmap.drawQr(
+        result: QrRenderResult, options: QrOptions, isActive: () -> Boolean
+    ) = with(result) {
+
+        for (x in error/2 until bitMatrix.width - error/2) {
+            for (y in error/2 until bitMatrix.height - error/2) {
+                if (!isActive()) {
+                    throw CancellationException()
+                }
+                if (!options.shapes.background
+                        .invoke(
+                            x- error/2,
+                            y-error/2,
+                            bitMatrix.width-error,
+                            pixelSize,
+                            Neighbors.Empty
+                        )
+                ) continue
+
+                val color = options.colors.codeBackground.invoke(
+                    x- error/2, y-error/2, bitMatrix.width-error, pixelSize
+                )
+                kotlin.runCatching {
+                    this@drawQr[x + padding, y + padding] = QrUtil.mixColors(
+                        color, this@drawQr[x + padding, y + padding], color.alpha / 255f
+                    )
+                }
+            }
+        }
+
+        for (x in 0 until bitMatrix.width) {
+            for (y in 0 until bitMatrix.height) {
+                if (!isActive()) {
+                    throw CancellationException()
+                }
+
+                val pixel = bitMatrix[x, y].toInt()
+
+                val realX = minOf(x, bitMatrix.width - x - error)
+                val realY = minOf(y, bitMatrix.height - y - error)
+
+                val topRightCorner = bitMatrix.width - x < x && bitMatrix.height - y < y
+
+                val color = when {
+                    pixel == 1 && !topRightCorner && options.colors.ball !is QrColor.Unspecified &&
+                        ball.let {
+                           realX  in it.x until it.x + it.size  &&
+                           realY in it.y until it.y + it.size
+                        } -> options.colors.ball.invoke(
+                        realX - ball.x, realY-ball.y, ball.size, pixelSize)
+
+                    pixel == 1 && !topRightCorner && options.colors.frame !is QrColor.Unspecified &&
+                        frame.let {
+                            realX in it.x until it.x + it.size &&
+                            realY in it.y until it.y + it.size
+                        } -> options.colors.frame.invoke(
+                        realX-frame.x, realY-frame.y, frame.size, pixelSize)
+
+                    pixel == 1  && options.colors.dark.invoke(
+                        x, y, bitMatrix.width, pixelSize
+                    ).alpha > 0 -> options.colors.dark.invoke(
+                            x, y, bitMatrix.width, pixelSize
+                        )
+                    pixel == 0 && options.colors.light.invoke(
+                        x, y, bitMatrix.width, pixelSize
+                    ).alpha > 0 -> options.colors.light.invoke(
+                        x, y, bitMatrix.width, pixelSize
+                    )
+                    else -> null
+                }
+
+                if (color != null) {
+                    kotlin.runCatching {
+                        this@drawQr[x + padding + error / 2, y + padding + error / 2] = color
+                    }
+                }
+            }
+        }
+    }
+
+    private fun Bitmap.drawLogo(
+        renderResult: QrRenderResult, options: QrOptions, isActive: () -> Boolean
+    ) = with(renderResult){
+        if (options.logo != null) {
+            val logoSize = ((width - shapeIncrease * 4) * options.logo.size).roundToInt()
+            val bitmapLogo = options.logo.drawable
+                .toBitmap(logoSize, logoSize, Bitmap.Config.ARGB_8888)
+            val logoTopLeft = (width - logoSize) / 2
+
+            for (i in 0 until bitmapLogo.width) {
+                for (j in 0 until bitmapLogo.height) {
+
+                    if (!isActive()) {
+                        throw CancellationException()
+                    }
+
+                    if (bitmapLogo[i, j] != Color.TRANSPARENT) {
+                        runCatching {
+                            this@drawLogo[logoTopLeft + i, logoTopLeft + j] =
+                                bitmapLogo[i, j]
                         }
                     }
                 }
-                backgroundBitmap.recycle()
             }
-
-            for (x in padding until bmp.width - padding) {
-                for (y in padding until bmp.height - padding) {
-                    if (bitMatrix[x-padding, y-padding]){
-                        bmp[x,y] = options.darkColor
-                    } else {
-                        if (options.lightColor != Color.TRANSPARENT &&
-                            options.style.bgShape.isDark(
-                                x-padding, y-padding,options.size - 2 * padding,
-                                pixelSize,
-                                Neighbors.Empty,
-
-                            )) {
-                            bmp[x, y] = Color.rgb(
-                                (options.lightColor.red * 0.75 + bmp[x, y].red * 0.25).roundToInt(),
-                                (options.lightColor.green * 0.75 + bmp[x, y].green * 0.25).roundToInt(),
-                                (options.lightColor.blue * 0.75 + bmp[x, y].blue * 0.25).roundToInt()
-                            )
-                        }
-                    }
-                }
-            }
-            if (options.logo != null){
-                val logoSize = ((bmp.width - shapeIncrease*4) * options.logo.size).roundToInt()
-                val bitmapLogo = options.logo.drawable
-                    .toBitmap(logoSize,logoSize, Bitmap.Config.ARGB_8888)
-                val logoTopLeft = (bmp.width - logoSize)/2
-
-                for (i in 0 until bitmapLogo.width){
-                    for (j in 0 until bitmapLogo.height){
-                        if (bitmapLogo[i,j] != Color.TRANSPARENT)
-                            bmp[logoTopLeft+i, logoTopLeft+j] = bitmapLogo[i, j]
-                    }
-                }
-                bitmapLogo.recycle()
-            }
-
-            return bmp
-        } catch (e: Exception) {
-            throw QrCodeCreationException(cause = e)
+            bitmapLogo.recycle()
         }
     }
 }
 
+internal val QrOptions.actualEcl : QrErrorCorrectionLevel
+    get() = if (errorCorrectionLevel == QrErrorCorrectionLevel.Auto) when {
+        logo == null -> errorCorrectionLevel
+        logo.size * (1 + logo.padding) > .3 ->
+            QrErrorCorrectionLevel.High
+        logo.size * (1 + logo.padding) in .2 .. .3
+                && errorCorrectionLevel.lvl < ErrorCorrectionLevel.Q ->
+            QrErrorCorrectionLevel.MediumHigh
+        errorCorrectionLevel.lvl < ErrorCorrectionLevel.M ->
+            QrErrorCorrectionLevel.Medium
+        else -> errorCorrectionLevel
+    } else errorCorrectionLevel

@@ -5,7 +5,13 @@ import android.graphics.Bitmap
 class QrCodeCreationException(cause : Throwable?=null, message: String? = null) :
     Exception(message, cause)
 
-interface QrCodeCreator {
+interface QrCodeGenerator {
 
-    fun createQrCode(text: String, options: QrOptions) : Bitmap
+    fun generateQrCode(text: String, options: QrOptions) : Bitmap
+
+    /**
+     * A [generateQrCode] wrap with cancellation support.
+     * Should be performed with computation dispatcher.
+     * */
+    suspend fun generateQrCodeSuspend(text: String, options: QrOptions) : Bitmap
 }

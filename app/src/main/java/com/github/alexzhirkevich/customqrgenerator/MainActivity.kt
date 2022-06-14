@@ -9,8 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import com.github.alexzhirkevich.customqrgenerator.example.R
 import com.github.alexzhirkevich.customqrgenerator.example.databinding.ActivityMainBinding
 import com.github.alexzhirkevich.customqrgenerator.style.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 
 class MainActivity : AppCompatActivity() {
@@ -20,14 +18,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val qrOptions by lazy {
-         QrOptions.Builder(1024)
-            .setPadding(150)
+        QrOptions.Builder(1024)
+            .setPadding(.3f)
             .setBackground(
-                QrBackground(
+                QrBackgroundImage(
                     drawable = ContextCompat
                         .getDrawable(this, R.drawable.frame)!!,
-                    alpha = 1f
-            ))
+                )
+            )
             .setLogo(
                 QrLogo(
                     drawable = ContextCompat
@@ -38,44 +36,49 @@ class MainActivity : AppCompatActivity() {
                         .Circle
                 )
             )
-            .setLightColor(Color.WHITE)
-            .setDarkColor(Color.parseColor("#345288"))
-            .setStyle(
-                QrStyle(
-                    pixel = QrPixelStyle.RoundCorners(),
-                    ball = QrBallStyle.RoundCorners(.3f),
-                    frame = QrFrameStyle.RoundCorners(.3f),
-                    bgShape  = QrBackgroundStyle.RoundCorners(.1f)
+            .setColors(
+                QrColors(
+                    dark = QrColor
+                        .Solid(Color.parseColor("#345288")),
+                    bitmapBackground = QrColor.Solid(Color.WHITE),
+                    codeBackground = QrColor
+                        .Solid(Color.parseColor("#ddffffff")),
+                )
+            )
+            .setElementsShapes(
+                QrElementsShapes(
+                    darkPixel = QrPixelShape
+                        .RoundCorners(),
+                    ball = QrBallShape
+                        .RoundCorners(.25f),
+                    frame = QrFrameShape
+                        .RoundCorners(.25f),
+                    background = QrBackgroundShape
+                        .RoundCorners(.05f)
                 )
             )
             .build()
     }
 
-    private val qrGenerator : QrCodeCreator = QRGenerator()
+    private val qrGenerator: QrCodeGenerator = QrGenerator()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
         setContentView(binding.root)
-
         setSupportActionBar(binding.toolbar)
 
         binding.create.setOnClickListener {
             lifecycleScope.launchWhenStarted {
-                withContext(Dispatchers.Default) {
-                    //better to create qr-codes in background
-                    qrGenerator.createQrCode(binding.editText.text.toString(), qrOptions).also {
-                        withContext(Dispatchers.Main) {
-                            with (binding.qrCode){
-                                setImageBitmap(it)
-                                setBackgroundResource(0)
-                            }
-                        }
-                    }
+                val bmp = qrGenerator.generateQrCodeSuspend(
+                    binding.editText.text.toString(), qrOptions)
+
+                with(binding.qrCode) {
+                    setImageBitmap(bmp)
+                    setBackgroundResource(0)
                 }
             }
         }
     }
-
 }

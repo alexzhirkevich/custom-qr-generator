@@ -6,28 +6,31 @@ import kotlin.math.sqrt
 
 /**
  * Style of the qr-code pixels.
- * Element size in 1 by default.
- * You can implement your own style by overriding [isDark] method.
- * @see QrModifier
+ * You can implement your own style by overriding [invoke] method.
+ * @see QrShapeModifier
  * */
-interface QrPixelStyle : QrModifier {
+interface QrPixelShape : QrShapeModifier<Boolean> {
 
-    object Default : QrPixelStyle
+    object Default : QrPixelShape {
+        override fun invoke(
+            i: Int, j: Int, elementSize: Int,
+            qrPixelSize: Int, neighbors: Neighbors
+        ): Boolean = true
+    }
 
     class Circle(
         @FloatRange(from = MIN_SIZE.toDouble(), to = MAX_SIZE.toDouble())
         private val size : Float = 1f
-    ) : QrPixelStyle {
+    ) : QrPixelShape {
 
         companion object{
             const val MIN_SIZE = .5f
             const val MAX_SIZE = 1.0f
         }
 
-        override fun isDark(
+        override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int,
-            neighbors: Neighbors
+            qrPixelSize: Int, neighbors: Neighbors
         ): Boolean {
 
             val center = elementSize/2.0
@@ -36,11 +39,10 @@ interface QrPixelStyle : QrModifier {
         }
     }
 
-    object Rhombus : QrPixelStyle{
-        override fun isDark(
+    object Rhombus : QrPixelShape{
+        override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int,
-            neighbors: Neighbors
+            qrPixelSize: Int, neighbors: Neighbors
         ): Boolean {
             val center = elementSize/2.0
             return (i+j < center || abs(j-i) > center || i+j > 3*center).not()
@@ -53,16 +55,13 @@ interface QrPixelStyle : QrModifier {
         val topRight : Boolean = true,
         val bottomLeft : Boolean = true,
         val bottomRight : Boolean = true
-    ) : QrPixelStyle{
-        override fun isDark(
-            i: Int,
-            j: Int,
-            elementSize: Int,
-            qrPixelSize: Int,
-            neighbors: Neighbors
+    ) : QrPixelShape{
+        override fun invoke(
+            i: Int, j: Int, elementSize: Int,
+            qrPixelSize: Int, neighbors: Neighbors
         ): Boolean {
-            return QrBallStyle.RoundCorners(.5f,
-            topLeft,topRight,bottomLeft,bottomRight).isDark(
+            return QrBallShape.RoundCorners(.5f,
+            topLeft,topRight,bottomLeft,bottomRight).invoke(
                 i, j, elementSize, qrPixelSize, neighbors
             )
         }
@@ -76,11 +75,10 @@ interface QrPixelStyle : QrModifier {
         val topRight : Boolean = true,
         val bottomLeft : Boolean = true,
         val bottomRight : Boolean = true
-    ) : QrPixelStyle {
-        override fun isDark(
+    ) : QrPixelShape {
+        override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int,
-            neighbors: Neighbors
+            qrPixelSize: Int, neighbors: Neighbors
         ): Boolean =
             isRoundDark(
                 i, j, elementSize, qrPixelSize, neighbors,
@@ -101,11 +99,11 @@ interface QrPixelStyle : QrModifier {
                 bottomRight : Boolean) : Boolean {
                 if (neighbors.hasAny.not()){
                     return Circle(1f)
-                        .isDark(i, j,elementSize, qrPixelSize, neighbors)
+                        .invoke(i, j,elementSize, qrPixelSize, neighbors)
                 }
                 if (neighbors.hasAllNearest){
                     return Default
-                        .isDark(i, j,elementSize, qrPixelSize, neighbors)
+                        .invoke(i, j,elementSize, qrPixelSize, neighbors)
                 }
                 val cornerRadius = .25
                 val center = elementSize/2f
@@ -121,8 +119,8 @@ interface QrPixelStyle : QrModifier {
                             i > sum && j < sub -> sum to sub
                     bottomRight &&
                             i > sum && j > sum -> sum to sum
-                    else -> return QrFrameStyle.Default
-                        .isDark(i, j,elementSize, qrPixelSize, neighbors)
+                    else -> return QrFrameShape.Default
+                        .invoke(i, j,elementSize, qrPixelSize, neighbors)
                 }
                 return sqrt((x-i)*(x-i) + (y-j)*(y-j)) < sub
             }
@@ -130,11 +128,10 @@ interface QrPixelStyle : QrModifier {
     }
 
 
-    object RoundCornersHorizontal : QrPixelStyle {
-        override fun isDark(
+    object RoundCornersHorizontal : QrPixelShape {
+        override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int,
-            neighbors: Neighbors
+            qrPixelSize: Int, neighbors: Neighbors
         ): Boolean = with(neighbors) {
             RoundCorners.isRoundDark(
                 i, j, elementSize, qrPixelSize, neighbors,
@@ -142,11 +139,10 @@ interface QrPixelStyle : QrModifier {
             )
         }
     }
-    object RoundCornersVertical : QrPixelStyle {
-        override fun isDark(
+    object RoundCornersVertical : QrPixelShape {
+        override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int,
-            neighbors: Neighbors
+            qrPixelSize: Int, neighbors: Neighbors
         ): Boolean = with(neighbors) {
             RoundCorners.isRoundDark(
                 i, j, elementSize, qrPixelSize, neighbors,

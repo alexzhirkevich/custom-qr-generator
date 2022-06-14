@@ -44,6 +44,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     implementation 'com.google.zxing:core:3.3.3'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2"
 
 }
 
@@ -54,7 +55,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.alexzhirkevich'
                 artifactId = 'custom-qr-generator'
-                version = '1.0.9'
+                version = '1.1.0'
             }
         }
         repositories {
@@ -64,117 +65,3 @@ afterEvaluate {
         }
     }
 }
-
-//plugins {
-//    id 'com.android.library'
-//    id 'org.jetbrains.kotlin.android'
-//    id 'maven-publish'
-//    id 'signing'
-//}
-//
-////java{
-////    withJavadocJar()
-////    withSourcesJar()
-////}
-//android {
-//    compileSdk 32
-//
-//    defaultConfig {
-//        minSdk 1
-//        targetSdk 32
-//
-//        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-//        consumerProguardFiles "consumer-rules.pro"
-//    }
-//
-//    buildTypes {
-//        release {
-//            minifyEnabled true
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-//        }
-//    }
-//    compileOptions {
-//        sourceCompatibility JavaVersion.VERSION_1_8
-//        targetCompatibility JavaVersion.VERSION_1_8
-//    }
-//    kotlinOptions {
-//        jvmTarget = '1.8'
-//    }
-//    publishing {
-//        singleVariant('release') {
-//            withSourcesJar()
-//        }
-//    }
-//}
-//
-//dependencies {
-//
-//    implementation 'androidx.core:core-ktx:1.7.0'
-//    testImplementation 'junit:junit:4.13.2'
-//    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-//
-//    implementation 'com.google.zxing:core:3.3.3'
-//
-//}
-//
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            release(MavenPublication) {
-//                print(components)
-//                from components.release
-//                groupId = 'io.github.alexzhirkevich'
-//                artifactId = 'custom-qr-generator'
-//                version = '1.0.6'
-//
-//                pom {
-//                    name "Custom QR Generator"
-//                    description "Android library for creating QR-codes with logo, custom pixel/eyes shapes, background image. Powered by ZXing."
-//                    url "https://github.com/alexzhirkevich/custom-qr-generator"
-//                    inceptionYear 2022
-//
-//                    licenses {
-//                        license {
-//                            name "MIT Licence"
-//                            url "https://github.com/alexzhirkevich/custom-qr-generator/blob/main/LICENSE"
-//                        }
-//                    }
-//
-//                    developers {
-//                        developer {
-//                            id "alexzhirkevich"
-//                            name "Alexander Zhirkevich"
-//                            email "sasha.zhirkevich@gmail.com"
-//                        }
-//                    }
-//
-//                    scm {
-//                        connection "scm:git:git:github.com/alexzhirkevich/custom-qr-generator.git"
-//                        developerConnection "scm:git:ssh://github.com/alexzhirkevich/custom-qr-generator.git"
-//                        url "https://github.com/alexzhirkevich/custom-qr-generator"
-//                    }
-//                }
-//            }
-//        }
-//
-//        repositories {
-//            maven {
-//                name = "OSSRH"
-//                url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-//                username project.properties["ossrhUsername"]
-//                password project.properties["ossrhPassword"]
-//            }
-//        }
-//    }
-//}
-//
-//signing{
-//    sign publishing.publications.release
-//}
-//
-//javadoc{
-//    if (JavaVersion.current().isJava9Compatible()){
-//        options.addBoleanOption('html5',true)
-//    }
-//}

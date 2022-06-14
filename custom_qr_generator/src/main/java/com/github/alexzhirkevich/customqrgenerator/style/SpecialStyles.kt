@@ -1,5 +1,5 @@
 package com.github.alexzhirkevich.customqrgenerator.style
 
-internal sealed interface AsPixels : QrModifier {
-    val pixelStyle : QrPixelStyle
+interface ModifierDelegate<T,M : QrShapeModifier<T>> : QrShapeModifier<T> {
+    val delegate : QrShapeModifier<T>
 }

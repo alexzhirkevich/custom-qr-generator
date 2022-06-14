@@ -5,19 +5,17 @@ import kotlin.math.sqrt
 
 /**
  * Style of the qr-code eye frame.
- * Element size in 7 by default, but 3 middle units are reserved for [QrBallStyle]
  * (changing has no affect).
- * You can implement your own style by overriding [isDark] method.
+ * You can implement your own style by overriding [invoke] method.
  * Frame width should be equal to pixelSize.
- * @see QrModifier
+ * @see QrShapeModifier
  * */
-interface QrFrameStyle : QrModifier {
+interface QrFrameShape : QrShapeModifier<Boolean> {
 
-    object Default : QrFrameStyle {
-        override fun isDark(
+    object Default : QrFrameShape {
+        override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int,
-            neighbors: Neighbors
+            qrPixelSize: Int, neighbors: Neighbors
         ): Boolean {
             val size = elementSize
             return i in 0..qrPixelSize || j in 0..qrPixelSize ||
@@ -27,23 +25,23 @@ interface QrFrameStyle : QrModifier {
 
     /**
      * Special style for QR code eye frame - frame pixels will be counted as qr pixels.
-     * For example, [QrPixelStyle.Circle] style will make eye frame look like a chaplet.
+     * For example, [QrPixelShape.Circle] style will make eye frame look like a chaplet.
      * */
-    class AsPixelsStyle(override val pixelStyle: QrPixelStyle) : QrFrameStyle, AsPixels {
+    class AsPixelShape(override val delegate: QrPixelShape)
+        : QrFrameShape, ModifierDelegate<Boolean, QrPixelShape> {
         @Throws(IllegalStateException::class)
-        override fun isDark(
-            i: Int,
-            j: Int,
-            elementSize: Int,
-            qrPixelSize: Int,
-            neighbors: Neighbors
-        ): Nothing {
-            throw IllegalStateException("AsPixels style delegates it's work and could not be called")
+        override fun invoke(
+            i: Int, j: Int, elementSize: Int,
+            qrPixelSize: Int, neighbors: Neighbors
+        ): Boolean {
+            return Default.invoke(i, j, elementSize, qrPixelSize, neighbors) &&
+                    delegate.invoke(i % qrPixelSize, j % qrPixelSize,
+                        qrPixelSize, qrPixelSize, neighbors)
         }
     }
 
-    object Circle : QrFrameStyle {
-        override fun isDark(
+    object Circle : QrFrameShape {
+        override fun invoke(
             i: Int, j: Int, elementSize: Int,
             qrPixelSize: Int, neighbors: Neighbors
         ): Boolean {
@@ -59,8 +57,8 @@ interface QrFrameStyle : QrModifier {
         val horizontalOuter: Boolean = true,
         val verticalOuter: Boolean = true,
         val inner: Boolean = true,
-    ) : QrFrameStyle {
-        override fun isDark(
+    ) : QrFrameShape {
+        override fun invoke(
             i: Int, j: Int, elementSize: Int,
             qrPixelSize: Int, neighbors: Neighbors
         ): Boolean {
@@ -75,7 +73,7 @@ interface QrFrameStyle : QrModifier {
                 horizontalOuter && i < sub && j > sum -> sub to sum
                 verticalOuter && i > sum && j < sub -> sum to sub
                 inner && i > sum && j > sum -> sum to sum
-                else -> return Default.isDark(i, j,elementSize,qrPixelSize,neighbors)
+                else -> return Default.invoke(i, j,elementSize,qrPixelSize,neighbors)
             }
             return sqrt((x-i)*(x-i) + (y-j)*(y-j)) in sub-qrPixelSize .. sub
         }
