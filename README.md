@@ -108,7 +108,7 @@ val bitmap = generator.generateQrCodeSuspend("Your text here", options)
 
 ## Customization
   
-You can easily implement your own shapes and coloring for QR Code elements using math formula to decide if bitmap pixel needs to be dark.
+You can easily implement your own shapes and coloring for QR Code elements using math formulas.
 For example, this is implementation of Circle QR-pixels:
   
 <img src="./screenshots/circlepixels.png" width="256" height="256">
