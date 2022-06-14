@@ -193,7 +193,7 @@ class QrGenerator : QrCodeGenerator {
             for (i in 0 until bitmapLogo.width) {
                 for (j in 0 until bitmapLogo.height) {
 
-                    if (!options.logo.shape.invoke(i,j,bitmapLogo.width, bitmapLogo.width, Neighbors.Empty)){
+                    if (!options.logo.shape.invoke(i,j,bitmapLogo.width, pixelSize, Neighbors.Empty)){
                         continue
                     }
                     if (!isActive()) {
