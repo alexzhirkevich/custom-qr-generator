@@ -24,7 +24,20 @@ allprojects {
     }
 }
 ```
-<b>Step 2.</b> Add the dependency
+Or for gradle 7+ to settings.gradle file: 
+```gradle
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        ...
+        maven {
+            url 'https://jitpack.io'        
+        }
+    }
+}
+```
+
+<b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
     implementation 'com.github.alexzhirkevich:custom-qr-generator:1.1.0'
