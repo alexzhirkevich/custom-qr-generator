@@ -100,7 +100,7 @@ val bitmap = generator.generateQrCode("Your text here", options)
 ```
 
 It is better to perform QR codes generating in background thread.
-Supports cancellation with coroutines.
+Generator supports cancellation with coroutines.
 
 ```kotlin  
 val bitmap = generator.generateQrCodeSuspend("Your text here", options)
