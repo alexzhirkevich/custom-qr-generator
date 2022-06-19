@@ -94,7 +94,7 @@ val options = QrOptions.Builder(1024)
 Then create a QR code generator and pass your text and options into it:
   
 ```kotlin  
-val qrGenerator: QrCodeGenerator = QrGenerator()
+val generator: QrCodeGenerator = QrGenerator()
   
 val bitmap = generator.generateQrCode("Your text here", options)
 ```
