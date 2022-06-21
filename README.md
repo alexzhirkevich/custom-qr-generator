@@ -40,15 +40,22 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.1.0'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.2.0'
 }
 ```
 
  
 ## Usage
 
-To create a QR Code Bitmap, first define styling options:
-  
+<b>Step 1.</b> Create QR code data. There are multiple QR types support: Plain Text, Url, Wi-Fi,
+Email, GeoPos, Profile Cards, Phone, etc. 
+
+```kotlin
+val data = QrData.Url("https://example.com")
+```
+
+<b>Step 2.</b> Define styling options:
+
 ```kotlin
 val options = QrOptions.Builder(1024)
     .setPadding(.3f)
@@ -91,19 +98,20 @@ val options = QrOptions.Builder(1024)
     )
     .build()
 ```
-Then create a QR code generator and pass your text and options into it:
+
+<b>Step 2.</b> Create a QR code generator and pass your data and options into it:
   
 ```kotlin  
 val qrGenerator: QrCodeGenerator = QrGenerator()
   
-val bitmap = generator.generateQrCode("Your text here", options)
+val bitmap = generator.generateQrCode(data, options)
 ```
 
 It is better to perform QR codes generating in background thread.
 Generator supports cancellation with coroutines.
 
 ```kotlin  
-val bitmap = generator.generateQrCodeSuspend("Your text here", options)
+val bitmap = generator.generateQrCodeSuspend(data, options)
 ```
 
 ## Customization

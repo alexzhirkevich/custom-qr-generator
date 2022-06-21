@@ -15,18 +15,22 @@ import kotlin.math.roundToInt
 
 class QrGenerator : QrCodeGenerator {
 
-    override fun generateQrCode(text: String, options: QrOptions): Bitmap =
+    override fun generateQrCode(data: QrData, options: QrOptions): Bitmap =
         kotlin.runCatching {
-            createQrCodeInternal(text,options) { true }
+            val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
+            val result = encoder.encode(data.encode())
+            createQrCodeInternal(result,options) { true }
         }.getOrElse {
             throw QrCodeCreationException(it)
         }
 
-    override suspend fun generateQrCodeSuspend(text: String, options: QrOptions): Bitmap =
+    override suspend fun generateQrCodeSuspend(data: QrData, options: QrOptions): Bitmap =
         withContext(Dispatchers.Default) {
             kotlin.runCatching {
+                val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
+                val result = encoder.encodeSuspend(data.encode())
                 coroutineScope {
-                    createQrCodeInternal(text, options, coroutineContext::isActive)
+                    createQrCodeInternal(result, options, coroutineContext::isActive)
                 }
             }.getOrElse {
                 if (it is CancellationException)
@@ -36,11 +40,9 @@ class QrGenerator : QrCodeGenerator {
         }
 
     private fun createQrCodeInternal(
-        text: String, options: QrOptions, isActive : () -> Boolean
+       result: QrRenderResult, options: QrOptions, isActive : () -> Boolean
     ) : Bitmap {
 
-        val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
-        val result = encoder.encode(text)
 
         val bmp = Bitmap.createBitmap(
             options.size, options.size,

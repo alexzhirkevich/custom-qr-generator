@@ -7,11 +7,11 @@ class QrCodeCreationException(cause : Throwable?=null, message: String? = null) 
 
 interface QrCodeGenerator {
 
-    fun generateQrCode(text: String, options: QrOptions) : Bitmap
+    fun generateQrCode(data: QrData, options: QrOptions) : Bitmap
 
     /**
      * A [generateQrCode] wrap with cancellation support.
      * Should be performed with computation dispatcher.
      * */
-    suspend fun generateQrCodeSuspend(text: String, options: QrOptions) : Bitmap
+    suspend fun generateQrCodeSuspend(data: QrData, options: QrOptions) : Bitmap
 }

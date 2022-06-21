@@ -1,14 +1,18 @@
 package com.github.alexzhirkevich.customqrgenerator
 
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.github.alexzhirkevich.customqrgenerator.example.R
 import com.github.alexzhirkevich.customqrgenerator.example.databinding.ActivityMainBinding
 import com.github.alexzhirkevich.customqrgenerator.style.*
+import java.io.File
+import java.io.FileOutputStream
 
 
 class MainActivity : AppCompatActivity() {
@@ -72,8 +76,8 @@ class MainActivity : AppCompatActivity() {
         binding.create.setOnClickListener {
             lifecycleScope.launchWhenStarted {
                 val bmp = qrGenerator.generateQrCodeSuspend(
-                    binding.editText.text.toString(), qrOptions)
-
+                    QrData.Url(binding.editText.text.toString()), qrOptions
+                )
                 with(binding.qrCode) {
                     setImageBitmap(bmp)
                     setBackgroundResource(0)

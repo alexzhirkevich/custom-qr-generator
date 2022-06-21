@@ -4,7 +4,6 @@ plugins {
     id 'maven-publish'
 }
 
-
 android {
     compileSdk 32
 
@@ -55,7 +54,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.alexzhirkevich'
                 artifactId = 'custom-qr-generator'
-                version = '1.1.1'
+                version = '1.2.0'
             }
         }
         repositories {
