@@ -11,7 +11,7 @@ import android.graphics.Color
  * @param codeBackground color of code background (above image; after paddings)
  * Shape regulated by [QrElementsShapes.background]
  * */
-class QrColors(
+data class QrColors(
     val light : QrColor = QrColor.Unspecified,
     val dark : QrColor = QrColor.Solid(Color.BLACK),
     val frame : QrColor = QrColor.Unspecified,

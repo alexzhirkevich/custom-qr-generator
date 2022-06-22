@@ -10,7 +10,7 @@ package com.github.alexzhirkevich.customqrgenerator.style
  * @param code shape of all qr-code. [QrColors.codeBackground] will be applied according that shape
  * and shape of the
  * */
-class QrElementsShapes(
+data class QrElementsShapes(
     val darkPixel : QrPixelShape = QrPixelShape.Default,
     val lightPixel : QrPixelShape = QrPixelShape.Default,
     val frame : QrFrameShape = QrFrameShape.Default,
