@@ -21,7 +21,7 @@ interface QrBallShape : QrShapeModifier<Boolean> {
      * Special style for QR code ball - ball pixels will be counted as qr pixels.
      * For example, [QrPixelShape.Circle] style will make qr-code ball look like a square of 9 balls.
      * */
-    class AsPixelShape(override val delegate: QrPixelShape) : QrBallShape, ModifierDelegate<Boolean, QrPixelShape> {
+    data class AsPixelShape(override val delegate: QrPixelShape) : QrBallShape, ModifierDelegate<Boolean, QrPixelShape> {
         @Throws(IllegalStateException::class)
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
@@ -35,7 +35,7 @@ interface QrBallShape : QrShapeModifier<Boolean> {
         }
     }
 
-    class Circle(@FloatRange(from = .75, to = 1.0) private val size : Float = 1f) : QrBallShape {
+    data class Circle(@FloatRange(from = .75, to = 1.0) private val size : Float = 1f) : QrBallShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
             qrPixelSize: Int, neighbors: Neighbors
@@ -53,7 +53,7 @@ interface QrBallShape : QrShapeModifier<Boolean> {
 
     }
 
-    class RoundCorners(
+    data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         val outer: Boolean = true,
         val horizontalOuter: Boolean = true,

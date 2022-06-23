@@ -30,13 +30,13 @@ interface QrColor  {
             Color.TRANSPARENT
     }
 
-    class Solid(@ColorInt val color : Int) : QrColor {
+    data class Solid(@ColorInt val color : Int) : QrColor {
 
         @ColorInt
         override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int = color
     }
 
-    class LinearGradient(
+    data class LinearGradient(
         @ColorInt val startColor : Int,
         @ColorInt val endColor : Int,
         val orientation: Orientation
@@ -49,16 +49,16 @@ interface QrColor  {
         @ColorInt
         override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int {
             val proportion = when (orientation){
-                Orientation.Vertical -> 1f - i.toFloat()/elementSize
-                Orientation.Horizontal -> 1f - j.toFloat()/elementSize
-                Orientation.LeftDiagonal -> 1f - i*j.toFloat()/elementSize/elementSize
-                Orientation.RightDiagonal -> 1f - i*(elementSize-j).toFloat()/elementSize/elementSize
+                Orientation.Vertical -> 1f - j.toFloat()/elementSize
+                Orientation.Horizontal -> 1f - i.toFloat()/elementSize
+                Orientation.LeftDiagonal -> 1f - (i+j.toFloat())/2/elementSize
+                Orientation.RightDiagonal -> 1f - (i+elementSize-j.toFloat())/2/elementSize
             }
             return QrUtil.mixColors(startColor, endColor, proportion.coerceIn(0f..1f))
         }
     }
 
-    class RadialGradient(
+    data class RadialGradient(
         @ColorInt val centerColor : Int,
         @ColorInt val radiusColor : Int,
     ) : QrColor{
@@ -71,7 +71,7 @@ interface QrColor  {
         }
     }
 
-    class CrossingGradient(
+    data class CrossingGradient(
         @ColorInt val colorLeftDiagonal : Int,
         @ColorInt val colorRightDiagonal : Int,
     ) : QrColor {

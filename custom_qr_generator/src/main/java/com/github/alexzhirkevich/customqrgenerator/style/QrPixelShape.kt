@@ -18,7 +18,7 @@ interface QrPixelShape : QrShapeModifier<Boolean> {
         ): Boolean = true
     }
 
-    class Circle(
+    data class Circle(
         @FloatRange(from = MIN_SIZE.toDouble(), to = MAX_SIZE.toDouble())
         private val size : Float = 1f
     ) : QrPixelShape {
@@ -50,7 +50,7 @@ interface QrPixelShape : QrShapeModifier<Boolean> {
     }
 
 
-    class RoundCornersIndependent(
+    data class RoundCornersIndependent(
         val topLeft : Boolean = true,
         val topRight : Boolean = true,
         val bottomLeft : Boolean = true,
@@ -70,7 +70,7 @@ interface QrPixelShape : QrShapeModifier<Boolean> {
      * If corner is true - it can be round depending on [Neighbors].
      * If corner is false - it will never be round.
      * */
-    class RoundCorners(
+    data class RoundCorners(
         val topLeft : Boolean = true,
         val topRight : Boolean = true,
         val bottomLeft : Boolean = true,

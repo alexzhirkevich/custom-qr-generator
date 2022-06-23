@@ -27,7 +27,7 @@ interface QrFrameShape : QrShapeModifier<Boolean> {
      * Special style for QR code eye frame - frame pixels will be counted as qr pixels.
      * For example, [QrPixelShape.Circle] style will make eye frame look like a chaplet.
      * */
-    class AsPixelShape(override val delegate: QrPixelShape)
+    data class AsPixelShape(override val delegate: QrPixelShape)
         : QrFrameShape, ModifierDelegate<Boolean, QrPixelShape> {
         @Throws(IllegalStateException::class)
         override fun invoke(
@@ -51,7 +51,7 @@ interface QrFrameShape : QrShapeModifier<Boolean> {
         }
     }
 
-    class RoundCorners(
+    data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         val outer: Boolean = true,
         val horizontalOuter: Boolean = true,

@@ -31,7 +31,7 @@ interface QrShape {
         override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: ByteMatrix)  = true
     }
 
-    class Circle(
+    data class Circle(
         @FloatRange(from = 1.0, to = 2.0)
         val padding : Float = 1.1f,
         private val random : Random = Random

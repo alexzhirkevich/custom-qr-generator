@@ -3,7 +3,7 @@ package com.github.alexzhirkevich.customqrgenerator.style
 /**
  * Status of the neighbor qr-code pixels
  * */
-class Neighbors(
+data class Neighbors(
     val topLeft : Boolean=false,
     val topRight : Boolean=false,
     val left : Boolean=false,
