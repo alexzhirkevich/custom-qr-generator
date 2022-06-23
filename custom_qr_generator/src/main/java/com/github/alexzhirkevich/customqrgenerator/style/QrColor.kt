@@ -95,18 +95,18 @@ interface QrColor  {
                 realI <= center/2 && realJ <= center/2 ->
                     color
                 realI > center/2 && realJ < center/2 ->
-                    LinearGradient(color,middleColor,LinearGradient.Orientation.Vertical)
+                    LinearGradient(color,middleColor,LinearGradient.Orientation.Horizontal)
                         .invoke(imin, jmin, elementSize/4, qrPixelSize)
                 realI < center/2 && realJ > center/2 ->
-                    LinearGradient(color,middleColor,LinearGradient.Orientation.Horizontal)
+                    LinearGradient(color,middleColor,LinearGradient.Orientation.Vertical)
                         .invoke(imin, jmin, elementSize/4,qrPixelSize)
                 else -> {
                     val order : (Int, Int) -> Int = if (color == colorLeftDiagonal)
-                        ::maxOf else ::minOf
+                        ::minOf else ::maxOf
                     order(
-                        LinearGradient(color, middleColor, LinearGradient.Orientation.Horizontal)
-                            .invoke(imin, jmin, elementSize / 4, qrPixelSize),
                         LinearGradient(color, middleColor, LinearGradient.Orientation.Vertical)
+                            .invoke(imin, jmin, elementSize / 4, qrPixelSize),
+                        LinearGradient(color, middleColor, LinearGradient.Orientation.Horizontal)
                             .invoke(imin, jmin, elementSize / 4, qrPixelSize)
                     )
                 }
