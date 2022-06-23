@@ -2,6 +2,9 @@ package com.github.alexzhirkevich.customqrgenerator.style
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
 import com.github.alexzhirkevich.customqrgenerator.QrUtil
 import kotlin.math.sqrt
 
@@ -101,8 +104,10 @@ interface QrColor  {
                     LinearGradient(color,middleColor,LinearGradient.Orientation.Vertical)
                         .invoke(imin, jmin, elementSize/4,qrPixelSize)
                 else -> {
-                    val order : (Int, Int) -> Int = if (color == colorLeftDiagonal)
-                        ::minOf else ::maxOf
+                    val order : (Int, Int) -> Int = if (
+                        color == colorLeftDiagonal && colorLeftDiagonal > colorRightDiagonal ||
+                        color == colorRightDiagonal && colorLeftDiagonal < colorRightDiagonal
+                    ) ::minOf else ::maxOf
                     order(
                         LinearGradient(color, middleColor, LinearGradient.Orientation.Vertical)
                             .invoke(imin, jmin, elementSize / 4, qrPixelSize),
