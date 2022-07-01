@@ -36,11 +36,27 @@ interface QrData {
     }
 
     data class Wifi(
-        val authentication: String? = null,
+        val authentication: Authentication?=null,
         val ssid: String? = null,
         val psk: String? = null,
         val hidden: Boolean = false,
     ) : QrData {
+
+        enum class Authentication {
+            WEP,
+            WPA,
+            WPA2EAP {
+                override fun toString(): String {
+                    return "WPA2-EAP"
+                }
+            },
+            OPEN {
+                override fun toString(): String {
+                    return "nopass"
+                }
+            }
+        }
+
         override fun encode(): String = buildString{
             append("WIFI:")
             if (ssid!= null) {
