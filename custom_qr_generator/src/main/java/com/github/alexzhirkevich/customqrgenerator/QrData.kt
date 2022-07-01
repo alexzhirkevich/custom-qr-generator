@@ -188,7 +188,7 @@ interface QrData {
         }
     }
 
-    data class MedCard(
+    data class MeCard(
         val name: String? = null,
         val address: String? = null,
         val phoneNumber: String? = null,
