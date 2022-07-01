@@ -1,5 +1,5 @@
 # custom-qr-generator
-Android library for creating QR-codes with logo, custom pixel/eyes shapes, background image. Powerd by <a href="https://github.com/zxing/zxing">ZXing</a>.
+Android library for creating QR-codes with logo, custom pixel/eyes shapes, background image. Powered by <a href="https://github.com/zxing/zxing">ZXing</a>.
 
 <table>
   <tr>
@@ -40,7 +40,7 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.2.2'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.2.3'
 }
 ```
 
