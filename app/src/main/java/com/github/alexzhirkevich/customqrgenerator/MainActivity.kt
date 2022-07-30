@@ -3,17 +3,13 @@ package com.github.alexzhirkevich.customqrgenerator
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toColorInt
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.github.alexzhirkevich.customqrgenerator.example.R
 import com.github.alexzhirkevich.customqrgenerator.example.databinding.ActivityMainBinding
 import com.github.alexzhirkevich.customqrgenerator.style.*
-import java.io.File
-import java.io.FileOutputStream
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -64,15 +60,23 @@ class MainActivity : AppCompatActivity() {
             .build()
     }
 
-    private val qrGenerator: QrCodeGenerator = QrGenerator()
+    // Use wisely. More threads doesn't mean more performance.
+    // It depends on device and QrOptions.size
+    private val threadPolicy = when(Runtime.getRuntime().availableProcessors()){
+        in 1..3 -> QrGenerator.ThreadPolicy.SingleThread
+        in 4..6 -> QrGenerator.ThreadPolicy.DoubleThread
+        else -> QrGenerator.ThreadPolicy.QuadThread
+    }
+
+    private val qrGenerator: QrCodeGenerator = QrGenerator(threadPolicy)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
+        var oldBmp : Bitmap? = null
         binding.create.setOnClickListener {
             lifecycleScope.launchWhenStarted {
                 val bmp = qrGenerator.generateQrCodeSuspend(
@@ -82,6 +86,8 @@ class MainActivity : AppCompatActivity() {
                     setImageBitmap(bmp)
                     setBackgroundResource(0)
                 }
+                oldBmp?.recycle()
+                oldBmp = bmp
             }
         }
     }

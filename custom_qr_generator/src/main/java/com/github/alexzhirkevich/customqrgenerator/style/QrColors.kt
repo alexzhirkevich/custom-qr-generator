@@ -16,6 +16,6 @@ data class QrColors(
     val dark : QrColor = QrColor.Solid(Color.BLACK),
     val frame : QrColor = QrColor.Unspecified,
     val ball : QrColor = QrColor.Unspecified,
-    val bitmapBackground : QrColor = QrColor.Solid(Color.TRANSPARENT),
-    val codeBackground : QrColor = QrColor.Solid(Color.WHITE),
+    val bitmapBackground : QrColor = QrColor.Solid(Color.WHITE),
+    val codeBackground : QrColor = QrColor.Unspecified,
 )
