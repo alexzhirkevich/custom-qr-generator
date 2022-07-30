@@ -1,4 +1,4 @@
-# custom-qr-generator
+# Сustom QR generator for Android
 Android library for creating QR-codes with logo, custom pixel/eyes shapes, background image. Powered by <a href="https://github.com/zxing/zxing">ZXing</a>.
 
 <table>
