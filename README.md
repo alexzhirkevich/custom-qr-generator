@@ -27,12 +27,9 @@ allprojects {
 Or for gradle 7+ to settings.gradle file: 
 ```gradle
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         ...
-        maven {
-            url 'https://jitpack.io'        
-        }
+        maven { url 'https://jitpack.io' }
     }
 }
 ```
@@ -40,14 +37,14 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.2.3'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.2.4'
 }
 ```
 
  
 ## Usage
 
-<b>Step 1.</b> Create QR code data. There are multiple QR types support: Plain Text, Url, Wi-Fi,
+<b>Step 1.</b> Create QR code data. There are multiple QR types: Plain Text, Url, Wi-Fi,
 Email, GeoPos, Profile Cards, Phone, etc. 
 
 ```kotlin
@@ -126,7 +123,7 @@ object Circle : QrPixelShape {
     override fun invoke(
         i: Int, j: Int, elementSize: Int,
         qrPixelSize: Int, neighbors: Neighbors
-    ): Boolean = {
+    ): Boolean {
         val center = elementSize/2.0
         return (sqrt((center-i)*(center-i) + (center-j)*(center-j)) < center)
     }

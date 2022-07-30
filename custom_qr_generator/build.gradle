@@ -13,6 +13,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+        signingConfig signingConfigs.debug
     }
 
     buildTypes {
@@ -54,7 +55,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.alexzhirkevich'
                 artifactId = 'custom-qr-generator'
-                version = '1.2.3'
+                version = '1.2.4'
             }
         }
         repositories {
