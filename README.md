@@ -111,6 +111,23 @@ Generator supports cancellation with coroutines.
 val bitmap = generator.generateQrCodeSuspend(data, options)
 ```
 
+Generator can work in parallel threads (different Default coroutine dispatchers).
+<br><b>NOTE: Use wisely! More threads doesn't mean more performance!</b>
+It depends on device and size of the QR code.<br>By default generator works in SingleThread. 
+To change it pass another ```QrGenerator.ThreadPolicy``` to ```QrGenerator``` constructor.<br>
+For example:
+
+```kotlin
+val threadPolicy = when(Runtime.getRuntime().availableProcessors()){
+    in 1..3 -> QrGenerator.ThreadPolicy.SingleThread
+    in 4..6 -> QrGenerator.ThreadPolicy.DoubleThread
+    else -> QrGenerator.ThreadPolicy.QuadThread
+}
+
+val generator: QrCodeGenerator = QrGenerator(threadPolicy)
+
+```
+
 ## Customization
   
 You can easily implement your own shapes and coloring for QR Code elements using math formulas.
