@@ -95,6 +95,15 @@ class QrGenerator(
             bgBitmap?.getPixels(bgBitmapPixels, 0,width,0,0,width, height)
             bgBitmap?.recycle()
 
+            fun bgColor(x : Int, y : Int) : Int{
+                val bitmapBgColor = options.colors.bitmapBackground.invoke(
+                    x,y, bitMatrix.width, pixelSize
+                )
+                return bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
+                    ?.let { QrUtil.mixColors(it, bitmapBgColor, options.background?.alpha ?: 0f) }
+                    ?: bitmapBgColor
+            }
+
             val array = IntArray(width*height)
             val ranges = threadPolicy(width)
 
@@ -143,13 +152,7 @@ class QrGenerator(
                                         x, y, bitMatrix.width, pixelSize
                                     )
                                     else -> {
-
-                                        val bitmapBgColor = options.colors.bitmapBackground.invoke(
-                                            x,y, bitMatrix.width, pixelSize
-                                        )
-                                        val bgColor = bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
-                                            ?.let { QrUtil.mixColors(it, bitmapBgColor, options.background?.alpha ?: 0f) }
-                                            ?: bitmapBgColor
+                                        val bgColor = bgColor(x,y)
 
                                         val codeBg = options.colors.codeBackground.invoke(
                                             x-padding, y-padding, bitMatrix.width - padding*2, pixelSize
@@ -162,18 +165,20 @@ class QrGenerator(
                                 }
                                 array[x+error/2 + (y+error/2) * width] = color
                             } else {
-                                val bitmapBgColor = options.colors.bitmapBackground.invoke(
-                                    x,y, bitMatrix.width, pixelSize
-                                )
-                                val bgColor = bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
-                                    ?.let { QrUtil.mixColors(it, bitmapBgColor, options.background?.alpha ?: 0f) }
-                                    ?: bitmapBgColor
-                                array[x + y*width] = bgColor
+                                array[x + y*width] =    bgColor(x,y)
                             }
                         }
                     }
                 }
             }.joinAll()
+
+            for (x in padding until padding+error/2)
+                for (y in padding until width - padding)
+                    array[x + y*width] = bgColor(x,y)
+
+            for (x in padding until width - padding)
+                for (y in padding until padding+error/2)
+                    array[x + y*width] = bgColor(x,y)
 
             if (options.logo != null) {
                 val logoSize = ((width - shapeIncrease * 4) * options.logo.size).roundToInt()
