@@ -81,7 +81,6 @@ class QrGenerator(
 
         return bmp.apply {
             drawCode(result, options)
-            drawLogo(result, options)
         }
     }
 
@@ -90,13 +89,20 @@ class QrGenerator(
             val bgBitmap = options.background?.drawable
                 ?.toBitmap(width, height, Bitmap.Config.ARGB_8888)
 
+            val bgBitmapPixels = if (bgBitmap != null)
+                IntArray(width * height) else null
+
+            bgBitmap?.getPixels(bgBitmapPixels, 0,width,0,0,width, height)
+            bgBitmap?.recycle()
+
+            val array = IntArray(width*height)
             val ranges = threadPolicy(width)
 
             ranges.map {
                 launch(Dispatchers.Default) {
 
                     for (x in it.first) {
-                        for (y in it.second) {
+                        for (y in  it.second) {
                             ensureActive()
 
                             val inCodeRange = x in padding until width -padding &&
@@ -137,10 +143,14 @@ class QrGenerator(
                                         x, y, bitMatrix.width, pixelSize
                                     )
                                     else -> {
-                                        val bgColor = bgBitmap?.get(x,y)?.takeIf { it.alpha > 0 } ?:
-                                        options.colors.bitmapBackground.invoke(
+
+                                        val bitmapBgColor = options.colors.bitmapBackground.invoke(
                                             x,y, bitMatrix.width, pixelSize
                                         )
+                                        val bgColor = bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
+                                            ?.let { QrUtil.mixColors(it, bitmapBgColor, options.background?.alpha ?: 0f) }
+                                            ?: bitmapBgColor
+
                                         val codeBg = options.colors.codeBackground.invoke(
                                             x-padding, y-padding, bitMatrix.width - padding*2, pixelSize
                                         )
@@ -150,29 +160,32 @@ class QrGenerator(
                                         else bgColor
                                     }
                                 }
-                                this@drawCode[x+error/2, y+error/2] = color
+                                array[x+error/2 + (y+error/2) * width] = color
                             } else {
-                                this@drawCode[x,y] = bgBitmap?.get(x,y)?.takeIf { it.alpha > 0 } ?:
-                                        options.colors.bitmapBackground.invoke(
-                                            x,y, bitMatrix.width, pixelSize)
+                                val bitmapBgColor = options.colors.bitmapBackground.invoke(
+                                    x,y, bitMatrix.width, pixelSize
+                                )
+                                val bgColor = bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
+                                    ?.let { QrUtil.mixColors(it, bitmapBgColor, options.background?.alpha ?: 0f) }
+                                    ?: bitmapBgColor
+                                array[x + y*width] = bgColor
                             }
                         }
                     }
                 }
             }.joinAll()
-            bgBitmap?.recycle()
-        }
-    }
 
-    private suspend fun Bitmap.drawLogo(
-        renderResult: QrRenderResult, options: QrOptions
-    ) = with(renderResult){
-        coroutineScope {
             if (options.logo != null) {
                 val logoSize = ((width - shapeIncrease * 4) * options.logo.size).roundToInt()
                 val bitmapLogo = options.logo.drawable
                     .toBitmap(logoSize, logoSize, Bitmap.Config.ARGB_8888)
+
+                val logoPixels = IntArray(logoSize*logoSize)
+                bitmapLogo.getPixels(logoPixels,0, logoSize, 0,0, logoSize, logoSize)
+                bitmapLogo.recycle()
+
                 val logoTopLeft = (width - logoSize) / 2
+
 
                 for (i in 0 until bitmapLogo.width) {
                     for (j in 0 until bitmapLogo.height) {
@@ -185,16 +198,17 @@ class QrGenerator(
                             continue
                         }
 
-                        if (bitmapLogo[i, j] != Color.TRANSPARENT) {
+                        if (logoPixels[i + j * logoSize] != Color.TRANSPARENT) {
                             runCatching {
-                                this@drawLogo[logoTopLeft + i, logoTopLeft + j] =
-                                    bitmapLogo[i, j]
+                                array[logoTopLeft + i + (logoTopLeft + j) * width] =
+                                    logoPixels[i + j * logoSize]
                             }
                         }
                     }
                 }
-                bitmapLogo.recycle()
             }
+
+            setPixels(array,0,width,0,0,width,height)
         }
     }
 }
