@@ -6,10 +6,10 @@ import androidx.annotation.FloatRange
 /**
  * @param drawable logo image. Can have transparent background
  * @param size logo size relative to qr-code size.
- * If logo size is bigger then size allowed in [FloatRange], qr-code might be unreadable.
+ * If logo size is bigger than allowed size, QR code might be unreadable.
  * @param padding logo padding  relative to logo size
- * @param shape style of the logo padding.
- * For example round logo can have [QrLogoShape.Circle] style to have round padding.
+ * @param shape shape of logo image and padding.
+ * @param scale way of getting necessary scaled bitmap from [drawable]
  * You can implement custom [QrLogoShape]
  * */
 data class QrLogo(
