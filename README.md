@@ -135,9 +135,13 @@ val generator: QrCodeGenerator = QrGenerator(threadPolicy)
   
 You can easily implement your own shapes and coloring for QR Code elements using math formulas.
 For example, this is implementation of Circle QR-pixels:
-  
+
+<table align="center-vertical">
+<td>
 <img src="./screenshots/circlepixels.png" width="256" height="256">
- 
+</td>
+<td>
+
 ```kotlin
 object Circle : QrPixelShape {
     override fun invoke(
@@ -145,8 +149,11 @@ object Circle : QrPixelShape {
         qrPixelSize: Int, neighbors: Neighbors
     ): Boolean {
         val center = elementSize/2.0
-        return (sqrt((center-i)*(center-i) + (center-j)*(center-j)) < center)
+        return sqrt((center-i)*(center-i) + (center-j)*(center-j)) < center
     }
 }
 ```
+
+</td>
+</table>
 
