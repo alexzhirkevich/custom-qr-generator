@@ -149,7 +149,8 @@ object Circle : QrPixelShape {
         qrPixelSize: Int, neighbors: Neighbors
     ): Boolean {
         val center = elementSize/2.0
-        return sqrt((center-i)*(center-i) + (center-j)*(center-j)) < center
+        return sqrt((center-i)*(center-i) + 
+            (center-j)*(center-j)) < center
     }
 }
 ```
