@@ -8,5 +8,6 @@ import android.graphics.drawable.Drawable
  * */
 data class QrBackgroundImage(
     val drawable: Drawable,
-    val alpha : Float = 1f
+    val alpha : Float = 1f,
+    val scale: BitmapScale = BitmapScale.FitCenter
 )

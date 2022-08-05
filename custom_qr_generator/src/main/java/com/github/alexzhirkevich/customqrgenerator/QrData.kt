@@ -45,11 +45,6 @@ interface QrData {
         enum class Authentication {
             WEP,
             WPA,
-            WPA2EAP {
-                override fun toString(): String {
-                    return "WPA2-EAP"
-                }
-            },
             OPEN {
                 override fun toString(): String {
                     return "nopass"

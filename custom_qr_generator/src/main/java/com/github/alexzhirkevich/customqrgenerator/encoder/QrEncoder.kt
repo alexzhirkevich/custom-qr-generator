@@ -1,15 +1,14 @@
 package com.github.alexzhirkevich.customqrgenerator.encoder
 
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
-import com.github.alexzhirkevich.customqrgenerator.neighbors
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.style.QrShapeModifier
 import com.google.zxing.qrcode.encoder.ByteMatrix
 import com.google.zxing.qrcode.encoder.Encoder
 import com.google.zxing.qrcode.encoder.QRCode
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.roundToInt
 
 private class ElementData (
@@ -47,30 +46,25 @@ internal class QrEncoder(private val options: QrOptions)  {
     // 0 == black, 255 == white (i.e. an 8 bit greyscale bitmap).
     private fun renderResult(code: QRCode, isActive : () -> Boolean): QrRenderResult {
         val initialInput = (code.matrix ?: throw IllegalStateException())
+            .toQrMatrix()
         val input = options.codeShape.apply(initialInput)
-        if (input.height != input.width || initialInput.width > input.width) {
-            throw IllegalStateException(
-                "QrShape transform must return square matrix and cannot reduce matrix size"
-            )
-        }
-        val diff = (input.width - initialInput.width)/2
-        val inputSize = input.width
+        val diff = (input.size - initialInput.size)/2
+        val inputSize = input.size
         val padding = (options.size * options.padding.coerceIn(0f, 1f) /2f).roundToInt()
         val outputSize = (options.size - 2 * padding).coerceAtLeast(inputSize)
         val multiple = outputSize / inputSize
-        val output = ByteMatrix(outputSize, outputSize)
-        output.clear(-1)
+        val output = QrCodeMatrix(outputSize)
         var inputY = 0
         var outputY = 0
 
         val error =  ((outputSize.toFloat()/inputSize - multiple)* inputSize).roundToInt()
 
-        while (inputY < input.height) {
+        while (inputY < input.size) {
 
             var inputX = 0
             var outputX = 0
 
-            while (inputX < input.width) {
+            while (inputX < input.size) {
 
                 if (!isActive()){
                     throw CancellationException()
@@ -93,7 +87,7 @@ internal class QrEncoder(private val options: QrOptions)  {
                                     multiple,
                                     neighbors
                                 )
-                            ) 1 else -1
+                            ) QrCodeMatrix.PixelType.DarkPixel else QrCodeMatrix.PixelType.Background
                         }
                     }
                 } else {
@@ -102,16 +96,16 @@ internal class QrEncoder(private val options: QrOptions)  {
                     for (i in outputX until outputX + multiple) {
                         for (j in outputY until outputY + multiple) {
                             output[i, j] = when {
-                                !options.codeShape.pixelInShape(inputX,inputY,input) -> -1
-                                input[inputX, inputY].toInt() == 1 && options.shapes.darkPixel.invoke(
+                                !options.codeShape.pixelInShape(inputX,inputY,input) -> QrCodeMatrix.PixelType.Background
+                                input[inputX, inputY] == QrCodeMatrix.PixelType.DarkPixel && options.shapes.darkPixel.invoke(
                                     i - outputX, j - outputY,
                                     multiple, multiple, neighbors
-                                ) -> 1
+                                ) -> QrCodeMatrix.PixelType.DarkPixel
                                 options.shapes.lightPixel.invoke(
                                     i - outputX, j - outputY,
                                     multiple, multiple, neighbors
-                                ) -> 0
-                                else -> -1
+                                ) -> QrCodeMatrix.PixelType.LightPixel
+                                else -> QrCodeMatrix.PixelType.Background
                             }
                         }
                     }
@@ -143,7 +137,7 @@ internal class QrEncoder(private val options: QrOptions)  {
         return QrRenderResult(output, padding, multiple,diff*multiple, frame, ball, error)
     }
 
-    private fun ByteMatrix.applyLogo(error : Int ,diff: Int, multiple: Int, padding : Int) {
+    private fun QrCodeMatrix.applyLogo(error : Int, diff: Int, multiple: Int, padding : Int) {
         if (options.logo != null) {
             val logoSize = ((options.size - 4 * diff * multiple) *
                     options.logo.size * (1 + options.logo.padding))
@@ -155,7 +149,7 @@ internal class QrEncoder(private val options: QrOptions)  {
                 for (j in 0 until logoSize) {
                     if (options.logo.shape.invoke(i, j, logoSize, multiple, Neighbors.Empty)) {
                         kotlin.runCatching {
-                            this[logoTopLeft + i, logoTopLeft + j] = -1
+                            this[logoTopLeft + i, logoTopLeft + j] = QrCodeMatrix.PixelType.Background
                         }
                     }
                 }
@@ -221,4 +215,50 @@ internal class QrEncoder(private val options: QrOptions)  {
         )
         else -> null
     }
+}
+
+fun ByteMatrix.toQrMatrix() : QrCodeMatrix {
+    if (width != height)
+        throw IllegalStateException("Non-square qr byte matrix")
+
+    return QrCodeMatrix(width).apply {
+        for (i in 0 until width){
+            for (j in 0 until width){
+                this[i,j] = if (this@toQrMatrix[i,j].toInt() == 1)
+                    QrCodeMatrix.PixelType.DarkPixel
+                else QrCodeMatrix.PixelType.Background
+            }
+        }
+    }
+}
+
+internal fun QrCodeMatrix.neighbors(i : Int, j : Int) : Neighbors {
+
+    val topLeft = kotlin.runCatching {
+        this[i - 1, j - 1] == QrCodeMatrix.PixelType.DarkPixel
+    }.getOrDefault(false)
+    val topRight = kotlin.runCatching {
+        this[i - 1, j + 1] == QrCodeMatrix.PixelType.DarkPixel
+    }.getOrDefault(false)
+    val top = kotlin.runCatching {
+        this[i - 1, j] == QrCodeMatrix.PixelType.DarkPixel
+    }.getOrDefault(false)
+    val left = kotlin.runCatching {
+        this[i, j - 1] == QrCodeMatrix.PixelType.DarkPixel
+    }.getOrDefault(false)
+    val right = kotlin.runCatching {
+        this[i, j + 1] == QrCodeMatrix.PixelType.DarkPixel
+    }.getOrDefault(false)
+    val bottomLeft = kotlin.runCatching {
+        this[i+1, j - 1] == QrCodeMatrix.PixelType.DarkPixel
+    }.getOrDefault(false)
+    val bottomRight = kotlin.runCatching {
+        this[i+1, j + 1] == QrCodeMatrix.PixelType.DarkPixel
+    }.getOrDefault(false)
+    val bottom = kotlin.runCatching {
+        this[i+1, j] == QrCodeMatrix.PixelType.DarkPixel
+    }.getOrDefault(false)
+    return Neighbors(
+        topLeft, topRight, left, top, right, bottomLeft, bottom, bottomRight
+    )
 }

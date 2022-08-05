@@ -75,7 +75,7 @@ interface QrBallShape : QrShapeModifier<Boolean> {
                 horizontalOuter && i < sub && j > sum -> sub to sum
                 verticalOuter && i > sum && j < sub -> sum to sub
                 inner && i > sum && j > sum -> sum to sum
-                else -> return QrLogoShape.Default
+                else -> return Default
                     .invoke(i, j,elementSize, qrPixelSize, neighbors)
             }
             return sqrt((x-i)*(x-i) + (y-j)*(y-j)) < sub

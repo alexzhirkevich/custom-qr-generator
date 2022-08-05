@@ -4,8 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.core.graphics.alpha
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.get
-import androidx.core.graphics.set
+import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrEncoder
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrRenderResult
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
@@ -101,6 +100,7 @@ class QrGenerator(
 
     private suspend fun Bitmap.drawCode(result: QrRenderResult, options: QrOptions) = coroutineScope{
         with(result) {
+
             val bgBitmap = options.background?.drawable
                 ?.toBitmap(width, height, Bitmap.Config.ARGB_8888)
 
@@ -112,12 +112,11 @@ class QrGenerator(
 
             val array = IntArray(width*height)
 
-            fun drawBg(xrange : IntRange, yrange : IntRange){
-
+            fun draw(xrange : IntRange, yrange : IntRange){
                 for (x in xrange) {
                     for (y in yrange) {
                         val bitmapBgColor = options.colors.bitmapBackground.invoke(
-                            x,y, bitMatrix.width, pixelSize
+                            x,y, bitMatrix.size, pixelSize
                         )
                         val bgColor =  bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
                             ?.let { QrUtil.mixColors(it, bitmapBgColor, options.background?.alpha ?: 0f) }
@@ -126,55 +125,54 @@ class QrGenerator(
                         array[x + y * width] =bgColor
                     }
                 }
-            }
-
-            fun drawPattern(xrange : IntRange, yrange : IntRange){
                 for (x in xrange) {
                     for (y in yrange) {
                         ensureActive()
 
                         val inCodeRange = x in padding until width -padding - error &&
                                 y in padding until height-padding - error && options.shapes.background
-                            .invoke(x - padding, y - padding, bitMatrix.width - error, pixelSize, Neighbors.Empty)
+                            .invoke(x - padding, y - padding, bitMatrix.size - error, pixelSize, Neighbors.Empty)
 
                         if (inCodeRange){
-                            val pixel = bitMatrix[x - padding, y - padding].toInt()
+                            val pixel = bitMatrix[x - padding, y - padding]
 
-                            val realX = minOf(x - padding, bitMatrix.width - x - error - padding)
-                            val realY = minOf(y - padding, bitMatrix.height - y - error - padding)
+                            val realX = minOf(x - padding, bitMatrix.size - x - error - padding)
+                            val realY = minOf(y - padding, bitMatrix.size - y - error - padding)
 
-                            val topRightCorner = bitMatrix.width - x  < x && bitMatrix.height - y < y
+                            val topRightCorner = bitMatrix.size - x  < x && bitMatrix.size - y < y
 
                             val color = when {
-                                pixel == 1 && !topRightCorner && options.colors.ball !is QrColor.Unspecified &&
+                                pixel == QrCodeMatrix.PixelType.DarkPixel &&
+                                        !topRightCorner && options.colors.ball !is QrColor.Unspecified &&
                                         ball.let {
                                             realX in it.x until it.x + it.size  &&
                                                     realY in it.y until it.y + it.size
                                         } -> options.colors.ball.invoke(
                                     realX - ball.x, realY-ball.y, ball.size, pixelSize)
 
-                                pixel == 1 && !topRightCorner && options.colors.frame !is QrColor.Unspecified &&
+                                pixel == QrCodeMatrix.PixelType.DarkPixel &&
+                                        !topRightCorner && options.colors.frame !is QrColor.Unspecified &&
                                         frame.let {
                                             realX in it.x until it.x + it.size &&
                                                     realY in it.y until it.y + it.size
                                         } -> options.colors.frame.invoke(
                                     realX-frame.x, realY-frame.y, frame.size, pixelSize)
 
-                                pixel == 1  && options.colors.dark.invoke(
-                                    x, y, bitMatrix.width, pixelSize
+                                pixel == QrCodeMatrix.PixelType.DarkPixel  && options.colors.dark.invoke(
+                                    x, y, bitMatrix.size, pixelSize
                                 ).alpha > 0 -> options.colors.dark.invoke(
-                                    x, y, bitMatrix.width, pixelSize
+                                    x, y, bitMatrix.size, pixelSize
                                 )
-                                pixel == 0 && options.colors.light.invoke(
-                                    x, y, bitMatrix.width, pixelSize
+                                pixel == QrCodeMatrix.PixelType.LightPixel && options.colors.light.invoke(
+                                    x, y, bitMatrix.size, pixelSize
                                 ).alpha > 0 -> options.colors.light.invoke(
-                                    x, y, bitMatrix.width, pixelSize
+                                    x, y, bitMatrix.size, pixelSize
                                 )
                                 else -> {
                                     val bgColor = array[x+error/2 + (y+error/2) * width]
 
                                     val codeBg = options.colors.codeBackground.invoke(
-                                        x-padding, y-padding, bitMatrix.width - padding*2, pixelSize
+                                        x-padding, y-padding, bitMatrix.size - padding*2, pixelSize
                                     )
 
                                     if (codeBg.alpha >0)
@@ -188,14 +186,11 @@ class QrGenerator(
                 }
             }
 
-            threadPolicy.invoke(width, ::drawBg)
-
-            threadPolicy.invoke(width, ::drawPattern)
+            threadPolicy.invoke(width, ::draw)
 
             if (options.logo != null) {
                 val logoSize = ((width - shapeIncrease * 4) * options.logo.size).roundToInt()
-                val bitmapLogo = options.logo.drawable
-                    .toBitmap(logoSize, logoSize, Bitmap.Config.ARGB_8888)
+                val bitmapLogo = options.logo.scale.scale(options.logo.drawable, logoSize, logoSize)
 
                 val logoPixels = IntArray(logoSize*logoSize)
                 bitmapLogo.getPixels(logoPixels,0, logoSize, 0,0, logoSize, logoSize)
@@ -215,7 +210,7 @@ class QrGenerator(
                             continue
                         }
 
-                        if (logoPixels[i + j * logoSize] != Color.TRANSPARENT) {
+                        if (logoPixels[i + j * logoSize].alpha > 0) {
                             runCatching {
                                 array[logoTopLeft + i + (logoTopLeft + j) * width] =
                                     logoPixels[i + j * logoSize]

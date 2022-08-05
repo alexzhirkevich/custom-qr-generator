@@ -17,5 +17,6 @@ data class QrLogo(
     @FloatRange(from = 0.0, to = .3)
     val size : Float = 0.2f,
     val padding : Float = 0.15f,
-    val shape: QrLogoShape = QrLogoShape.Default
+    val shape: QrLogoShape = QrLogoShape.Default,
+    val scale: BitmapScale = BitmapScale.FitCenter,
 )
