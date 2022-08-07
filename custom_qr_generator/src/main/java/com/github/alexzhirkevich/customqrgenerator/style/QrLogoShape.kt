@@ -6,32 +6,19 @@ import androidx.annotation.FloatRange
  * Shape of the qr-code logo padding.
  * You can implement your own shape by overriding [invoke] method.
  * */
-interface QrLogoShape : QrShapeModifier<Boolean> {
+interface QrLogoShape : QrShapeModifier {
 
-    object Default : QrLogoShape {
-        override fun invoke(
-            i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
-        ): Boolean = true
-    }
+    object Default : QrShapeModifierDelegate(
+        delegate = DefaultShapeModifier
+    ), QrLogoShape
 
-    object Circle : QrLogoShape {
-        override fun invoke(
-            i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
-        ): Boolean = QrBallShape.Circle(1f)
-            .invoke(i, j,elementSize, qrPixelSize, neighbors)
-    }
+    object Circle : QrShapeModifierDelegate(
+        delegate = QrBallShape.Circle(1f)
+    ), QrLogoShape
 
-    object Rhombus : QrLogoShape {
-        override fun invoke(
-            i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
-        ): Boolean {
-            return QrBallShape.Rhombus
-                .invoke(i, j,elementSize, qrPixelSize, neighbors)
-        }
-    }
+    object Rhombus : QrShapeModifierDelegate(
+        delegate = QrBallShape.Rhombus
+    ), QrLogoShape
 
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
@@ -39,11 +26,10 @@ interface QrLogoShape : QrShapeModifier<Boolean> {
         val horizontalOuter: Boolean = true,
         val verticalOuter: Boolean = true,
         val inner: Boolean = true,
-    ) : QrLogoShape {
-        override fun invoke(
-            i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
-        ): Boolean = QrBallShape.RoundCorners(corner, outer, horizontalOuter, verticalOuter, inner)
-            .invoke(i, j,elementSize, qrPixelSize, neighbors)
-    }
+    ) : QrShapeModifierDelegate(
+       delegate =  QrBallShape.RoundCorners(
+           corner, outer, horizontalOuter, verticalOuter, inner)
+    ), QrLogoShape
 }
+
+fun QrShapeModifier.asLogoShape() : QrLogoShape = object : QrLogoShape, QrShapeModifier by this{}

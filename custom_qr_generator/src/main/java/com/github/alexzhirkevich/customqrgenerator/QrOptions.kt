@@ -1,5 +1,7 @@
 package com.github.alexzhirkevich.customqrgenerator
 
+import android.graphics.Canvas
+import android.graphics.Paint
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import com.github.alexzhirkevich.customqrgenerator.style.*
@@ -14,18 +16,18 @@ data class QrOptions(
     val codeShape : QrShape,
     val errorCorrectionLevel: QrErrorCorrectionLevel
 ){
-    class Builder(@IntRange(from = 0) private val size : Int){
+    class Builder(@IntRange(from = 0) val size : Int){
 
-        private var padding = .125f
-        private var colors = QrColors()
-        private var logo: QrLogo? = null
-        private var background: QrBackgroundImage? = null
-        private var shapes = QrElementsShapes()
-        private var codeShape : QrShape = QrShape.Default
-        private var errorCorrectionLevel : QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
+        var padding = .125f
+        var colors = QrColors()
+        var logo: QrLogo? = null
+        var backgroundImage: QrBackgroundImage? = null
+        var elementsShapes = QrElementsShapes()
+        var codeShape : QrShape = QrShape.Default
+        var errorCorrectionLevel : QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
 
         fun build() : QrOptions = QrOptions(
-            size, padding,colors, logo, background,shapes, codeShape, errorCorrectionLevel
+            size, padding,colors, logo, backgroundImage,elementsShapes, codeShape, errorCorrectionLevel
         )
 
         /**
@@ -45,15 +47,15 @@ data class QrOptions(
         }
 
         fun setBackground(background: QrBackgroundImage?)  = apply{
-            this.background = background
+            this.backgroundImage = background
         }
 
         fun setCodeShape(shape: QrShape) : Builder = apply{
-            codeShape =shape
+            this.codeShape =shape
         }
 
         fun setElementsShapes(shapes: QrElementsShapes) = apply {
-            this.shapes = shapes
+            this.elementsShapes = shapes
         }
 
         fun setErrorCorrectionLevel(level: QrErrorCorrectionLevel) = apply{
@@ -61,3 +63,29 @@ data class QrOptions(
         }
     }
 }
+
+/**
+ * Build [QrOptions] via Kotlin DSL
+ * */
+fun createQrOptions(size: Int, build :QrOptions.Builder.() -> Unit) : QrOptions {
+    return QrOptions.Builder(size).apply(build).build()
+}
+
+/**
+ * Create custom [QrShapeModifier] by drawing on [Canvas].
+ * Can be converted to a specific shape modifier with corresponding
+ * as___Shape function
+ * @see QrCanvasShapeModifier
+ * @see QrShapeModifier.asPixelShape
+ * @see QrShapeModifier.asBallShape
+ * @see QrShapeModifier.asFrameShape
+ * @see QrShapeModifier.asLogoShape
+ * @see QrShapeModifier.asBackgroundShape
+ * */
+fun QrOptions.Builder.drawShape(draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit)
+        : QrShapeModifier = object : QrCanvasShapeModifier {
+
+    override fun draw(canvas: Canvas, drawPaint: Paint, erasePaint: Paint) =
+        draw(canvas, drawPaint, erasePaint)
+
+}.toShapeModifier(size)

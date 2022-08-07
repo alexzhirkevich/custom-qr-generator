@@ -1,32 +1,31 @@
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
-import kotlin.math.abs
-import kotlin.math.sqrt
+import kotlin.math.*
+
 
 /**
  * Style of the qr-code pixels.
  * You can implement your own style by overriding [invoke] method.
  * @see QrShapeModifier
  * */
-interface QrPixelShape : QrShapeModifier<Boolean> {
+interface QrPixelShape : QrShapeModifier {
 
-    object Default : QrPixelShape {
+
+    object Default : QrShapeModifierDelegate(
+        delegate = DefaultShapeModifier
+    ), QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
             qrPixelSize: Int, neighbors: Neighbors
         ): Boolean = true
     }
 
+
     data class Circle(
-        @FloatRange(from = MIN_SIZE.toDouble(), to = MAX_SIZE.toDouble())
+        @FloatRange(from = .5, to = 1.0)
         private val size : Float = 1f
     ) : QrPixelShape {
-
-        companion object{
-            const val MIN_SIZE = .5f
-            const val MAX_SIZE = 1.0f
-        }
 
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
@@ -34,10 +33,11 @@ interface QrPixelShape : QrShapeModifier<Boolean> {
         ): Boolean {
 
             val center = elementSize/2.0
-            return (sqrt((center-i)*(center-i) + (center-j)*(center-j)) <
-                    center * size.coerceIn(MIN_SIZE, MAX_SIZE))
+            return (sqrt((center-i).pow(2) + (center-j).pow(2)) <
+                    center * size.coerceIn(0f, 1f))
         }
     }
+
 
     object Rhombus : QrPixelShape{
         override fun invoke(
@@ -49,23 +49,6 @@ interface QrPixelShape : QrShapeModifier<Boolean> {
         }
     }
 
-
-    data class RoundCornersIndependent(
-        val topLeft : Boolean = true,
-        val topRight : Boolean = true,
-        val bottomLeft : Boolean = true,
-        val bottomRight : Boolean = true
-    ) : QrPixelShape{
-        override fun invoke(
-            i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
-        ): Boolean {
-            return QrBallShape.RoundCorners(.5f,
-            topLeft,topRight,bottomLeft,bottomRight).invoke(
-                i, j, elementSize, qrPixelSize, neighbors
-            )
-        }
-    }
     /**
      * If corner is true - it can be round depending on [Neighbors].
      * If corner is false - it will never be round.
@@ -79,16 +62,18 @@ interface QrPixelShape : QrShapeModifier<Boolean> {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
             qrPixelSize: Int, neighbors: Neighbors
-        ): Boolean =
-            isRoundDark(
-                i, j, elementSize, qrPixelSize, neighbors,
-                topLeft && neighbors.top.not() && neighbors.left.not(),
-                topRight && neighbors.top.not() && neighbors.right.not(),
-                bottomLeft && neighbors.bottom.not() && neighbors.left.not(),
-                bottomRight && neighbors.bottom.not() && neighbors.right.not()
-            )
+        ): Boolean = isRoundDark(
+            i, j, elementSize, qrPixelSize, neighbors,
+            topLeft && neighbors.top.not() && neighbors.left.not(),
+            topRight && neighbors.top.not() && neighbors.right.not(),
+            bottomLeft && neighbors.bottom.not() && neighbors.left.not(),
+            bottomRight && neighbors.bottom.not() && neighbors.right.not()
+        )
 
-        internal companion object {
+        companion object {
+
+            private val circle = Circle(1f)
+
             internal fun isRoundDark(
                 i: Int, j: Int, elementSize: Int,
                 qrPixelSize: Int,
@@ -98,7 +83,7 @@ interface QrPixelShape : QrShapeModifier<Boolean> {
                 bottomLeft : Boolean,
                 bottomRight : Boolean) : Boolean {
                 if (neighbors.hasAny.not()){
-                    return Circle(1f)
+                    return circle
                         .invoke(i, j,elementSize, qrPixelSize, neighbors)
                 }
                 if (neighbors.hasAllNearest){
@@ -119,35 +104,82 @@ interface QrPixelShape : QrShapeModifier<Boolean> {
                             i > sum && j < sub -> sum to sub
                     bottomRight &&
                             i > sum && j > sum -> sum to sum
-                    else -> return QrFrameShape.Default
+                    else -> return Default
                         .invoke(i, j,elementSize, qrPixelSize, neighbors)
                 }
-                return sqrt((x-i)*(x-i) + (y-j)*(y-j)) < sub
+                return sqrt((x-i).pow(2) + (y-j).pow(2)) < sub
             }
         }
     }
 
 
-    object RoundCornersHorizontal : QrPixelShape {
+    // TODO: fix
+    /**
+     * Doesn't work well with QrOptions.size < 512 and [sidePadding] > 0
+     * */
+    class RoundCornersHorizontal(
+        @FloatRange(from = .0, to = .5)
+        val sidePadding : Float = 0f
+    ) : QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
             qrPixelSize: Int, neighbors: Neighbors
         ): Boolean = with(neighbors) {
+            val padding = (elementSize * sidePadding).roundToInt()
+
+            j in padding until elementSize - padding &&
             RoundCorners.isRoundDark(
-                i, j, elementSize, qrPixelSize, neighbors,
+                i, j-padding,
+                //idk why even size here causes protruding sticks with low code size
+                (elementSize-padding*2).let { if (it % 2 == 1) it else it -1 },
+                qrPixelSize, neighbors,
                 top.not(), top.not(), bottom.not(), bottom.not()
             )
         }
     }
-    object RoundCornersVertical : QrPixelShape {
+
+
+    // TODO: fix
+    /**
+     * Doesn't work well with QrOptions.size < 512 and [sidePadding] > 0
+     * */
+    data class RoundCornersVertical(
+        @FloatRange(from = .0, to = .5)
+        val sidePadding : Float = 0f
+    ) : QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
             qrPixelSize: Int, neighbors: Neighbors
         ): Boolean = with(neighbors) {
+
+            val padding = (elementSize * sidePadding).roundToInt()
+
+            i in padding until elementSize - padding &&
             RoundCorners.isRoundDark(
-                i, j, elementSize, qrPixelSize, neighbors,
+                i-padding, j,
+                //idk why even size here causes protruding sticks with low code size
+                (elementSize-padding*2).let { if (it % 2 == 1) it else it -1 },
+                qrPixelSize, neighbors,
                 left.not(), right.not(), left.not(), right.not()
             )
         }
     }
+
+
+    object Star : QrPixelShape {
+        override fun invoke(
+            i: Int, j: Int, elementSize: Int,
+            qrPixelSize: Int, neighbors: Neighbors
+        ): Boolean {
+            val radius = elementSize/2f
+
+            val i2 = minOf(i, elementSize-i)
+            val j2 = minOf(j, elementSize-j)
+
+            return sqrt((i2 * i2).toDouble() + (j2 * j2)) > radius
+        }
+    }
 }
+
+fun QrShapeModifier.asPixelShape() : QrPixelShape = if (this is QrPixelShape) this else
+    object : QrPixelShape, QrShapeModifier by this{}

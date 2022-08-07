@@ -2,6 +2,7 @@ package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -40,7 +41,7 @@ interface QrShape {
         override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix): Boolean =
             with(modifiedByteMatrix) {
                 val center = size/2f
-                return sqrt((center - i) * (center - i) + (center-j) * (center - j)) <= center
+                return sqrt((center - i).pow(2) + (center-j).pow(2)) <= center
             }
 
         override fun apply(byteMatrix: QrCodeMatrix): QrCodeMatrix = with(byteMatrix){

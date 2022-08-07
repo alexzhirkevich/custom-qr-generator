@@ -15,7 +15,7 @@ private class ElementData (
     val x : (Int) -> (Int),
     val y : (Int) -> (Int),
     val size : Int,
-    val modifier: QrShapeModifier<Boolean>
+    val modifier: QrShapeModifier
 )
 
 internal class QrEncoder(private val options: QrOptions)  {

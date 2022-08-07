@@ -8,7 +8,7 @@ Android library for creating QR-codes with logo, custom pixel/eyes shapes, backg
     <td><img src="./screenshots/tiktok.png" width="256" height="256"></td>
   </tr>
 </table>
-  
+
 
 ## Installation
 [![](https://jitpack.io/v/alexzhirkevich/custom-qr-generator.svg)](https://jitpack.io/#alexzhirkevich/custom-qr-generator)
@@ -27,7 +27,7 @@ allprojects {
     }
 }
 ```
-Or for gradle 7+ to settings.gradle file: 
+Or for gradle 7+ to settings.gradle file:
 ```gradle
 dependencyResolutionManagement {
     repositories {
@@ -44,11 +44,11 @@ dependencies {
 }
 ```
 
- 
+
 ## Usage
 
 <b>Step 1.</b> Create QR code data. There are multiple QR types: Plain Text, Url, Wi-Fi,
-Email, GeoPos, Profile Cards, Phone, etc. 
+Email, GeoPos, Profile Cards, Phone, etc.
 
 ```kotlin
 val data = QrData.Url("https://example.com")
@@ -100,12 +100,46 @@ val options = QrOptions.Builder(1024)
 ```
 
 <b>Step 3.</b> Create a QR code generator and pass your data and options into it:
-  
+
 ```kotlin  
 val generator: QrCodeGenerator = QrGenerator()
   
 val bitmap = generator.generateQrCode(data, options)
 ```
+
+### DSL
+
+```QrOptions``` can be created via Kotlin DSL. This also allows to easily create custom shape for
+QR elements by drawing on canvas using ```drawShape``` function. This is extension function
+for ```QrOptions.Builder``` and can be used not only inside ```createQrOptions```
+
+For example:
+
+<table align="center-vertical">
+<td>
+<img src="./screenshots/ring.png" width="256" height="256">
+</td>
+<td>
+
+```kotlin  
+ val options = createQrOptions(1024) {
+        elementsShapes = QrElementsShapes(
+            darkPixel = drawShape { canvas, drawPaint, erasePaint ->
+                val cx = canvas.width/2f
+                val cy = canvas.height/2f
+                val radius = minOf(canvas.width, canvas.height)/2f
+                canvas.drawCircle(cx, cy,radius, drawPaint)
+                canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
+                canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
+            }.asPixelShape()
+        )
+    }
+```
+
+</td>
+</table>
+
+### Multi-threading
 
 It is better to perform QR codes generating in background thread.
 Generator supports cancellation with coroutines.
@@ -116,7 +150,7 @@ val bitmap = generator.generateQrCodeSuspend(data, options)
 
 Generator can work in parallel threads (different Default coroutine dispatchers).
 <br><b>NOTE: Use wisely! More threads doesn't mean more performance!</b>
-It depends on device and size of the QR code.<br>By default generator works in SingleThread. 
+It depends on device and size of the QR code.<br>By default generator works in SingleThread.
 To change it pass another ```QrGenerator.ThreadPolicy``` to ```QrGenerator``` constructor.<br>
 For example:
 
@@ -132,29 +166,54 @@ val generator: QrCodeGenerator = QrGenerator(threadPolicy)
 ```
 
 ## Customization
-  
-You can easily implement your own shapes and coloring for QR Code elements using math formulas.
-For example, this is implementation of Circle QR-pixels:
+
+You can easily implement your own shapes and coloring for QR Code elements using math formulas or by drawing on canvas.
 
 <table align="center-vertical">
-<td>
-<img src="./screenshots/circlepixels.png" width="256" height="256">
-</td>
-<td>
+<tr>
+  <td>
+  <img src="./screenshots/circlepixels.png" width="256" height="256">
+  </td>
+  <td>
 
-```kotlin
-object Circle : QrPixelShape {
-    override fun invoke(
-        i: Int, j: Int, elementSize: Int,
-        qrPixelSize: Int, neighbors: Neighbors
-    ): Boolean {
-        val center = elementSize/2.0
-        return sqrt((center-i)*(center-i) + 
-            (center-j)*(center-j)) < center
+  ```kotlin
+  object Circle : QrPixelShape {
+      override fun invoke(
+          i: Int, j: Int, elementSize: Int,
+          qrPixelSize: Int, neighbors: Neighbors
+      ): Boolean {
+          val center = elementSize/2.0
+          return sqrt((center-i)*(center-i) + 
+              (center-j)*(center-j)) < center
+      }
+  }
+  ```
+  </td>
+</tr>
+<tr>
+  <td>
+  <img src="./screenshots/ring.png" width="256" height="256">
+  </td>
+  <td>
+
+  ```kotlin  
+ object Ring : QrCanvasShapeModifier {
+        override fun draw(canvas: Canvas, drawPaint: Paint, erasePaint: Paint) {
+            val cx = canvas.width/2f
+            val cy = canvas.height/2f
+            val radius = minOf(canvas.width, canvas.height)/2f
+            canvas.drawCircle(cx, cy,radius, drawPaint)
+            canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
+            canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
+        }
     }
-}
-```
 
-</td>
+  val ring : QrPixelShape = Ring.toShapeModifier(1024).asPixelShape()
+  
+  ```
+Or use DSL ```createQrOptions``` with ```drawShape``` function
+
+  </td>
+</tr>
 </table>
 

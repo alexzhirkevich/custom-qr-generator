@@ -1,6 +1,7 @@
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
@@ -10,7 +11,8 @@ import kotlin.math.sqrt
  * Frame width should be equal to pixelSize.
  * @see QrShapeModifier
  * */
-interface QrFrameShape : QrShapeModifier<Boolean> {
+interface QrFrameShape : QrShapeModifier {
+
 
     object Default : QrFrameShape {
         override fun invoke(
@@ -23,22 +25,16 @@ interface QrFrameShape : QrShapeModifier<Boolean> {
         }
     }
 
+
     /**
      * Special style for QR code eye frame - frame pixels will be counted as qr pixels.
      * For example, [QrPixelShape.Circle] style will make eye frame look like a chaplet.
      * */
-    data class AsPixelShape(override val delegate: QrPixelShape)
-        : QrFrameShape, ModifierDelegate<Boolean, QrPixelShape> {
-        @Throws(IllegalStateException::class)
-        override fun invoke(
-            i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
-        ): Boolean {
-            return Default.invoke(i, j, elementSize, qrPixelSize, neighbors) &&
-                    delegate.invoke(i % qrPixelSize, j % qrPixelSize,
-                        qrPixelSize, qrPixelSize, neighbors)
-        }
-    }
+    data class AsPixelShape(val shape: QrPixelShape)
+        : QrShapeModifierDelegate(
+            delegate = Default + shape % {_, ps, _ -> ps}
+        ), QrFrameShape
+
 
     object Circle : QrFrameShape {
         override fun invoke(
@@ -46,10 +42,11 @@ interface QrFrameShape : QrShapeModifier<Boolean> {
             qrPixelSize: Int, neighbors: Neighbors
         ): Boolean {
             val radius = elementSize / 2.0
-            return sqrt((radius - i) * (radius - i) + (radius - j) * (radius - j)) in
+            return sqrt((radius - i).pow(2) + (radius - j).pow(2)) in
                     radius - qrPixelSize .. radius
         }
     }
+
 
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
@@ -79,3 +76,7 @@ interface QrFrameShape : QrShapeModifier<Boolean> {
         }
     }
 }
+
+
+fun QrShapeModifier.asFrameShape() : QrFrameShape = if (this is QrFrameShape) this else
+    object : QrFrameShape, QrShapeModifier by this{}
