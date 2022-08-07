@@ -32,4 +32,11 @@ interface QrLogoShape : QrShapeModifier {
     ), QrLogoShape
 }
 
-fun QrShapeModifier.asLogoShape() : QrLogoShape = object : QrLogoShape, QrShapeModifier by this{}
+fun QrShapeModifier.asLogoShape() : QrLogoShape = object : QrLogoShape {
+    override fun invoke(
+        i: Int, j: Int, elementSize: Int,
+        qrPixelSize: Int, neighbors: Neighbors
+    ): Boolean = this@asLogoShape
+        .invoke(i,j, elementSize, qrPixelSize, neighbors)
+
+}

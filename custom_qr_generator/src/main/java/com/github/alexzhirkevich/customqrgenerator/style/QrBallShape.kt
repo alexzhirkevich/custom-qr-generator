@@ -68,4 +68,10 @@ interface QrBallShape : QrShapeModifier {
 }
 
 fun QrShapeModifier.asBallShape() : QrBallShape = if (this is QrBallShape) this else
-    object : QrBallShape, QrShapeModifier by this{}
+    object : QrBallShape {
+        override fun invoke(
+            i: Int, j: Int, elementSize: Int,
+            qrPixelSize: Int, neighbors: Neighbors
+        ): Boolean = this@asBallShape
+            .invoke(i, j, elementSize, qrPixelSize, neighbors)
+    }

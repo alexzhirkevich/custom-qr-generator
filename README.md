@@ -40,7 +40,7 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.2.5'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.3.0-rc'
 }
 ```
 
@@ -110,36 +110,42 @@ val bitmap = generator.generateQrCode(data, options)
 ### DSL
 
 ```QrOptions``` can be created via Kotlin DSL. This also allows to easily create custom shape for
-QR elements by drawing on canvas using ```drawShape``` function. This is extension function
-for ```QrOptions.Builder``` and can be used not only inside ```createQrOptions```
+QR elements by drawing on canvas using ```drawElementShape``` function. This is extension function
+for ```QrOptionsBuilderScope```. This function creates ```QrCanvasShapeModifier``` and automatically
+converts it to necessary element shape with necessary size based on ```QrOptionsBuilderScope``` size 
+and padding.
 
 For example:
 
 <table align="center-vertical">
-<td>
-<img src="./screenshots/ring.png" width="256" height="256">
-</td>
-<td>
+    <td>
+        <img src="./screenshots/ring.png" width="256" height="256">
+    </td>
+    <td>
 
-```kotlin  
- val options = createQrOptions(1024) {
-    elementsShapes = QrElementsShapes(
-        darkPixel = drawShape { canvas, drawPaint, erasePaint ->
-            val cx = canvas.width/2f
-            val cy = canvas.height/2f
-            val radius = minOf(canvas.width, canvas.height)/2f
-            canvas.drawCircle(cx, cy,radius, drawPaint)
-            canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
-            canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
-        }.asPixelShape()
-    )
-}
-```
-
-</td>
+        ```kotlin  
+         val options : QrOptions = createQrOptions(1024) {
+            elementsShapes = QrElementsShapes(
+                darkPixel = drawElementShape { canvas, drawPaint, erasePaint ->
+                    val cx = canvas.width/2f
+                    val cy = canvas.height/2f
+                    val radius = minOf(canvas.width, canvas.height)/2f
+                    canvas.drawCircle(cx, cy, radius, drawPaint)
+                    canvas.drawCircle(cx, cy, radius*2/2.5f, erasePaint)
+                    canvas.drawCircle(cx, cy, radius/1.75f, drawPaint)
+                }
+            )
+        }
+        ```
+    </td>
 </table>
 
-### Multi-threading
+<b> Created shape should not be used with other ```QrOptions``` with different size!</b> 
+This can cause shape quality issues.
+
+Another example with ```QrCanvasShapeModifier``` can be found in Customization section below.
+
+### Multithreading
 
 It is better to perform QR codes generating in background thread.
 Generator supports cancellation with coroutines.
@@ -170,54 +176,60 @@ val generator: QrCodeGenerator = QrGenerator(threadPolicy)
 You can easily implement your own shapes and coloring for QR Code elements using math formulas or by drawing on canvas.
 
 <table align="center-vertical">
-<tr>
-  <td>
-  <img src="./screenshots/circlepixels.png" width="256" height="256">
-  </td>
-  <td>
+    <tr>
+        <td>
+            <img src="./screenshots/circlepixels.png" width="256" height="256">
+        </td>
+        <td>
+        
+            ```kotlin
+            object Circle : QrPixelShape {
+              override fun invoke(
+                  i: Int, j: Int, elementSize: Int,
+                  qrPixelSize: Int, neighbors: Neighbors
+              ): Boolean {
+                  val center = elementSize/2.0
+                  return sqrt((center-i)*(center-i) + 
+                      (center-j)*(center-j)) < center
+              }
+            }
+            ```
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <img src="./screenshots/ring.png" width="256" height="256">
+        </td>
+        <td>
+        
+            ```kotlin  
+            object Ring : QrCanvasShapeModifier {
+               override fun draw(
+                   canvas: Canvas, drawPaint: Paint, erasePaint: Paint
+               ) {
+                   val cx = canvas.width/2f
+                   val cy = canvas.height/2f
+                   val radius = minOf(canvas.width, canvas.height)/2f
+                   canvas.drawCircle(cx, cy,radius, drawPaint)
+                   canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
+                   canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
+               }
+            }
+            
+            // qr pixel size with 1024p bitmap size
+            // is unlikely to be greater than 48p
+            val ring : QrPixelShape = Ring
+                .toShapeModifier(elementSize = 48)
+                .asPixelShape()
+            // or automatically determine size with DSL
+            val ringPixelOptions : QrOptions = createQrOptions(1024){
+                elementsShapes = QrElementsShapes(
+                    darkPixel = drawElementShape(Ring::draw)
+                )
+            }
+            ``` 
 
-  ```kotlin
-  object Circle : QrPixelShape {
-      override fun invoke(
-          i: Int, j: Int, elementSize: Int,
-          qrPixelSize: Int, neighbors: Neighbors
-      ): Boolean {
-          val center = elementSize/2.0
-          return sqrt((center-i)*(center-i) + 
-              (center-j)*(center-j)) < center
-      }
-  }
-  ```
-  </td>
-</tr>
-<tr>
-  <td>
-  <img src="./screenshots/ring.png" width="256" height="256">
-  </td>
-  <td>
-
-  ```kotlin  
- object Ring : QrCanvasShapeModifier {
-      override fun draw(
-          canvas: Canvas, drawPaint: Paint, erasePaint: Paint
-      ) {
-          val cx = canvas.width/2f
-          val cy = canvas.height/2f
-          val radius = minOf(canvas.width, canvas.height)/2f
-          canvas.drawCircle(cx, cy,radius, drawPaint)
-          canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
-          canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
-      }
-  }
-
-  val ring : QrPixelShape = Ring
-      .toShapeModifier(1024)
-      .asPixelShape()
-
-  ```
-Or use DSL ```createQrOptions``` with ```drawShape``` function
-
-  </td>
-</tr>
+        </td>
+    </tr>
 </table>
 

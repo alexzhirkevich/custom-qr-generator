@@ -182,4 +182,10 @@ interface QrPixelShape : QrShapeModifier {
 }
 
 fun QrShapeModifier.asPixelShape() : QrPixelShape = if (this is QrPixelShape) this else
-    object : QrPixelShape, QrShapeModifier by this{}
+    object : QrPixelShape {
+        override fun invoke(
+            i: Int, j: Int, elementSize: Int,
+            qrPixelSize: Int, neighbors: Neighbors
+        ): Boolean = this@asPixelShape
+            .invoke(i, j, elementSize, qrPixelSize, neighbors)
+    }

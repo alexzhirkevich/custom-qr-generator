@@ -27,4 +27,10 @@ interface QrBackgroundShape : QrShapeModifier {
 }
 
 fun QrShapeModifier.asBackgroundShape() : QrBackgroundShape = if (this is QrBackgroundShape) this else
-    object : QrBackgroundShape, QrShapeModifier by this{}
+    object : QrBackgroundShape {
+        override fun invoke(
+            i: Int, j: Int, elementSize: Int,
+            qrPixelSize: Int, neighbors: Neighbors
+        ): Boolean = this@asBackgroundShape
+            .invoke(i, j, elementSize, qrPixelSize, neighbors)
+    }

@@ -79,4 +79,10 @@ interface QrFrameShape : QrShapeModifier {
 
 
 fun QrShapeModifier.asFrameShape() : QrFrameShape = if (this is QrFrameShape) this else
-    object : QrFrameShape, QrShapeModifier by this{}
+    object : QrFrameShape {
+        override fun invoke(
+            i: Int, j: Int, elementSize: Int,
+            qrPixelSize: Int, neighbors: Neighbors
+        ): Boolean = this@asFrameShape
+            .invoke(i, j, elementSize, qrPixelSize, neighbors)
+    }

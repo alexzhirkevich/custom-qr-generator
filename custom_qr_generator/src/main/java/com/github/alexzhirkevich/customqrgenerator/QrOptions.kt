@@ -5,6 +5,18 @@ import android.graphics.Paint
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import com.github.alexzhirkevich.customqrgenerator.style.*
+import kotlin.math.roundToInt
+
+interface QrOptionsBuilderScope {
+    val size : Int
+    val padding :Float
+    var colors : QrColors
+    var logo: QrLogo?
+    var backgroundImage : QrBackgroundImage?
+    var elementsShapes : QrElementsShapes
+    var codeShape : QrShape
+    var errorCorrectionLevel : QrErrorCorrectionLevel
+}
 
 data class QrOptions(
     @IntRange(from = 0) val size : Int,
@@ -16,15 +28,15 @@ data class QrOptions(
     val codeShape : QrShape,
     val errorCorrectionLevel: QrErrorCorrectionLevel
 ){
-    class Builder(@IntRange(from = 0) val size : Int){
+    class Builder(@IntRange(from = 0) override val size : Int) : QrOptionsBuilderScope {
 
-        var padding = .125f
-        var colors = QrColors()
-        var logo: QrLogo? = null
-        var backgroundImage: QrBackgroundImage? = null
-        var elementsShapes = QrElementsShapes()
-        var codeShape : QrShape = QrShape.Default
-        var errorCorrectionLevel : QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
+        override var padding = .125f
+        override var colors = QrColors()
+        override var logo: QrLogo? = null
+        override var backgroundImage: QrBackgroundImage? = null
+        override var elementsShapes = QrElementsShapes()
+        override var codeShape : QrShape = QrShape.Default
+        override var errorCorrectionLevel : QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
 
         fun build() : QrOptions = QrOptions(
             size, padding,colors, logo, backgroundImage,elementsShapes, codeShape, errorCorrectionLevel
@@ -65,27 +77,49 @@ data class QrOptions(
 }
 
 /**
- * Build [QrOptions] via Kotlin DSL
+ * Build [QrOptions] with Kotlin DSL
  * */
-fun createQrOptions(size: Int, build :QrOptions.Builder.() -> Unit) : QrOptions {
-    return QrOptions.Builder(size).apply(build).build()
+fun createQrOptions(size: Int, padding: Float = .125f, build : QrOptionsBuilderScope.() -> Unit) : QrOptions {
+    return QrOptions.Builder(size)
+        .apply { setPadding(padding) }
+        .apply(build)
+        .build()
 }
 
 /**
- * Create custom [QrShapeModifier] by drawing on [Canvas].
- * Can be converted to a specific shape modifier with corresponding
- * as___Shape function
- * @see QrCanvasShapeModifier
- * @see QrShapeModifier.asPixelShape
- * @see QrShapeModifier.asBallShape
- * @see QrShapeModifier.asFrameShape
- * @see QrShapeModifier.asLogoShape
- * @see QrShapeModifier.asBackgroundShape
+ * Create a custom QR element shape by drawing on Canvas.
+ * Should be used in [createQrOptions] builder.
+ *
+ * @return [T] shape modifier linked to built [QrOptions].
+ * Should not be used for [QrOptions] with changed [QrOptions.size] or
+ * [QrOptions.padding]
  * */
-fun QrOptions.Builder.drawShape(draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit)
-        : QrShapeModifier = object : QrCanvasShapeModifier {
+inline fun <reified T : QrShapeModifier> QrOptionsBuilderScope.drawElementShape(
+    crossinline draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit
+): T = object : QrCanvasShapeModifier {
 
     override fun draw(canvas: Canvas, drawPaint: Paint, erasePaint: Paint) =
         draw(canvas, drawPaint, erasePaint)
 
-}.toShapeModifier(size)
+}.let {
+    when{
+        T::class == QrPixelShape::class -> it
+            .toShapeModifier((size * (1-padding)/ 21).roundToInt())
+            .asPixelShape()
+        T::class == QrBallShape::class -> it
+            .toShapeModifier((size * (1-padding)/ 7).roundToInt())
+            .asBallShape()
+        T::class == QrFrameShape::class -> it
+            .toShapeModifier((size * (1-padding)/ 3).roundToInt())
+            .asFrameShape()
+        T::class == QrLogoShape::class -> it
+            .toShapeModifier((size * (1 - padding)/3).roundToInt())
+            .asLogoShape()
+        T::class == QrBackgroundShape::class -> it
+            .toShapeModifier((size * (1 - padding)/3).roundToInt())
+            .asBackgroundShape()
+        else -> throw IllegalStateException(
+            "Only QrElementsShapes arguments can be created via drawShape function"
+        )
+    } as T
+}
