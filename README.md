@@ -123,17 +123,17 @@ For example:
 
 ```kotlin  
  val options = createQrOptions(1024) {
-        elementsShapes = QrElementsShapes(
-            darkPixel = drawShape { canvas, drawPaint, erasePaint ->
-                val cx = canvas.width/2f
-                val cy = canvas.height/2f
-                val radius = minOf(canvas.width, canvas.height)/2f
-                canvas.drawCircle(cx, cy,radius, drawPaint)
-                canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
-                canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
-            }.asPixelShape()
-        )
-    }
+    elementsShapes = QrElementsShapes(
+        darkPixel = drawShape { canvas, drawPaint, erasePaint ->
+            val cx = canvas.width/2f
+            val cy = canvas.height/2f
+            val radius = minOf(canvas.width, canvas.height)/2f
+            canvas.drawCircle(cx, cy,radius, drawPaint)
+            canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
+            canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
+        }.asPixelShape()
+    )
+}
 ```
 
 </td>
@@ -198,15 +198,17 @@ You can easily implement your own shapes and coloring for QR Code elements using
 
   ```kotlin  
  object Ring : QrCanvasShapeModifier {
-        override fun draw(canvas: Canvas, drawPaint: Paint, erasePaint: Paint) {
-            val cx = canvas.width/2f
-            val cy = canvas.height/2f
-            val radius = minOf(canvas.width, canvas.height)/2f
-            canvas.drawCircle(cx, cy,radius, drawPaint)
-            canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
-            canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
-        }
-    }
+      override fun draw(
+          canvas: Canvas, drawPaint: Paint, erasePaint: Paint
+      ) {
+          val cx = canvas.width/2f
+          val cy = canvas.height/2f
+          val radius = minOf(canvas.width, canvas.height)/2f
+          canvas.drawCircle(cx, cy,radius, drawPaint)
+          canvas.drawCircle(cx, cy,radius*2/2.5f, erasePaint)
+          canvas.drawCircle(cx, cy,radius/1.75f, drawPaint)
+      }
+  }
 
   val ring : QrPixelShape = Ring.toShapeModifier(1024).asPixelShape()
   
