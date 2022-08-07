@@ -210,8 +210,10 @@ You can easily implement your own shapes and coloring for QR Code elements using
       }
   }
 
-  val ring : QrPixelShape = Ring.toShapeModifier(1024).asPixelShape()
-  
+  val ring : QrPixelShape = Ring
+      .toShapeModifier(1024)
+      .asPixelShape()
+
   ```
 Or use DSL ```createQrOptions``` with ```drawShape``` function
 
