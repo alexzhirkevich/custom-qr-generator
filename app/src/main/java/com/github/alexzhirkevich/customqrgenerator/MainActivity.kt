@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.github.alexzhirkevich.customqrgenerator.example.R
 import com.github.alexzhirkevich.customqrgenerator.example.databinding.ActivityMainBinding
@@ -30,17 +29,15 @@ class MainActivity : AppCompatActivity() {
                 shape = QrLogoShape.Circle
             )
             colors = QrColors(
-                dark = QrColor
-                    .Solid(0xff345288.toInt()),
-                highlighting = QrColor
-                    .Solid(0xddffffff.toInt()),
+                dark = QrColor.Solid(0xff345288.toInt()),
+                highlighting = QrColor.Solid(0xddffffff.toInt()),
             )
             elementsShapes = QrElementsShapes(
                 darkPixel = QrPixelShape.RoundCorners(),
                 lightPixel = QrPixelShape.RoundCorners(),
                 ball = QrBallShape.Default,
                 frame = QrFrameShape.RoundCorners(.25f),
-                hightlighting = QrBackgroundShape.RoundCorners(.05f)
+                hightlighting = QrHighlightingShape.RoundCorners(.05f)
             )
         }
     }
@@ -65,6 +62,7 @@ class MainActivity : AppCompatActivity() {
         var oldBmp : Bitmap?=null
         binding.create.setOnClickListener {
             lifecycleScope.launchWhenStarted {
+
                 val bmp = qrGenerator.generateQrCodeSuspend(
                     QrData.Url(binding.editText.text.toString()), options
                 )

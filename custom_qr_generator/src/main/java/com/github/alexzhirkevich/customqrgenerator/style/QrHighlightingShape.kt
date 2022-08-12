@@ -2,16 +2,16 @@ package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
 
-interface QrBackgroundShape : QrShapeModifier {
+interface QrHighlightingShape : QrShapeModifier {
 
     object Default : QrShapeModifierDelegate(
         delegate = DefaultShapeModifier,
-    ), QrBackgroundShape
+    ), QrHighlightingShape
 
 
     object Circle : QrShapeModifierDelegate(
         delegate = QrPixelShape.Circle(1f)
-    ), QrBackgroundShape
+    ), QrHighlightingShape
 
 
     data class RoundCorners(
@@ -23,14 +23,14 @@ interface QrBackgroundShape : QrShapeModifier {
     ) : QrShapeModifierDelegate(
         delegate = QrBallShape.RoundCorners(
             corner, outer, horizontalOuter, verticalOuter, inner)
-    ), QrBackgroundShape
+    ), QrHighlightingShape
 }
 
-fun QrShapeModifier.asBackgroundShape() : QrBackgroundShape = if (this is QrBackgroundShape) this else
-    object : QrBackgroundShape {
+fun QrShapeModifier.asHighlightingShape() : QrHighlightingShape = if (this is QrHighlightingShape) this else
+    object : QrHighlightingShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
             neighbors: Neighbors
-        ): Boolean = this@asBackgroundShape
+        ): Boolean = this@asHighlightingShape
             .invoke(i, j, elementSize, neighbors)
     }

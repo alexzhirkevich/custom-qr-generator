@@ -13,5 +13,5 @@ data class QrElementsShapes(
     val lightPixel : QrPixelShape = QrPixelShape.Default,
     val frame : QrFrameShape = QrFrameShape.Default,
     val ball : QrBallShape = QrBallShape.Default,
-    val hightlighting : QrBackgroundShape = QrBackgroundShape.Default,
+    val hightlighting : QrHighlightingShape = QrHighlightingShape.Default,
 )
