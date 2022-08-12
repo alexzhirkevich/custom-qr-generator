@@ -13,12 +13,13 @@ import kotlin.random.Random
  * */
 interface QrShape {
 
+    val shapeSizeIncrease : Float
+
     /**
-     * Transform actual matrix or create new with BIGGER size.
+     * Transform actual [matrix] or create new with BIGGER size.
      * Matrix reducing causes [IllegalStateException].
-     * @param [byteMatrix] square matrix of qr-code pixels. 1 if pixel is set else 0
      * */
-    fun apply(byteMatrix: QrCodeMatrix) : QrCodeMatrix
+    fun apply(matrix: QrCodeMatrix) : QrCodeMatrix
 
     /**
      * Decide if pixel fits inside a QR code shape.
@@ -27,7 +28,9 @@ interface QrShape {
     fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: QrCodeMatrix) : Boolean
 
     object Default : QrShape {
-        override fun apply(byteMatrix: QrCodeMatrix) = byteMatrix
+        override val shapeSizeIncrease: Float = 1f
+
+        override fun apply(matrix: QrCodeMatrix) = matrix
 
         override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix)  = true
     }
@@ -44,7 +47,10 @@ interface QrShape {
                 return sqrt((center - i).pow(2) + (center-j).pow(2)) <= center
             }
 
-        override fun apply(byteMatrix: QrCodeMatrix): QrCodeMatrix = with(byteMatrix){
+        override val shapeSizeIncrease: Float =
+             1 + (padding * sqrt(2.0) - 1).toFloat()
+
+        override fun apply(matrix: QrCodeMatrix): QrCodeMatrix = with(matrix){
 
             val padding = padding.coerceIn(1f,2f)
             val added = (((size * padding * sqrt(2.0)) - size)/2).roundToInt()

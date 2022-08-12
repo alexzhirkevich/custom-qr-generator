@@ -2,13 +2,14 @@ package com.github.alexzhirkevich.customqrgenerator.encoder
 
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
+import com.github.alexzhirkevich.customqrgenerator.style.QrLogoShape
 import com.github.alexzhirkevich.customqrgenerator.style.QrShapeModifier
 import com.google.zxing.qrcode.encoder.ByteMatrix
 import com.google.zxing.qrcode.encoder.Encoder
 import com.google.zxing.qrcode.encoder.QRCode
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.isActive
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.roundToInt
 
 private class ElementData (
@@ -25,15 +26,7 @@ internal class QrEncoder(private val options: QrOptions)  {
         const val BALL_SIZE = 3
     }
 
-    fun encode(
-        contents: String,
-    ): QrRenderResult {
-        require(contents.isNotEmpty()) { "Found empty contents" }
-        val code = Encoder.encode(contents, options.errorCorrectionLevel.lvl, null)
-        return renderResult(code) {true}
-    }
-
-    suspend fun encodeSuspend(
+    suspend fun encode(
         contents: String,
     ): QrRenderResult = coroutineScope {
 
@@ -42,22 +35,27 @@ internal class QrEncoder(private val options: QrOptions)  {
         renderResult(code, coroutineContext::isActive)
     }
 
-    // Note that the input matrix uses 0 == white, 1 == black, while the output matrix uses
-    // 0 == black, 255 == white (i.e. an 8 bit greyscale bitmap).
-    private fun renderResult(code: QRCode, isActive : () -> Boolean): QrRenderResult {
+    private suspend fun renderResult(code: QRCode, isActive : () -> Boolean): QrRenderResult  =
+        coroutineScope {
         val initialInput = (code.matrix ?: throw IllegalStateException())
             .toQrMatrix()
+
         val input = options.codeShape.apply(initialInput)
+
         val diff = (input.size - initialInput.size)/2
-        val inputSize = input.size
         val padding = (options.size * options.padding.coerceIn(0f, 1f) /2f).roundToInt()
-        val outputSize = (options.size - 2 * padding).coerceAtLeast(inputSize)
-        val multiple = outputSize / inputSize
+        val outputSize = (options.size - 2 * padding).coerceAtLeast(input.size)
+        val multiple = outputSize / input.size
         val output = QrCodeMatrix(outputSize)
         var inputY = 0
         var outputY = 0
 
-        val error =  ((outputSize.toFloat()/inputSize - multiple)* inputSize).roundToInt()
+        val totalError =  ((outputSize.toFloat()/input.size - multiple)* input.size).roundToInt()
+        val logoError =  ((outputSize.toFloat()/input.size - multiple)* input.size/2).roundToInt()
+
+        if (options.logo != null){
+            input.applyLogoPadding(logoError/multiple.toFloat())
+        }
 
         while (inputY < input.size) {
 
@@ -66,12 +64,10 @@ internal class QrEncoder(private val options: QrOptions)  {
 
             while (inputX < input.size) {
 
-                if (!isActive()){
-                    throw CancellationException()
-                }
+                ensureActive()
 
                 val elementData = elementDataOrNull(
-                    inputX, inputY, diff, multiple, inputSize
+                    inputX, inputY, diff, multiple, input.size
                 )
 
                 val neighbors = input.neighbors(inputX,inputY)
@@ -81,35 +77,39 @@ internal class QrEncoder(private val options: QrOptions)  {
                         for (j in 0 until multiple) {
                             output[inputX * multiple + i, inputY * multiple + j] =
                                 if (elementData.modifier.invoke(
-                                    elementData.x(i),
-                                    elementData.y(j),
-                                    elementData.size,
-                                    multiple,
-                                    neighbors
-                                )
-                            ) QrCodeMatrix.PixelType.DarkPixel else QrCodeMatrix.PixelType.Background
+                                        elementData.x(i),
+                                        elementData.y(j),
+                                        elementData.size,
+                                        neighbors
+                                    )
+                            ) QrCodeMatrix.PixelType.DarkPixel
+                                else QrCodeMatrix.PixelType.Background
                         }
                     }
                 } else {
                     //pixels
 
-                    for (i in outputX until outputX + multiple) {
-                        for (j in outputY until outputY + multiple) {
-                            output[i, j] = when {
-                                !options.codeShape.pixelInShape(inputX,inputY,input) -> QrCodeMatrix.PixelType.Background
-                                input[inputX, inputY] == QrCodeMatrix.PixelType.DarkPixel && options.shapes.darkPixel.invoke(
-                                    i - outputX, j - outputY,
-                                    multiple, multiple, neighbors
-                                ) -> QrCodeMatrix.PixelType.DarkPixel
-                                options.shapes.lightPixel.invoke(
-                                    i - outputX, j - outputY,
-                                    multiple, multiple, neighbors
-                                ) -> QrCodeMatrix.PixelType.LightPixel
-                                else -> QrCodeMatrix.PixelType.Background
+                    if (input[inputX,inputY] != QrCodeMatrix.PixelType.Logo) {
+
+                        for (i in outputX until outputX + multiple) {
+                            for (j in outputY until outputY + multiple) {
+                                output[i, j] = when {
+                                    !options.codeShape.pixelInShape(inputX, inputY, input) ->
+                                        QrCodeMatrix.PixelType.Background
+                                    input[inputX, inputY] == QrCodeMatrix.PixelType.DarkPixel &&
+                                            options.shapes.darkPixel.invoke(
+                                                i - outputX, j - outputY,
+                                                multiple, neighbors
+                                            ) -> QrCodeMatrix.PixelType.DarkPixel
+                                    options.shapes.lightPixel.invoke(
+                                        i - outputX, j - outputY,
+                                        multiple, neighbors
+                                    ) -> QrCodeMatrix.PixelType.LightPixel
+                                    else -> QrCodeMatrix.PixelType.Background
+                                }
                             }
                         }
                     }
-
                 }
                 inputX++
                 outputX += multiple
@@ -118,8 +118,8 @@ internal class QrEncoder(private val options: QrOptions)  {
             outputY += multiple
         }
 
-        if (options.logo != null){
-            output.applyLogo(error,diff, multiple, padding)
+        if (options.logo != null && options.logo.padding.shouldApplyAccuratePadding){
+            output.applyMinimalLogoPadding(totalError)
         }
 
         val frame = Rectangle(
@@ -134,20 +134,53 @@ internal class QrEncoder(private val options: QrOptions)  {
             BALL_SIZE * multiple
         )
 
-        return QrRenderResult(output, padding, multiple,diff*multiple, frame, ball, error)
+        QrRenderResult(output, padding, multiple,diff*multiple, frame, ball, totalError)
     }
 
-    private fun QrCodeMatrix.applyLogo(error : Int, diff: Int, multiple: Int, padding : Int) {
+    private fun QrCodeMatrix.applyLogoPadding(error: Float) {
         if (options.logo != null) {
-            val logoSize = ((options.size - 4 * diff * multiple) *
-                    options.logo.size * (1 + options.logo.padding))
-                .roundToInt()
+            var logoSize = size /
+                    options.codeShape.shapeSizeIncrease.coerceAtLeast(1f) *
+                    options.logo.size.coerceIn(0f,1f) *
+                    (1 + options.logo.padding.value.coerceIn(0f,1f)) + 2
 
-            val logoTopLeft = (options.size - logoSize - padding * 2) / 2 - error/2
+            if (options.logo.shape !is QrLogoShape.Default) {
+                if (logoSize.roundToInt() % 2 == size % 2)
+                    logoSize--
+            } else {
+                if (logoSize.roundToInt() % 2 != size % 2)
+                    logoSize++
+            }
+
+
+            logoSize = logoSize.coerceIn(0f,size.toFloat())
+
+
+            var logoPos = ((size - logoSize )/2f)
+
+            if (options.logo.shape !is QrLogoShape.Default){
+                logoPos -= error/2
+            }
+
+            options.logo.padding.apply(
+                matrix = this,
+                logoSize = logoSize.roundToInt(),
+                logoPos = logoPos.roundToInt(),
+                logoShape = options.logo.shape)
+        }
+    }
+
+    private fun QrCodeMatrix.applyMinimalLogoPadding(error: Int) {
+        if (options.logo != null && options.logo.padding.value >= Float.MIN_VALUE) {
+            val logoSize = (size / options.codeShape.shapeSizeIncrease.coerceAtLeast(1f) *
+                    options.logo.size.coerceIn(0f,1f) * (1 + options.logo.padding.value.coerceIn(0f,1f)))
+                .roundToInt().coerceIn(0,size)
+
+            val logoTopLeft = (size - logoSize - error) / 2
 
             for (i in 0 until logoSize) {
                 for (j in 0 until logoSize) {
-                    if (options.logo.shape.invoke(i, j, logoSize, multiple, Neighbors.Empty)) {
+                    if (options.logo.shape.invoke(i, j, logoSize, Neighbors.Empty)) {
                         kotlin.runCatching {
                             this[logoTopLeft + i, logoTopLeft + j] = QrCodeMatrix.PixelType.Background
                         }
@@ -235,28 +268,28 @@ fun ByteMatrix.toQrMatrix() : QrCodeMatrix {
 internal fun QrCodeMatrix.neighbors(i : Int, j : Int) : Neighbors {
 
     val topLeft = kotlin.runCatching {
-        this[i - 1, j - 1] == QrCodeMatrix.PixelType.DarkPixel
+        this[i - 1, j - 1] == this[i,j]
     }.getOrDefault(false)
     val topRight = kotlin.runCatching {
-        this[i - 1, j + 1] == QrCodeMatrix.PixelType.DarkPixel
+        this[i - 1, j + 1] == this[i,j]
     }.getOrDefault(false)
     val top = kotlin.runCatching {
-        this[i - 1, j] == QrCodeMatrix.PixelType.DarkPixel
+        this[i - 1, j] == this[i,j]
     }.getOrDefault(false)
     val left = kotlin.runCatching {
-        this[i, j - 1] == QrCodeMatrix.PixelType.DarkPixel
+        this[i, j - 1] == this[i,j]
     }.getOrDefault(false)
     val right = kotlin.runCatching {
-        this[i, j + 1] == QrCodeMatrix.PixelType.DarkPixel
+        this[i, j + 1] == this[i,j]
     }.getOrDefault(false)
     val bottomLeft = kotlin.runCatching {
-        this[i+1, j - 1] == QrCodeMatrix.PixelType.DarkPixel
+        this[i+1, j - 1] == this[i,j]
     }.getOrDefault(false)
     val bottomRight = kotlin.runCatching {
-        this[i+1, j + 1] == QrCodeMatrix.PixelType.DarkPixel
+        this[i+1, j + 1] == this[i,j]
     }.getOrDefault(false)
     val bottom = kotlin.runCatching {
-        this[i+1, j] == QrCodeMatrix.PixelType.DarkPixel
+        this[i+1, j] == this[i,j]
     }.getOrDefault(false)
     return Neighbors(
         topLeft, topRight, left, top, right, bottomLeft, bottom, bottomRight

@@ -6,8 +6,6 @@ import kotlin.math.*
 
 /**
  * Style of the qr-code pixels.
- * You can implement your own style by overriding [invoke] method.
- * @see QrShapeModifier
  * */
 interface QrPixelShape : QrShapeModifier {
 
@@ -17,7 +15,7 @@ interface QrPixelShape : QrShapeModifier {
     ), QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean = true
     }
 
@@ -29,10 +27,10 @@ interface QrPixelShape : QrShapeModifier {
 
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean {
 
-            val center = elementSize/2.0
+            val center = elementSize/2f
             return (sqrt((center-i).pow(2) + (center-j).pow(2)) <
                     center * size.coerceIn(0f, 1f))
         }
@@ -42,10 +40,10 @@ interface QrPixelShape : QrShapeModifier {
     object Rhombus : QrPixelShape{
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean {
-            val center = elementSize/2.0
-            return (i+j < center || abs(j-i) > center || i+j > 3*center).not()
+            val center = elementSize/2f
+            return (i+j <= center || abs(j-i) >= center || i+j >= 3*center).not()
         }
     }
 
@@ -61,9 +59,9 @@ interface QrPixelShape : QrShapeModifier {
     ) : QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean = isRoundDark(
-            i, j, elementSize, qrPixelSize, neighbors,
+            i, j, elementSize, neighbors,
             topLeft && neighbors.top.not() && neighbors.left.not(),
             topRight && neighbors.top.not() && neighbors.right.not(),
             bottomLeft && neighbors.bottom.not() && neighbors.left.not(),
@@ -76,21 +74,21 @@ interface QrPixelShape : QrShapeModifier {
 
             internal fun isRoundDark(
                 i: Int, j: Int, elementSize: Int,
-                qrPixelSize: Int,
                 neighbors: Neighbors,
-                topLeft : Boolean,
-                topRight : Boolean,
-                bottomLeft : Boolean,
-                bottomRight : Boolean) : Boolean {
+                topLeft: Boolean,
+                topRight: Boolean,
+                bottomLeft: Boolean,
+                bottomRight: Boolean
+            ) : Boolean {
                 if (neighbors.hasAny.not()){
                     return circle
-                        .invoke(i, j,elementSize, qrPixelSize, neighbors)
+                        .invoke(i, j, elementSize, neighbors)
                 }
                 if (neighbors.hasAllNearest){
                     return Default
-                        .invoke(i, j,elementSize, qrPixelSize, neighbors)
+                        .invoke(i, j, elementSize, neighbors)
                 }
-                val cornerRadius = .25
+                val cornerRadius = .25f
                 val center = elementSize/2f
 
                 val sub = center - cornerRadius
@@ -105,7 +103,7 @@ interface QrPixelShape : QrShapeModifier {
                     bottomRight &&
                             i > sum && j > sum -> sum to sum
                     else -> return Default
-                        .invoke(i, j,elementSize, qrPixelSize, neighbors)
+                        .invoke(i, j, elementSize, neighbors)
                 }
                 return sqrt((x-i).pow(2) + (y-j).pow(2)) < sub
             }
@@ -123,7 +121,7 @@ interface QrPixelShape : QrShapeModifier {
     ) : QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean = with(neighbors) {
             val padding = (elementSize * sidePadding).roundToInt()
 
@@ -132,8 +130,8 @@ interface QrPixelShape : QrShapeModifier {
                 i, j-padding,
                 //idk why even size here causes protruding sticks with low code size
                 (elementSize-padding*2).let { if (it % 2 == 1) it else it -1 },
-                qrPixelSize, neighbors,
-                top.not(), top.not(), bottom.not(), bottom.not()
+                neighbors, top.not(),
+                top.not(), bottom.not(), bottom.not()
             )
         }
     }
@@ -149,7 +147,7 @@ interface QrPixelShape : QrShapeModifier {
     ) : QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean = with(neighbors) {
 
             val padding = (elementSize * sidePadding).roundToInt()
@@ -159,8 +157,8 @@ interface QrPixelShape : QrShapeModifier {
                 i-padding, j,
                 //idk why even size here causes protruding sticks with low code size
                 (elementSize-padding*2).let { if (it % 2 == 1) it else it -1 },
-                qrPixelSize, neighbors,
-                left.not(), right.not(), left.not(), right.not()
+                neighbors, left.not(),
+                right.not(), left.not(), right.not()
             )
         }
     }
@@ -169,7 +167,7 @@ interface QrPixelShape : QrShapeModifier {
     object Star : QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean {
             val radius = elementSize/2f
 
@@ -185,7 +183,7 @@ fun QrShapeModifier.asPixelShape() : QrPixelShape = if (this is QrPixelShape) th
     object : QrPixelShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean = this@asPixelShape
-            .invoke(i, j, elementSize, qrPixelSize, neighbors)
+            .invoke(i, j, elementSize, neighbors)
     }

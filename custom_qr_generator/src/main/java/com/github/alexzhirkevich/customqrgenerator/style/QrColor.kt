@@ -2,11 +2,7 @@ package com.github.alexzhirkevich.customqrgenerator.style
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
-import androidx.core.graphics.blue
-import androidx.core.graphics.green
-import androidx.core.graphics.red
 import com.github.alexzhirkevich.customqrgenerator.QrUtil
-import kotlin.math.sqrt
 
 /**
  * Color of the different QR code elements.
@@ -61,16 +57,31 @@ interface QrColor  {
         }
     }
 
+    data class SquareGradient(
+        val startColor : Int,
+        val endColor : Int,
+    ) : QrColor {
+        override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int {
+            val ti = minOf(i, elementSize-i)
+            val tj = minOf(j, elementSize-j)
+            val proportion = minOf(ti,tj) * 2f / elementSize
+
+            return QrUtil.mixColors(startColor, endColor, proportion)
+        }
+    }
+
     data class RadialGradient(
-        @ColorInt val centerColor : Int,
-        @ColorInt val radiusColor : Int,
+        @ColorInt val startColor : Int,
+        @ColorInt val endColor : Int,
     ) : QrColor{
 
         @ColorInt
         override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int {
             val center = elementSize/2f
-            val proportion = 1f - sqrt((i-center) * (i-center) + (j-center) * (j-center))/center
-            return QrUtil.mixColors(centerColor, radiusColor, proportion.coerceIn(0f..1f))
+            val ti = minOf(i, elementSize-i)
+            val tj = minOf(j, elementSize-j)
+            val proportion = (ti + tj) / (2f* center)
+            return QrUtil.mixColors(startColor, endColor, proportion.coerceIn(0f..1f))
         }
     }
 

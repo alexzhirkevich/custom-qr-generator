@@ -7,8 +7,6 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
-import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
-import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import kotlin.math.roundToInt
 
 internal object QrUtil {

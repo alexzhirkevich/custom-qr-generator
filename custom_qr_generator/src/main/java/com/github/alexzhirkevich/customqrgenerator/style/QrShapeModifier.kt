@@ -13,7 +13,7 @@ sealed interface QrShapeModifier {
      * */
     operator fun invoke(
         i: Int, j: Int, elementSize: Int,
-        qrPixelSize: Int, neighbors: Neighbors
+        neighbors: Neighbors
     ): Boolean
 }
 
@@ -21,7 +21,7 @@ operator fun QrShapeModifier.plus(other : QrShapeModifier): QrShapeModifier =
     ShapeModifierSum(this, other)
 
 operator fun QrShapeModifier.rem(
-    remRuntime : (elemSize : Int, pixelSize : Int, neighbors : Neighbors) -> Int
+    remRuntime : (elemSize : Int, neighbors : Neighbors) -> Int
 ) : QrShapeModifier = ShapeModifierRemRuntime(this, remRuntime)
 
 operator fun QrShapeModifier.rem(rem : Int) : QrShapeModifier =
@@ -32,7 +32,7 @@ operator fun QrShapeModifier.rem(rem : Int) : QrShapeModifier =
 internal object DefaultShapeModifier : QrShapeModifier {
     override fun invoke(
         i: Int, j: Int, elementSize: Int,
-        qrPixelSize: Int, neighbors: Neighbors
+        neighbors: Neighbors
     ): Boolean  = true
 }
 
@@ -42,10 +42,10 @@ private class ShapeModifierSum(
 ) : QrShapeModifier {
     override fun invoke(
         i: Int, j: Int, elementSize: Int,
-        qrPixelSize: Int, neighbors: Neighbors
+        neighbors: Neighbors
     ): Boolean {
-        return a(i, j, elementSize, qrPixelSize, neighbors) &&
-                b(i, j, elementSize, qrPixelSize, neighbors)
+        return a(i, j, elementSize, neighbors) &&
+                b(i, j, elementSize, neighbors)
     }
 }
 
@@ -55,22 +55,22 @@ private class ShapeModifierRem(
 ) : QrShapeModifier {
     override fun invoke(
         i: Int, j: Int, elementSize: Int,
-        qrPixelSize: Int, neighbors: Neighbors
+        neighbors: Neighbors
     ): Boolean {
-        return modifier.invoke(i % rem, j % rem, rem, qrPixelSize, neighbors)
+        return modifier.invoke(i % rem, j % rem, rem, neighbors)
     }
 }
 
 private class ShapeModifierRemRuntime(
     private val modifier: QrShapeModifier,
-    private val remRuntime : (elemSize : Int, pixelSize : Int, neighbors : Neighbors) -> Int
+    private val remRuntime : (elemSize : Int, neighbors : Neighbors) -> Int
 ) : QrShapeModifier {
     override fun invoke(
         i: Int, j: Int, elementSize: Int,
-        qrPixelSize: Int, neighbors: Neighbors
+        neighbors: Neighbors
     ): Boolean {
-        val rem = remRuntime(elementSize, qrPixelSize, neighbors)
-        return modifier.invoke(i % rem, j % rem, rem, qrPixelSize, neighbors)
+        val rem = remRuntime(elementSize, neighbors)
+        return modifier.invoke(i % rem, j % rem, rem, neighbors)
     }
 }
 

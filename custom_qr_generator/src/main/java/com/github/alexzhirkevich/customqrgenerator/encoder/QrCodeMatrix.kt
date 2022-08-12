@@ -2,7 +2,7 @@ package com.github.alexzhirkevich.customqrgenerator.encoder
 
 class QrCodeMatrix(val size : Int){
 
-    enum class PixelType { DarkPixel, LightPixel, Background }
+    enum class PixelType { DarkPixel, LightPixel, Background, Logo }
 
     private val types = MutableList(size * size) {
         PixelType.Background

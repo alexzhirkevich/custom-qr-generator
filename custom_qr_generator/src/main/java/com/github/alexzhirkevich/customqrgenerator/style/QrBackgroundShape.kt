@@ -30,7 +30,7 @@ fun QrShapeModifier.asBackgroundShape() : QrBackgroundShape = if (this is QrBack
     object : QrBackgroundShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean = this@asBackgroundShape
-            .invoke(i, j, elementSize, qrPixelSize, neighbors)
+            .invoke(i, j, elementSize, neighbors)
     }

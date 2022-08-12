@@ -57,7 +57,7 @@ private class QrCanvasToShapeModifier(
 
     override fun invoke(
         i: Int, j: Int, elementSize: Int,
-        qrPixelSize: Int, neighbors: Neighbors
+        neighbors: Neighbors
     ): Boolean {
 
         val scale = size / elementSize.toFloat()

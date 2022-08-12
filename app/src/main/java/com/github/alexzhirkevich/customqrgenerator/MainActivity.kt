@@ -1,11 +1,10 @@
 package com.github.alexzhirkevich.customqrgenerator
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.github.alexzhirkevich.customqrgenerator.example.R
 import com.github.alexzhirkevich.customqrgenerator.example.databinding.ActivityMainBinding
@@ -17,47 +16,33 @@ class MainActivity : AppCompatActivity() {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    private val qrOptions by lazy {
-        QrOptions.Builder(1024)
-            .setPadding(.3f)
-            .setBackground(
-                QrBackgroundImage(
-                    drawable = ContextCompat
-                        .getDrawable(this, R.drawable.frame)!!,
-                )
+    private val options by lazy {
+        createQrOptions(1024, .3f) {
+            backgroundImage = QrBackgroundImage(
+                drawable = ContextCompat
+                    .getDrawable(this@MainActivity, R.drawable.frame)!!
             )
-            .setLogo(
-                QrLogo(
-                    drawable = ContextCompat
-                        .getDrawable(this, R.drawable.tg)!!,
-                    size = .2f,
-                    padding = .2f,
-                    shape = QrLogoShape
-                        .Circle
-                )
+            logo = QrLogo(
+                drawable = ContextCompat
+                    .getDrawable(this@MainActivity, R.drawable.tg)!!,
+                size = .25f,
+                padding = QrLogoPadding.Natural(.15f),
+                shape = QrLogoShape.Circle
             )
-            .setColors(
-                QrColors(
-                    dark = QrColor
-                        .Solid(Color.parseColor("#345288")),
-                    bitmapBackground = QrColor.Solid(Color.WHITE),
-                    codeBackground = QrColor
-                        .Solid(Color.parseColor("#ddffffff")),
-                )
+            colors = QrColors(
+                dark = QrColor
+                    .Solid(0xff345288.toInt()),
+                highlighting = QrColor
+                    .Solid(0xddffffff.toInt()),
             )
-            .setElementsShapes(
-                QrElementsShapes(
-                    darkPixel = QrPixelShape
-                        .RoundCorners(),
-                    ball = QrBallShape
-                        .RoundCorners(.25f),
-                    frame = QrFrameShape
-                        .RoundCorners(.25f),
-                    background = QrBackgroundShape
-                        .RoundCorners(.05f)
-                )
+            elementsShapes = QrElementsShapes(
+                darkPixel = QrPixelShape.RoundCorners(),
+                lightPixel = QrPixelShape.RoundCorners(),
+                ball = QrBallShape.Default,
+                frame = QrFrameShape.RoundCorners(.25f),
+                hightlighting = QrBackgroundShape.RoundCorners(.05f)
             )
-            .build()
+        }
     }
 
     // Use wisely. More threads doesn't mean more performance.
@@ -70,18 +55,20 @@ class MainActivity : AppCompatActivity() {
 
     private val qrGenerator: QrCodeGenerator = QrGenerator(threadPolicy)
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        var oldBmp : Bitmap? = null
+        var oldBmp : Bitmap?=null
         binding.create.setOnClickListener {
             lifecycleScope.launchWhenStarted {
                 val bmp = qrGenerator.generateQrCodeSuspend(
-                    QrData.Url(binding.editText.text.toString()), qrOptions
+                    QrData.Url(binding.editText.text.toString()), options
                 )
+
                 with(binding.qrCode) {
                     setImageBitmap(bmp)
                     setBackgroundResource(0)

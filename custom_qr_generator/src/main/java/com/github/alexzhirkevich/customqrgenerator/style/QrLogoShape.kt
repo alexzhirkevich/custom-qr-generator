@@ -4,7 +4,6 @@ import androidx.annotation.FloatRange
 
 /**
  * Shape of the qr-code logo padding.
- * You can implement your own shape by overriding [invoke] method.
  * */
 interface QrLogoShape : QrShapeModifier {
 
@@ -35,8 +34,14 @@ interface QrLogoShape : QrShapeModifier {
 fun QrShapeModifier.asLogoShape() : QrLogoShape = object : QrLogoShape {
     override fun invoke(
         i: Int, j: Int, elementSize: Int,
-        qrPixelSize: Int, neighbors: Neighbors
+        neighbors: Neighbors
     ): Boolean = this@asLogoShape
-        .invoke(i,j, elementSize, qrPixelSize, neighbors)
+        .invoke(i, j, elementSize, neighbors)
 
+}
+
+internal object UndefinedLogoShape : QrLogoShape {
+    override fun invoke(
+        i: Int, j: Int, elementSize: Int, neighbors: Neighbors
+    ): Boolean = true
 }

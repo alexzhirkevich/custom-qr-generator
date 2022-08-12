@@ -4,7 +4,10 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import androidx.core.graphics.drawable.toBitmap
 
-interface BitmapScale {
+/**
+ * Way of getting [Bitmap] from [Drawable]
+ * */
+sealed interface BitmapScale {
 
     /**
      * Create [Bitmap] from [Drawable] with desired [width] and [height]
@@ -17,7 +20,8 @@ interface BitmapScale {
      * */
     object FitCenter : BitmapScale {
         override fun scale(drawable: Drawable, width: Int, height: Int): Bitmap {
-            return drawable.toBitmap(width,height, config = Bitmap.Config.ARGB_8888)
+            return drawable.toBitmap(width,height,
+                config = Bitmap.Config.ARGB_8888)
         }
     }
 
@@ -32,16 +36,21 @@ interface BitmapScale {
 
             if (iWidth == -1 || iHeight == -1 ||
                 width / height.toDouble() == iWidth/iHeight.toDouble())
-                return drawable.toBitmap(width,height, config = Bitmap.Config.ARGB_8888)
+                return drawable.toBitmap(width,height,
+                    config = Bitmap.Config.ARGB_8888)
 
             if (iWidth != width || iHeight != height){
-                val scale = maxOf(width.toDouble()/iWidth, height.toDouble()/iHeight)
+                val scale = maxOf(
+                    width.toDouble()/iWidth,
+                    height.toDouble()/iHeight
+                )
 
                 iWidth = (iWidth * scale).toInt() + 1
                 iHeight = (iHeight * scale).toInt() + 1
             }
 
-            val bitmap = drawable.toBitmap(iWidth, iHeight, config = Bitmap.Config.ARGB_8888)
+            val bitmap = drawable.toBitmap(iWidth, iHeight,
+                config = Bitmap.Config.ARGB_8888)
             val x = (iWidth - width)/2
             val y = (iHeight - height)/2
 

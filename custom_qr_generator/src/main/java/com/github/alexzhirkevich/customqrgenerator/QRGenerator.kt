@@ -1,7 +1,6 @@
 package com.github.alexzhirkevich.customqrgenerator
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import androidx.core.graphics.alpha
 import androidx.core.graphics.drawable.toBitmap
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
@@ -14,8 +13,8 @@ import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
 class QrGenerator(
-    private val threadPolicy : ThreadPolicy = ThreadPolicy
-        .SingleThread
+    private val threadPolicy: ThreadPolicy = ThreadPolicy
+        .SingleThread,
 ) : QrCodeGenerator {
 
     enum class ThreadPolicy {
@@ -61,23 +60,17 @@ class QrGenerator(
         abstract suspend operator fun invoke(size : Int, block : (IntRange, IntRange) -> Unit)
     }
 
-    override fun generateQrCode(data: QrData, options: QrOptions): Bitmap =
+    override fun generateQrCode(data: QrData, options: QrOptions): Bitmap = runBlocking {
         kotlin.runCatching {
-            val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
-            val result = encoder.encode(data.encode())
-            runBlocking {
-                createQrCodeInternal(result, options)
-            }
+            createQrCodeInternal(data, options)
         }.getOrElse {
             throw QrCodeCreationException(it)
         }
-
+    }
     override suspend fun generateQrCodeSuspend(data: QrData, options: QrOptions): Bitmap =
         withContext(Dispatchers.Default) {
             kotlin.runCatching {
-                val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
-                val result = encoder.encodeSuspend(data.encode())
-                createQrCodeInternal(result, options)
+                createQrCodeInternal(data, options)
             }.getOrElse {
                 throw if (it is CancellationException)
                      it else QrCodeCreationException(cause = it)
@@ -85,8 +78,11 @@ class QrGenerator(
         }
 
     private suspend fun createQrCodeInternal(
-       result: QrRenderResult, options: QrOptions
+       data : QrData,  options: QrOptions
     ) : Bitmap {
+
+        val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
+        val result = encoder.encode(data.encode())
 
         val bmp = Bitmap.createBitmap(
             options.size, options.size,
@@ -101,8 +97,10 @@ class QrGenerator(
     private suspend fun Bitmap.drawCode(result: QrRenderResult, options: QrOptions) = coroutineScope{
         with(result) {
 
-            val bgBitmap = options.background?.drawable
-                ?.toBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val bgBitmap = withContext(Dispatchers.IO) {
+                options.background?.drawable
+                    ?.toBitmap(width, height, Bitmap.Config.ARGB_8888)
+            }
 
             val bgBitmapPixels = if (bgBitmap != null)
                 IntArray(width * height) else null
@@ -112,7 +110,8 @@ class QrGenerator(
 
             val array = IntArray(width*height)
 
-            fun draw(xrange : IntRange, yrange : IntRange){
+            threadPolicy.invoke(width){ xrange, yrange ->
+
                 for (x in xrange) {
                     for (y in yrange) {
                         val bitmapBgColor = options.colors.bitmapBackground.invoke(
@@ -130,8 +129,13 @@ class QrGenerator(
                         ensureActive()
 
                         val inCodeRange = x in padding until width -padding - error &&
-                                y in padding until height-padding - error && options.shapes.background
-                            .invoke(x - padding, y - padding, bitMatrix.size - error, pixelSize, Neighbors.Empty)
+                                y in padding until height-padding - error && options.shapes.hightlighting
+                            .invoke(
+                                x - padding,
+                                y - padding,
+                                bitMatrix.size - error,
+                                Neighbors.Empty
+                            )
 
                         if (inCodeRange){
                             val pixel = bitMatrix[x - padding, y - padding]
@@ -159,19 +163,19 @@ class QrGenerator(
                                     realX-frame.x, realY-frame.y, frame.size, pixelSize)
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel  && options.colors.dark.invoke(
-                                    x, y, bitMatrix.size, pixelSize
+                                    x-padding, y-padding, bitMatrix.size, pixelSize
                                 ).alpha > 0 -> options.colors.dark.invoke(
-                                    x, y, bitMatrix.size, pixelSize
+                                    x-padding, y-padding, bitMatrix.size, pixelSize
                                 )
                                 pixel == QrCodeMatrix.PixelType.LightPixel && options.colors.light.invoke(
-                                    x, y, bitMatrix.size, pixelSize
+                                    x-padding, y-padding, bitMatrix.size, pixelSize
                                 ).alpha > 0 -> options.colors.light.invoke(
-                                    x, y, bitMatrix.size, pixelSize
+                                    x-padding, y-padding, bitMatrix.size, pixelSize
                                 )
                                 else -> {
                                     val bgColor = array[x+error/2 + (y+error/2) * width]
 
-                                    val codeBg = options.colors.codeBackground.invoke(
+                                    val codeBg = options.colors.highlighting.invoke(
                                         x-padding, y-padding, bitMatrix.size - padding*2, pixelSize
                                     )
 
@@ -186,12 +190,13 @@ class QrGenerator(
                 }
             }
 
-            threadPolicy.invoke(width, ::draw)
+            if (options.logo != null) kotlin.run {
+                val logoSize = ((width - padding*2) /
+                        options.codeShape.shapeSizeIncrease *
+                        options.logo.size)
+                    .roundToInt()
 
-            if (options.logo != null) {
-                val logoSize = ((width - shapeIncrease * 4) * options.logo.size).roundToInt()
                 val bitmapLogo = options.logo.scale.scale(options.logo.drawable, logoSize, logoSize)
-
                 val logoPixels = IntArray(logoSize*logoSize)
                 bitmapLogo.getPixels(logoPixels,0, logoSize, 0,0, logoSize, logoSize)
                 bitmapLogo.recycle()
@@ -199,13 +204,15 @@ class QrGenerator(
                 val logoTopLeft = (width - logoSize) / 2
 
 
-                for (i in 0 until bitmapLogo.width) {
-                    for (j in 0 until bitmapLogo.height) {
+                for (i in 0 until logoSize) {
+                    for (j in 0 until logoSize) {
 
                         ensureActive()
 
-                        if (!options.logo.shape.invoke(i, j, bitmapLogo.width,
-                                pixelSize, Neighbors.Empty)
+                        if (!options.logo.shape.invoke(
+                                i, j, logoSize,
+                                Neighbors.Empty
+                            )
                         ) {
                             continue
                         }
@@ -224,12 +231,13 @@ class QrGenerator(
         }
     }
 }
+
 internal val QrOptions.actualEcl : QrErrorCorrectionLevel
     get() = if (errorCorrectionLevel == QrErrorCorrectionLevel.Auto) when {
         logo == null -> errorCorrectionLevel
-        logo.size * (1 + logo.padding) > .3 ->
+        logo.size * (1 + logo.padding.value) > .3 ->
             QrErrorCorrectionLevel.High
-        logo.size * (1 + logo.padding) in .2 .. .3
+        logo.size * (1 + logo.padding.value) in .2 .. .3
                 && errorCorrectionLevel.lvl < ErrorCorrectionLevel.Q ->
             QrErrorCorrectionLevel.MediumHigh
         errorCorrectionLevel.lvl < ErrorCorrectionLevel.M ->

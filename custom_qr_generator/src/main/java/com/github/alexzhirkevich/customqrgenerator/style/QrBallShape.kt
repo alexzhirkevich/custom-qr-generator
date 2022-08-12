@@ -6,8 +6,6 @@ import kotlin.math.sqrt
 
 /**
  * Style of the qr-code eye internal ball.
- * You can implement your own style by overriding [invoke] method.
- * @see QrShapeModifier
  * */
 interface QrBallShape : QrShapeModifier {
 
@@ -22,12 +20,14 @@ interface QrBallShape : QrShapeModifier {
      * */
     data class AsPixelShape(val shape: QrPixelShape)
         : QrShapeModifierDelegate(
-            delegate = Default + shape % { _, ps, _ -> ps }
+            delegate = Default + shape % { size, _ -> size/3 }
         ), QrBallShape
 
 
-    data class Circle(@FloatRange(from = .75, to = 1.0) private val size : Float = 1f) :
-        QrShapeModifierDelegate(
+    data class Circle(
+        @FloatRange(from = .75, to = 1.0)
+        private val size : Float = 1f
+    ) : QrShapeModifierDelegate(
             delegate = QrPixelShape.Circle(size)
         ), QrBallShape
 
@@ -46,7 +46,7 @@ interface QrBallShape : QrShapeModifier {
     ) : QrBallShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean {
             val cornerRadius = (.5f - corner.coerceIn(0f, .5f)) * elementSize
             val center = elementSize/2f
@@ -60,7 +60,7 @@ interface QrBallShape : QrShapeModifier {
                 verticalOuter && i > sum && j < sub -> sum to sub
                 inner && i > sum && j > sum -> sum to sum
                 else -> return Default
-                    .invoke(i, j,elementSize, qrPixelSize, neighbors)
+                    .invoke(i, j, elementSize, neighbors)
             }
             return sqrt((x-i).pow(2) + (y-j).pow(2)) < sub
         }
@@ -71,7 +71,7 @@ fun QrShapeModifier.asBallShape() : QrBallShape = if (this is QrBallShape) this 
     object : QrBallShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int,
-            qrPixelSize: Int, neighbors: Neighbors
+            neighbors: Neighbors
         ): Boolean = this@asBallShape
-            .invoke(i, j, elementSize, qrPixelSize, neighbors)
+            .invoke(i, j, elementSize, neighbors)
     }

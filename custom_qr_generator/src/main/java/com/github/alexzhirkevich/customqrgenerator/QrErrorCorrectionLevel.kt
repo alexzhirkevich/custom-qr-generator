@@ -5,7 +5,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 
 /**
  * QR code technology allows you to read encoded information even if
- * part of the QR code image is damaged. It's also allow to have logo
+ * part of the QR code image is damaged. It also allows to have logo
  * inside the code as a part of "damage".
  * */
 enum class QrErrorCorrectionLevel(
@@ -19,6 +19,7 @@ enum class QrErrorCorrectionLevel(
 
     /**
      * ~7% of QR code can be damaged (or used as logo).
+     *
      * QR code might be unreadable if logo is too big.
      * If your code has logo, it's better to use [Auto].
      * */
@@ -26,6 +27,7 @@ enum class QrErrorCorrectionLevel(
 
     /**
      * ~15% of QR code can be damaged (or used as logo).
+     *
      * QR code might be unreadable if logo is too big.
      * If your code has logo, it's better to use [Auto].
      * */
@@ -33,6 +35,7 @@ enum class QrErrorCorrectionLevel(
 
     /**
      * ~25% of QR code can be damaged (or used as logo).
+     *
      * QR code might be unreadable if logo is too big.
      * If your code has logo, it's better to use [Auto].
      * */
@@ -40,6 +43,7 @@ enum class QrErrorCorrectionLevel(
 
     /**
      * ~30% of QR code can be damaged (or used as logo).
+     *
      * QR code might be unreadable if logo is too big.
      * If your code has logo, it's better to use [Auto].
      * */
