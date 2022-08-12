@@ -97,6 +97,7 @@ class QrGenerator(
     private suspend fun Bitmap.drawCode(result: QrRenderResult, options: QrOptions) = coroutineScope{
         with(result) {
 
+
             val bgBitmap = withContext(Dispatchers.IO) {
                 options.background?.drawable
                     ?.toBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -114,7 +115,7 @@ class QrGenerator(
 
                 for (x in xrange) {
                     for (y in yrange) {
-                        val bitmapBgColor = options.colors.bitmapBackground.invoke(
+                        val bitmapBgColor = options.colors.background.invoke(
                             x,y, bitMatrix.size, pixelSize
                         )
                         val bgColor =  bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
@@ -140,27 +141,39 @@ class QrGenerator(
                         if (inCodeRange){
                             val pixel = bitMatrix[x - padding, y - padding]
 
-                            val realX = minOf(x - padding, bitMatrix.size - x - error - padding)
-                            val realY = minOf(y - padding, bitMatrix.size - y - error - padding)
+                            val realX = minOf(x - padding, width - x - error - padding)
+                            val realY = minOf(y - padding, height  - y - error - padding)
 
-                            val topRightCorner = bitMatrix.size - x  < x && bitMatrix.size - y < y
+                            val emptyCorner = width - x  < x && height - y < y
+
+                            val bottom = height - y < y
 
                             val color = when {
                                 pixel == QrCodeMatrix.PixelType.DarkPixel &&
-                                        !topRightCorner && options.colors.ball !is QrColor.Unspecified &&
+                                        !emptyCorner && options.colors.ball !is QrColor.Unspecified &&
                                         ball.let {
                                             realX in it.x until it.x + it.size  &&
                                                     realY in it.y until it.y + it.size
                                         } -> options.colors.ball.invoke(
-                                    realX - ball.x, realY-ball.y, ball.size, pixelSize)
+                                    i = realX - ball.x,
+                                    j= (realY-ball.y).let {
+                                       if (bottom) ball.size - it else it
+                                    },
+                                    elementSize = ball.size,
+                                    qrPixelSize = pixelSize)
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel &&
-                                        !topRightCorner && options.colors.frame !is QrColor.Unspecified &&
+                                        !emptyCorner && options.colors.frame !is QrColor.Unspecified &&
                                         frame.let {
                                             realX in it.x until it.x + it.size &&
                                                     realY in it.y until it.y + it.size
                                         } -> options.colors.frame.invoke(
-                                    realX-frame.x, realY-frame.y, frame.size, pixelSize)
+                                    i = realX-frame.x,
+                                    j = (realY-frame.y).let {
+                                        if (bottom) frame.size - it else it
+                                    },
+                                    elementSize = frame.size,
+                                    qrPixelSize =  pixelSize)
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel  && options.colors.dark.invoke(
                                     x-padding, y-padding, bitMatrix.size, pixelSize
@@ -184,6 +197,7 @@ class QrGenerator(
                                     else bgColor
                                 }
                             }
+
                             array[x+error/2 + (y+error/2) * width] = color
                         }
                     }
@@ -230,6 +244,7 @@ class QrGenerator(
             setPixels(array,0,width,0,0,width,height)
         }
     }
+
 }
 
 internal val QrOptions.actualEcl : QrErrorCorrectionLevel

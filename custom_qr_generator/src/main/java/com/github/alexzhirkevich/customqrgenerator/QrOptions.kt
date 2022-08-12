@@ -30,7 +30,8 @@ data class QrOptions(
         override var errorCorrectionLevel : QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
 
         fun build() : QrOptions = QrOptions(
-            size, padding,colors, logo, backgroundImage,elementsShapes, codeShape, errorCorrectionLevel
+            size, padding,colors, logo, backgroundImage,
+            elementsShapes, codeShape, errorCorrectionLevel
         )
 
         /**
@@ -68,9 +69,6 @@ data class QrOptions(
 
 interface QrOptionsBuilderScope {
     val size: Int
-    /**
-     * Padding of the QR code relative to [size].
-     * */
     val padding: Float
     var colors: QrColors
     var logo: QrLogo?
@@ -136,9 +134,9 @@ fun <T : QrShapeModifier> QrOptionsBuilderScope.drawElementShape(
         QrLogoShape::class -> it
             .toShapeModifier((size * (1 - padding)/3).roundToInt())
             .asLogoShape()
-        QrBackgroundShape::class -> it
+        QrHighlightingShape::class -> it
             .toShapeModifier((size * (1 - padding)/3).roundToInt())
-            .asBackgroundShape()
+            .asHighlightingShape()
         else -> throw IllegalStateException(
             "Only QrElementsShapes properties can be created via drawShape function"
         )
