@@ -39,9 +39,11 @@ private class QrCanvasToShapeModifier(
 ) : QrShapeModifier {
     private val drawPaint = Paint().apply {
         color = Color.BLACK
+        isAntiAlias = true
     }
     private val erasePaint = Paint().apply {
         color = Color.WHITE
+        isAntiAlias = true
     }
 
     private val pixels by lazy(LazyThreadSafetyMode.NONE) {

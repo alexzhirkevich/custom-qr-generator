@@ -109,7 +109,7 @@ inline fun QrOptionsBuilderScope.draw(
     override fun draw(canvas: Canvas) {
         action(canvas)
     }
-}.toQrColor((size * padding).roundToInt())
+}.toQrColor((size * (1-padding)).roundToInt())
 
 /**
  * Create a custom [QrElementsShapes] properties by drawing on [Canvas].
