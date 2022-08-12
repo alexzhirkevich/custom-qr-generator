@@ -29,8 +29,8 @@ class MainActivity : AppCompatActivity() {
                 shape = QrLogoShape.Circle
             )
             colors = QrColors(
-                dark = QrColor.Solid(0xff345288.toInt()),
-                highlighting = QrColor.Solid(0xddffffff.toInt()),
+                dark = QrColor.Solid(Color(0xff345288)),
+                highlighting = QrColor.Solid(Color(0xddffffff)),
             )
             elementsShapes = QrElementsShapes(
                 darkPixel = QrPixelShape.RoundCorners(),

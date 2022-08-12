@@ -2,7 +2,32 @@ package com.github.alexzhirkevich.customqrgenerator.style
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
+import androidx.annotation.IntRange
 import com.github.alexzhirkevich.customqrgenerator.QrUtil
+
+
+@ColorInt
+fun Long.toColor() : Int = Color(this)
+/**
+ * Converts a 0xAARRGGBB [Long] to [ColorInt]
+ * */
+@ColorInt
+fun Color(argb : Long) : Int = Color.argb(
+    (argb shr 24 and 0xff).toInt(),
+    (argb shr 16 and 0xff).toInt(),
+    (argb shr 8 and 0xff).toInt(),
+    (argb and 0xff).toInt(),
+)
+
+@ColorInt
+fun Color(
+    @IntRange(from = 0, to = 255) a : Int,
+    @IntRange(from = 0, to = 255) r : Int,
+    @IntRange(from = 0, to = 255) g : Int,
+    @IntRange(from = 0, to = 255) b : Int
+) : Int = Color.argb(
+    a,r,g,b
+)
 
 /**
  * Color of the different QR code elements.
@@ -16,7 +41,7 @@ interface QrColor  {
      * @return Color of the [[i],[j]] pixel of current element
      * */
     @ColorInt
-    operator fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int) : Int
+    operator fun invoke(i: Int, j: Int, elementSize: Int) : Int
 
     /**
      * Special color style. If it applied to pixels - they will be transparent.
@@ -25,14 +50,14 @@ interface QrColor  {
     object Unspecified : QrColor {
 
         @ColorInt
-        override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int =
+        override fun invoke(i: Int, j: Int, elementSize: Int): Int =
             Color.TRANSPARENT
     }
 
     data class Solid(@ColorInt val color : Int) : QrColor {
 
         @ColorInt
-        override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int = color
+        override fun invoke(i: Int, j: Int, elementSize: Int): Int = color
     }
 
     data class LinearGradient(
@@ -46,7 +71,7 @@ interface QrColor  {
         }
 
         @ColorInt
-        override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int {
+        override fun invoke(i: Int, j: Int, elementSize: Int): Int {
             val proportion = when (orientation){
                 Orientation.Vertical -> 1f - j.toFloat()/elementSize
                 Orientation.Horizontal -> 1f - i.toFloat()/elementSize
@@ -61,7 +86,7 @@ interface QrColor  {
         val startColor : Int,
         val endColor : Int,
     ) : QrColor {
-        override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int {
+        override fun invoke(i: Int, j: Int, elementSize: Int): Int {
             val ti = minOf(i, elementSize-i)
             val tj = minOf(j, elementSize-j)
             val proportion = minOf(ti,tj) * 2f / elementSize
@@ -76,7 +101,7 @@ interface QrColor  {
     ) : QrColor{
 
         @ColorInt
-        override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int {
+        override fun invoke(i: Int, j: Int, elementSize: Int): Int {
             val center = elementSize/2f
             val ti = minOf(i, elementSize-i)
             val tj = minOf(j, elementSize-j)
@@ -91,7 +116,7 @@ interface QrColor  {
     ) : QrColor {
 
         @ColorInt
-        override fun invoke(i: Int, j: Int, elementSize: Int, qrPixelSize: Int): Int {
+        override fun invoke(i: Int, j: Int, elementSize: Int): Int {
             val center = elementSize/2f
 
             val color = if(i <= center && j <= center || i>=center && j >=center)
@@ -110,10 +135,10 @@ interface QrColor  {
                     color
                 realI > center/2 && realJ < center/2 ->
                     LinearGradient(color,middleColor,LinearGradient.Orientation.Horizontal)
-                        .invoke(imin, jmin, elementSize/4, qrPixelSize)
+                        .invoke(imin, jmin, elementSize/4)
                 realI < center/2 && realJ > center/2 ->
                     LinearGradient(color,middleColor,LinearGradient.Orientation.Vertical)
-                        .invoke(imin, jmin, elementSize/4,qrPixelSize)
+                        .invoke(imin, jmin, elementSize/4)
                 else -> {
                     val order : (Int, Int) -> Int = if (
                         color == colorLeftDiagonal && colorLeftDiagonal > colorRightDiagonal ||
@@ -121,9 +146,9 @@ interface QrColor  {
                     ) ::minOf else ::maxOf
                     order(
                         LinearGradient(color, middleColor, LinearGradient.Orientation.Vertical)
-                            .invoke(imin, jmin, elementSize / 4, qrPixelSize),
+                            .invoke(imin, jmin, elementSize / 4),
                         LinearGradient(color, middleColor, LinearGradient.Orientation.Horizontal)
-                            .invoke(imin, jmin, elementSize / 4, qrPixelSize)
+                            .invoke(imin, jmin, elementSize / 4)
                     )
                 }
             }

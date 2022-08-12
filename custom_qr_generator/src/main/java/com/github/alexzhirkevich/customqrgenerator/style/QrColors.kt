@@ -10,6 +10,8 @@ import android.graphics.Color
  * @property background color of bitmap background (behind image)
  * @property highlighting color of code background (above image, after paddings)
  * Shape regulated by [QrElementsShapes.hightlighting]
+ * @property symmetry if false, all eyes will be the same color. Otherwise,
+ * color will be flipped according to eye position
  * */
 data class QrColors(
     val light : QrColor = QrColor.Unspecified,
@@ -18,4 +20,5 @@ data class QrColors(
     val ball : QrColor = QrColor.Unspecified,
     val background : QrColor = QrColor.Solid(Color.WHITE),
     val highlighting : QrColor = QrColor.Unspecified,
+    val symmetry : Boolean = true,
 )

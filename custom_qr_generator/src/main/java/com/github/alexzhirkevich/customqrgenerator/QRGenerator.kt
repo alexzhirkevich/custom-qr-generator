@@ -116,7 +116,7 @@ class QrGenerator(
                 for (x in xrange) {
                     for (y in yrange) {
                         val bitmapBgColor = options.colors.background.invoke(
-                            x,y, bitMatrix.size, pixelSize
+                            x, y, width
                         )
                         val bgColor =  bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
                             ?.let { QrUtil.mixColors(it, bitmapBgColor, options.background?.alpha ?: 0f) }
@@ -134,7 +134,7 @@ class QrGenerator(
                             .invoke(
                                 x - padding,
                                 y - padding,
-                                bitMatrix.size - error,
+                                width -  2*padding,
                                 Neighbors.Empty
                             )
 
@@ -147,6 +147,7 @@ class QrGenerator(
                             val emptyCorner = width - x  < x && height - y < y
 
                             val bottom = height - y < y
+                            val right = height - x < x
 
                             val color = when {
                                 pixel == QrCodeMatrix.PixelType.DarkPixel &&
@@ -155,12 +156,16 @@ class QrGenerator(
                                             realX in it.x until it.x + it.size  &&
                                                     realY in it.y until it.y + it.size
                                         } -> options.colors.ball.invoke(
-                                    i = realX - ball.x,
-                                    j= (realY-ball.y).let {
-                                       if (bottom) ball.size - it else it
+                                    i = (realX - ball.x).let {
+                                         if (right && !options.colors.symmetry)
+                                             ball.size - it else it
                                     },
-                                    elementSize = ball.size,
-                                    qrPixelSize = pixelSize)
+                                    j= (realY-ball.y).let {
+                                       if (bottom && !options.colors.symmetry)
+                                           ball.size - it else it
+                                    },
+                                    elementSize = ball.size
+                                )
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel &&
                                         !emptyCorner && options.colors.frame !is QrColor.Unspecified &&
@@ -168,28 +173,32 @@ class QrGenerator(
                                             realX in it.x until it.x + it.size &&
                                                     realY in it.y until it.y + it.size
                                         } -> options.colors.frame.invoke(
-                                    i = realX-frame.x,
-                                    j = (realY-frame.y).let {
-                                        if (bottom) frame.size - it else it
+                                    i = (realX-frame.x).let{
+                                        if (right && !options.colors.symmetry)
+                                            frame.size - it else it
                                     },
-                                    elementSize = frame.size,
-                                    qrPixelSize =  pixelSize)
+                                    j = (realY-frame.y).let {
+                                        if (bottom && !options.colors.symmetry)
+                                            frame.size - it else it
+                                    },
+                                    elementSize = frame.size
+                                )
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel  && options.colors.dark.invoke(
-                                    x-padding, y-padding, bitMatrix.size, pixelSize
+                                    x-padding, y-padding, width - 2*padding
                                 ).alpha > 0 -> options.colors.dark.invoke(
-                                    x-padding, y-padding, bitMatrix.size, pixelSize
+                                    x-padding, y-padding, width - 2 * padding
                                 )
                                 pixel == QrCodeMatrix.PixelType.LightPixel && options.colors.light.invoke(
-                                    x-padding, y-padding, bitMatrix.size, pixelSize
+                                    x-padding, y-padding, width - 2 * padding
                                 ).alpha > 0 -> options.colors.light.invoke(
-                                    x-padding, y-padding, bitMatrix.size, pixelSize
+                                    x-padding, y-padding, width - 2 * padding
                                 )
                                 else -> {
                                     val bgColor = array[x+error/2 + (y+error/2) * width]
 
                                     val codeBg = options.colors.highlighting.invoke(
-                                        x-padding, y-padding, bitMatrix.size - padding*2, pixelSize
+                                        x-padding, y-padding, width - padding*2
                                     )
 
                                     if (codeBg.alpha >0)

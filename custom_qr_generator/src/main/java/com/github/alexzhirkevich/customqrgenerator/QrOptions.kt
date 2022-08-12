@@ -95,8 +95,25 @@ fun createQrOptions(
 
 
 /**
+ * Draw anything you want on your QR code.
+ * And make sure it is scannable.
+ *
+ * Should be used inside [createQrOptions] builder.
+ *
+ * @return color linked to built [QrOptions].
+ * Should not be used for [QrOptions] with changed [QrOptions.size] or
+ * [QrOptions.padding] * */
+inline fun QrOptionsBuilderScope.draw(
+    crossinline action : Canvas.() -> Unit
+) : QrColor = object : QrCanvasColor {
+    override fun draw(canvas: Canvas) {
+        action(canvas)
+    }
+}.toQrColor((size * padding).roundToInt())
+
+/**
  * Create a custom [QrElementsShapes] properties by drawing on [Canvas].
- * Should be used in [createQrOptions] builder.
+ * Should be used inside [createQrOptions] builder.
  *
  * @return [T] shape modifier linked to built [QrOptions].
  * Should not be used for [QrOptions] with changed [QrOptions.size] or
@@ -105,7 +122,6 @@ fun createQrOptions(
 inline fun <reified T : QrShapeModifier> QrOptionsBuilderScope.drawElementShape(
     noinline draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit
 ): T = drawElementShape(T::class, draw)
-
 
 /**
  * @see [drawElementShape]
