@@ -1,7 +1,8 @@
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
-import com.google.zxing.qrcode.encoder.ByteMatrix
+import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -12,23 +13,26 @@ import kotlin.random.Random
  * */
 interface QrShape {
 
+    val shapeSizeIncrease : Float
+
     /**
-     * Transform actual matrix or create new with BIGGER size.
+     * Transform actual [matrix] or create new with BIGGER size.
      * Matrix reducing causes [IllegalStateException].
-     * @param [byteMatrix] square matrix of qr-code pixels. 1 if pixel is set else 0
      * */
-    fun apply(byteMatrix: ByteMatrix) : ByteMatrix
+    fun apply(matrix: QrCodeMatrix) : QrCodeMatrix
 
     /**
      * Decide if pixel fits inside a QR code shape.
      * [modifiedByteMatrix] is already changed by [apply].
      * */
-    fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: ByteMatrix) : Boolean
+    fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: QrCodeMatrix) : Boolean
 
     object Default : QrShape {
-        override fun apply(byteMatrix: ByteMatrix) = byteMatrix
+        override val shapeSizeIncrease: Float = 1f
 
-        override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: ByteMatrix)  = true
+        override fun apply(matrix: QrCodeMatrix) = matrix
+
+        override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix)  = true
     }
 
     data class Circle(
@@ -37,21 +41,22 @@ interface QrShape {
         private val random : Random = Random
     ) : QrShape {
 
-        override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: ByteMatrix): Boolean =
+        override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix): Boolean =
             with(modifiedByteMatrix) {
-                val center = width/2f
-                return sqrt((center - i) * (center - i) + (center-j) * (center - j)) <= center
+                val center = size/2f
+                return sqrt((center - i).pow(2) + (center-j).pow(2)) <= center
             }
 
-        override fun apply(byteMatrix: ByteMatrix): ByteMatrix = with(byteMatrix){
-            if (width != height)
-                throw IllegalStateException("Non-square ByteMatrix can not be extended to round")
+        override val shapeSizeIncrease: Float =
+             1 + (padding * sqrt(2.0) - 1).toFloat()
+
+        override fun apply(matrix: QrCodeMatrix): QrCodeMatrix = with(matrix){
 
             val padding = padding.coerceIn(1f,2f)
-            val added = (((width * padding * sqrt(2.0)) - width)/2).roundToInt()
+            val added = (((size * padding * sqrt(2.0)) - size)/2).roundToInt()
 
-            val newSize = width + 2*added
-            val newMatrix = ByteMatrix(newSize,newSize)
+            val newSize = size + 2*added
+            val newMatrix = QrCodeMatrix(newSize)
 
             val center = newSize / 2f
 
@@ -60,18 +65,17 @@ interface QrShape {
                     if (random.nextBoolean() &&
                         (i <= added-1 ||
                                 j <= added-1 ||
-                                i >= added + width ||
-                                j >= added + width ) &&
+                                i >= added + size ||
+                                j >= added + size ) &&
                         sqrt((center-i) *(center-i)+(center-j)*(center-j)) <= center
                     ){
-                        newMatrix.set(i, j, 1)
-
+                        newMatrix[i, j] = QrCodeMatrix.PixelType.DarkPixel
                     }
                 }
             }
 
-            for(i in 0 until width){
-                for(j in 0 until height){
+            for(i in 0 until size){
+                for(j in 0 until size){
                     newMatrix[added+i,added+j] = this[i,j]
                 }
             }

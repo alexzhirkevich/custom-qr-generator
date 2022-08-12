@@ -1,10 +1,7 @@
 package com.github.alexzhirkevich.customqrgenerator.encoder
 
-import com.google.zxing.common.BitMatrix
-import com.google.zxing.qrcode.encoder.ByteMatrix
-
 internal data class QrRenderResult(
-    val bitMatrix: ByteMatrix,
+    val bitMatrix: QrCodeMatrix,
     val padding : Int,
     val pixelSize : Int,
     val shapeIncrease : Int,

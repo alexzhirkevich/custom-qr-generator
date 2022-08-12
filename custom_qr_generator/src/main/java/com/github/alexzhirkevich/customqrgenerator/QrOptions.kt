@@ -1,8 +1,13 @@
 package com.github.alexzhirkevich.customqrgenerator
 
+import android.graphics.Canvas
+import android.graphics.Paint
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import com.github.alexzhirkevich.customqrgenerator.style.*
+import kotlin.math.roundToInt
+import kotlin.reflect.KClass
+
 
 data class QrOptions(
     @IntRange(from = 0) val size : Int,
@@ -14,18 +19,19 @@ data class QrOptions(
     val codeShape : QrShape,
     val errorCorrectionLevel: QrErrorCorrectionLevel
 ){
-    class Builder(@IntRange(from = 0) private val size : Int){
+    class Builder(@IntRange(from = 0) override val size : Int) : QrOptionsBuilderScope {
 
-        private var padding = .125f
-        private var colors = QrColors()
-        private var logo: QrLogo? = null
-        private var background: QrBackgroundImage? = null
-        private var shapes = QrElementsShapes()
-        private var codeShape : QrShape = QrShape.Default
-        private var errorCorrectionLevel : QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
+        override var padding = .125f
+        override var colors = QrColors()
+        override var logo: QrLogo? = null
+        override var backgroundImage: QrBackgroundImage? = null
+        override var elementsShapes = QrElementsShapes()
+        override var codeShape : QrShape = QrShape.Default
+        override var errorCorrectionLevel : QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
 
         fun build() : QrOptions = QrOptions(
-            size, padding,colors, logo, background,shapes, codeShape, errorCorrectionLevel
+            size, padding,colors, logo, backgroundImage,
+            elementsShapes, codeShape, errorCorrectionLevel
         )
 
         /**
@@ -41,19 +47,18 @@ data class QrOptions(
 
         fun setLogo(logo : QrLogo?) = apply {
             this.logo = logo
-
         }
 
-        fun setBackground(background: QrBackgroundImage?)  = apply{
-            this.background = background
+        fun setBackground(background: QrBackgroundImage?)  = apply {
+            this.backgroundImage = background
         }
 
-        fun setCodeShape(shape: QrShape) : Builder = apply{
-            codeShape =shape
+        fun setCodeShape(shape: QrShape) : Builder = apply {
+            this.codeShape =shape
         }
 
         fun setElementsShapes(shapes: QrElementsShapes) = apply {
-            this.shapes = shapes
+            this.elementsShapes = shapes
         }
 
         fun setErrorCorrectionLevel(level: QrErrorCorrectionLevel) = apply{
@@ -61,3 +66,96 @@ data class QrOptions(
         }
     }
 }
+
+interface QrOptionsBuilderScope {
+    val size: Int
+    val padding: Float
+    var colors: QrColors
+    var logo: QrLogo?
+    var backgroundImage: QrBackgroundImage?
+    var elementsShapes: QrElementsShapes
+    var codeShape: QrShape
+    var errorCorrectionLevel : QrErrorCorrectionLevel
+}
+
+
+/**
+ * Build [QrOptions] with DSL
+ * */
+fun createQrOptions(
+    size: Int,
+    padding: Float = .125f,
+    build : QrOptionsBuilderScope.() -> Unit
+) : QrOptions {
+    return QrOptions.Builder(size)
+        .apply { setPadding(padding) }
+        .apply(build)
+        .build()
+}
+
+
+/**
+ * Draw anything you want on your QR code.
+ * And make sure it is scannable.
+ *
+ * Should be used inside [createQrOptions] builder.
+ *
+ * @return color linked to built [QrOptions].
+ * Should not be used for [QrOptions] with changed [QrOptions.size] or
+ * [QrOptions.padding] * */
+inline fun QrOptionsBuilderScope.draw(
+    crossinline action : Canvas.() -> Unit
+) : QrColor = object : QrCanvasColor {
+    override fun draw(canvas: Canvas) {
+        action(canvas)
+    }
+}.toQrColor((size * padding).roundToInt())
+
+/**
+ * Create a custom [QrElementsShapes] properties by drawing on [Canvas].
+ * Should be used inside [createQrOptions] builder.
+ *
+ * @return [T] shape modifier linked to built [QrOptions].
+ * Should not be used for [QrOptions] with changed [QrOptions.size] or
+ * [QrOptions.padding]
+ * */
+inline fun <reified T : QrShapeModifier> QrOptionsBuilderScope.drawElementShape(
+    noinline draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit
+): T = drawElementShape(T::class, draw)
+
+/**
+ * @see [drawElementShape]
+ */
+@Suppress("unchecked_cast")
+fun <T : QrShapeModifier> QrOptionsBuilderScope.drawElementShape(
+    clazz: KClass<T>,
+    draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit
+) : T = object : QrCanvasShapeModifier {
+
+    override fun draw(
+        canvas: Canvas, drawPaint: Paint, erasePaint: Paint
+    ) = draw(canvas, drawPaint, erasePaint)
+
+}.let {
+    when (clazz) {
+        QrPixelShape::class -> it
+            .toShapeModifier((size * (1-padding)/ 21).roundToInt())
+            .asPixelShape()
+        QrBallShape::class -> it
+            .toShapeModifier((size * (1-padding)/ 7).roundToInt())
+            .asBallShape()
+        QrFrameShape::class -> it
+            .toShapeModifier((size * (1-padding)/ 3).roundToInt())
+            .asFrameShape()
+        QrLogoShape::class -> it
+            .toShapeModifier((size * (1 - padding)/3).roundToInt())
+            .asLogoShape()
+        QrHighlightingShape::class -> it
+            .toShapeModifier((size * (1 - padding)/3).roundToInt())
+            .asHighlightingShape()
+        else -> throw IllegalStateException(
+            "Only QrElementsShapes properties can be created via drawShape function"
+        )
+    } as T
+}
+

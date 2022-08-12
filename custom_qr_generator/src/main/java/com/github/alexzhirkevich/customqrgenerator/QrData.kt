@@ -13,7 +13,7 @@ interface QrData {
     }
 
     data class Email(val email: String) : QrData {
-        override fun encode(): String = "MAILTO: $email";
+        override fun encode(): String = "MAILTO: $email"
     }
 
     data class GeoPos(
@@ -45,11 +45,6 @@ interface QrData {
         enum class Authentication {
             WEP,
             WPA,
-            WPA2EAP {
-                override fun toString(): String {
-                    return "WPA2-EAP"
-                }
-            },
             OPEN {
                 override fun toString(): String {
                     return "nopass"
@@ -71,7 +66,7 @@ interface QrData {
             append("H:$hidden;")
         }
         internal companion object {
-            fun escape(text: String): String? {
+            fun escape(text: String): String {
                 return text.replace("\\", "\\\\")
                     .replace(",", "\\,")
                     .replace(";", "\\;")
@@ -255,7 +250,7 @@ interface QrData {
             } else if (summary != null) {
                 append("SUMMARY:$summary\n")
             }
-            append("\nEND:VEVENT");
+            append("\nEND:VEVENT")
         }
     }
 
