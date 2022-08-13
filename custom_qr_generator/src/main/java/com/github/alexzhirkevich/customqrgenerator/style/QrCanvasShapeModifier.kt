@@ -46,7 +46,7 @@ private class QrCanvasToShapeModifier(
         isAntiAlias = true
     }
 
-    private val pixels by lazy(LazyThreadSafetyMode.NONE) {
+    private val pixels by lazy {
         val pixels = IntArray(size * size)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888).apply {
             eraseColor(erasePaint.color)
