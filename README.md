@@ -154,8 +154,7 @@ and size of the QR code.
 
 You can easily implement your own shapes and coloring for QR Code in 2 ways: 
 using math formulas or by drawing on canvas. Second way is usually slower 
-(it takes more time to build ```QrOptions```, but code generating is a 
-little bit faster) and uses a lot of memory but provides more freedom.
+and uses a lot of memory but provides more freedom.
 
 For example:
 
