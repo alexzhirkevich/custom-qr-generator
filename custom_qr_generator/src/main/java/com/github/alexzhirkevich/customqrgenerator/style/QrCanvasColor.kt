@@ -17,14 +17,13 @@ private class QrCanvasColorToQrColor(
     private val size: Int
 ) : QrColor {
 
-    private val pixels : IntArray
-
-    init {
+    private val pixels : IntArray by lazy {
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         bitmap.applyCanvas(qrCanvasColor::draw)
-        pixels = IntArray(size * size)
+        val pixels = IntArray(size * size)
         bitmap.getPixels(pixels,0,size,0,0,size,size)
         bitmap.recycle()
+        pixels
     }
 
     override fun invoke(i: Int, j: Int, elementSize: Int): Int {
