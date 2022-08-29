@@ -140,6 +140,8 @@ val generator = QrCodeGenerator(context)
   
 val bitmap = generator.generateQrCode(data, options)
 ```
+`QrCodeGenerator` is an interface, but also is a function, that returns generator instance. 
+
 ‼️ QR codes must be generated in background thread. Generator supports cancellation with coroutines.
 `generateQrCodeSuspend` is always performed with `Dispatchers.Default`
 
@@ -356,16 +358,16 @@ val options =  createQrOptions(1024, .2f) {
 ## Serialization
 
 `QrOptions` and `QrData` can be serialized using kotlinx-serialization (actually any class
-from style package can be serialized). All options and QrData classes marked as `@Serializable`.
-Every class with interface preperties (or interfaces itself) now have companion object with
+from style package can be serialized). All options and QrData classes have `@Serializable` annotation.
+Every class with interface preperties (or property interfaces themselve) have companion object with
 `defaultSerializersModule` property. It provides kotlinx-serialization `SerializersModule` that
 can be used to serialize it default instances.
 
 There is global value `QrSerializersModule`, that can be used to serialize any serializable class instance.
+
 ‼️ If you implemented custom shape, color or other option, it must be added to module.
 
-Example (requires `org.jetbrains.kotlinx:kotlinx-serialization-json` dependency
-and `kotlinx-serialization` plugin):
+Example (requires `org.jetbrains.kotlinx:kotlinx-serialization-json` dependencyand `kotlinx-serialization` plugin):
 
 ```kotlin
 
