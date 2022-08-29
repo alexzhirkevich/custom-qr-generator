@@ -9,9 +9,9 @@ import androidx.core.graphics.applyCanvas
 /**
  * Create custom shape modifier by drawing on [Canvas].
  * This wrapper can be converted to [QrShapeModifier] using
- * [QrCanvasShapeModifier.toShapeModifier] function
+ * [QrCanvasShape.toShapeModifier] function
  * */
-interface QrCanvasShapeModifier {
+fun interface QrCanvasShape {
 
     /**
      * @param canvas canvas to draw shape
@@ -24,18 +24,18 @@ interface QrCanvasShapeModifier {
 }
 
 /**
- * Convert [QrCanvasShapeModifier] to [QrShapeModifier].
+ * Convert [QrCanvasShape] to [QrShapeModifier].
  * The [elementSize] should be >= than [QrShapeModifier.invoke] elementSize. Otherwise,
  * shapes quality will be less than expected.
  */
-fun QrCanvasShapeModifier.toShapeModifier(elementSize : Int) : QrShapeModifier =
+fun QrCanvasShape.toShapeModifier(elementSize : Int) : QrShapeModifier =
     QrCanvasToShapeModifier(elementSize, this)
 
 
 
 private class QrCanvasToShapeModifier(
     private val size: Int,
-    private val canvasShapeModifier : QrCanvasShapeModifier
+    private val canvasShapeModifier : QrCanvasShape
 ) : QrShapeModifier {
     private val drawPaint = Paint().apply {
         color = Color.BLACK
@@ -58,8 +58,7 @@ private class QrCanvasToShapeModifier(
     }
 
     override fun invoke(
-        i: Int, j: Int, elementSize: Int,
-        neighbors: Neighbors
+        i: Int, j: Int, elementSize: Int, neighbors: Neighbors
     ): Boolean {
 
         val scale = size / elementSize.toFloat()

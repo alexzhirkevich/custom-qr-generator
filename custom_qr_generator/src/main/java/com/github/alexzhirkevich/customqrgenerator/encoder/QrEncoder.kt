@@ -9,7 +9,6 @@ import com.google.zxing.qrcode.encoder.Encoder
 import com.google.zxing.qrcode.encoder.QRCode
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.isActive
 import kotlin.math.roundToInt
 
 private class ElementData (
@@ -32,10 +31,10 @@ internal class QrEncoder(private val options: QrOptions)  {
 
         require(contents.isNotEmpty()) { "Found empty contents" }
         val code = Encoder.encode(contents, options.errorCorrectionLevel.lvl, null)
-        renderResult(code, coroutineContext::isActive)
+        renderResult(code)
     }
 
-    private suspend fun renderResult(code: QRCode, isActive : () -> Boolean): QrRenderResult  =
+    private suspend fun renderResult(code: QRCode): QrRenderResult  =
         coroutineScope {
         val initialInput = (code.matrix ?: throw IllegalStateException())
             .toQrMatrix()
@@ -43,8 +42,9 @@ internal class QrEncoder(private val options: QrOptions)  {
         val input = options.codeShape.apply(initialInput)
 
         val diff = (input.size - initialInput.size)/2
-        val padding = (options.size * options.padding.coerceIn(0f, 1f) /2f).roundToInt()
-        val outputSize = (options.size - 2 * padding).coerceAtLeast(input.size)
+        val size = minOf(options.width, options.height)
+        val padding = (size * options.padding.coerceIn(0f, 1f) /2f).roundToInt()
+        val outputSize = (size - 2 * padding).coerceAtLeast(input.size)
         val multiple = outputSize / input.size
         val output = QrCodeMatrix(outputSize)
         var inputY = 0
@@ -53,9 +53,7 @@ internal class QrEncoder(private val options: QrOptions)  {
         val totalError =  ((outputSize.toFloat()/input.size - multiple)* input.size).roundToInt()
         val logoError =  ((outputSize.toFloat()/input.size - multiple)* input.size/2).roundToInt()
 
-        if (options.logo != null){
-            input.applyLogoPadding(logoError/multiple.toFloat())
-        }
+        input.applyLogoPadding(logoError/multiple.toFloat())
 
         while (inputY < input.size) {
 
@@ -70,7 +68,6 @@ internal class QrEncoder(private val options: QrOptions)  {
                     inputX, inputY, diff, multiple, input.size
                 )
 
-                val neighbors = input.neighbors(inputX,inputY)
 
                 if (elementData != null) {
                     for (i in 0 until multiple) {
@@ -80,7 +77,7 @@ internal class QrEncoder(private val options: QrOptions)  {
                                         elementData.x(i),
                                         elementData.y(j),
                                         elementData.size,
-                                        neighbors
+                                        Neighbors.Empty
                                     )
                             ) QrCodeMatrix.PixelType.DarkPixel
                                 else QrCodeMatrix.PixelType.Background
@@ -88,6 +85,8 @@ internal class QrEncoder(private val options: QrOptions)  {
                     }
                 } else {
                     //pixels
+
+                    val neighbors =  input.neighbors(inputX,inputY)
 
                     if (input[inputX,inputY] != QrCodeMatrix.PixelType.Logo) {
 
@@ -118,7 +117,7 @@ internal class QrEncoder(private val options: QrOptions)  {
             outputY += multiple
         }
 
-        if (options.logo != null && options.logo.padding.shouldApplyAccuratePadding){
+        if (options.logo.padding.shouldApplyAccuratePadding){
             output.applyMinimalLogoPadding(totalError)
         }
 
@@ -134,44 +133,47 @@ internal class QrEncoder(private val options: QrOptions)  {
             BALL_SIZE * multiple
         )
 
-        QrRenderResult(output, padding, multiple,diff*multiple, frame, ball, totalError)
+        val (pX, pY) = if (options.width < options.height){
+            padding to (options.height - outputSize)/2
+        } else {
+            (options.width - outputSize)/2 to padding
+        }
+        QrRenderResult(output, pX,pY, multiple,diff*multiple, frame, ball, totalError)
     }
 
     private fun QrCodeMatrix.applyLogoPadding(error: Float) {
-        if (options.logo != null) {
-            var logoSize = size /
-                    options.codeShape.shapeSizeIncrease.coerceAtLeast(1f) *
-                    options.logo.size.coerceIn(0f,1f) *
-                    (1 + options.logo.padding.value.coerceIn(0f,1f)) + 2
+        var logoSize = size /
+                options.codeShape.shapeSizeIncrease.coerceAtLeast(1f) *
+                options.logo.size.coerceIn(0f,1f) *
+                (1 + options.logo.padding.value.coerceIn(0f,1f)) + 2
 
-            if (options.logo.shape !is QrLogoShape.Default) {
-                if (logoSize.roundToInt() % 2 == size % 2)
-                    logoSize--
-            } else {
-                if (logoSize.roundToInt() % 2 != size % 2)
-                    logoSize++
-            }
-
-
-            logoSize = logoSize.coerceIn(0f,size.toFloat())
-
-
-            var logoPos = ((size - logoSize )/2f)
-
-            if (options.logo.shape !is QrLogoShape.Default){
-                logoPos -= error/2
-            }
-
-            options.logo.padding.apply(
-                matrix = this,
-                logoSize = logoSize.roundToInt(),
-                logoPos = logoPos.roundToInt(),
-                logoShape = options.logo.shape)
+        if (options.logo.shape !is QrLogoShape.Default) {
+            if (logoSize.roundToInt() % 2 == size % 2)
+                logoSize--
+        } else {
+            if (logoSize.roundToInt() % 2 != size % 2)
+                logoSize++
         }
+
+
+        logoSize = logoSize.coerceIn(0f,size.toFloat())
+
+
+        var logoPos = ((size - logoSize )/2f)
+
+        if (options.logo.shape !is QrLogoShape.Default){
+            logoPos -= error/2
+        }
+
+        options.logo.padding.apply(
+            matrix = this,
+            logoSize = logoSize.roundToInt(),
+            logoPos = logoPos.roundToInt(),
+            logoShape = options.logo.shape)
     }
 
     private fun QrCodeMatrix.applyMinimalLogoPadding(error: Int) {
-        if (options.logo != null && options.logo.padding.value >= Float.MIN_VALUE) {
+        if (options.logo.padding.value >= Float.MIN_VALUE) {
             val logoSize = (size / options.codeShape.shapeSizeIncrease.coerceAtLeast(1f) *
                     options.logo.size.coerceIn(0f,1f) * (1 + options.logo.padding.value.coerceIn(0f,1f)))
                 .roundToInt().coerceIn(0,size)
@@ -200,7 +202,8 @@ internal class QrEncoder(private val options: QrOptions)  {
             {(inputX -diff- 2) * multiple + it},
             {(inputY -diff- 2) * multiple + it},
             3 * multiple,
-            options.shapes.ball)
+            options.shapes.ball,
+        )
 
         // top left frame
         inputX- diff in 0 until 7 && inputY -diff in 0 until 7 ->

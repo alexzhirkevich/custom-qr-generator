@@ -1,64 +1,25 @@
 package com.github.alexzhirkevich.customqrgenerator
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import androidx.core.graphics.alpha
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrEncoder
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrRenderResult
+import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.style.QrColor
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
-class QrGenerator(
-    private val threadPolicy: ThreadPolicy = ThreadPolicy
-        .SingleThread,
+internal class QrCodeGeneratorImpl(
+    private val context: Context,
+    private val threadPolicy: ThreadPolicy
 ) : QrCodeGenerator {
-
-    enum class ThreadPolicy {
-
-        SingleThread {
-            override suspend operator fun invoke(size: Int, block: (IntRange, IntRange) -> Unit) {
-                block((0 until size), (0 until size))
-            }
-        },
-
-        DoubleThread {
-            override suspend operator fun invoke(size: Int, block: (IntRange, IntRange) -> Unit) {
-                coroutineScope {
-                    listOf(
-                        (0 until size) to (0 until size / 2),
-                        (0 until size) to (size / 2 until size),
-                    ).map {
-                        launch(Dispatchers.Default) {
-                            block(it.first, it.second)
-                        }
-                    }
-                }.joinAll()
-            }
-        },
-
-        QuadThread {
-            override suspend operator fun invoke(size: Int, block: (IntRange, IntRange) -> Unit) {
-                coroutineScope {
-                    listOf(
-                        (0 until size / 2) to (0 until size / 2),
-                        (0 until size / 2) to (size / 2 until size),
-                        (size / 2 until size) to (0 until size / 2),
-                        (size / 2 until size) to (size / 2 until size)
-                    ).map {
-                        launch(Dispatchers.Default) {
-                            block(it.first, it.second)
-                        }
-                    }
-                }.joinAll()
-            }
-        };
-
-        abstract suspend operator fun invoke(size : Int, block : (IntRange, IntRange) -> Unit)
-    }
 
     override fun generateQrCode(data: QrData, options: QrOptions): Bitmap = runBlocking {
         kotlin.runCatching {
@@ -85,7 +46,7 @@ class QrGenerator(
         val result = encoder.encode(data.encode())
 
         val bmp = Bitmap.createBitmap(
-            options.size, options.size,
+            options.width, options.height,
             Bitmap.Config.ARGB_8888
         )
 
@@ -94,55 +55,61 @@ class QrGenerator(
         }
     }
 
-    private suspend fun Bitmap.drawCode(result: QrRenderResult, options: QrOptions) = coroutineScope{
+    private suspend fun Bitmap.drawCode(
+        result: QrRenderResult,
+        options: QrOptions,
+        drawBg: Boolean = true,
+        drawLogo : Boolean = true
+    ) = coroutineScope{
         with(result) {
 
-
-            val bgBitmap = withContext(Dispatchers.IO) {
-                options.background?.drawable
+            val bgBitmap = options.background.drawable.get(context)
+                    .takeIf { it !is EmptyDrawable && drawBg }
                     ?.toBitmap(width, height, Bitmap.Config.ARGB_8888)
-            }
 
             val bgBitmapPixels = if (bgBitmap != null)
                 IntArray(width * height) else null
 
             bgBitmap?.getPixels(bgBitmapPixels, 0,width,0,0,width, height)
-            bgBitmap?.recycle()
 
+            val offsetX = (paddingX * (1+ options.offset.x.coerceIn(-1f,1f))).roundToInt()
+            val offsetY = (paddingY * (1+ options.offset.y.coerceIn(-1f,1f))).roundToInt()
             val array = IntArray(width*height)
 
-            threadPolicy.invoke(width){ xrange, yrange ->
+            threadPolicy.invoke(width, height){ xrange, yrange ->
 
-                for (x in xrange) {
-                    for (y in yrange) {
-                        val bitmapBgColor = options.colors.background.invoke(
-                            x, y, width
-                        )
-                        val bgColor =  bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
-                            ?.let { QrUtil.mixColors(it, bitmapBgColor, options.background?.alpha ?: 0f) }
-                            ?: bitmapBgColor
+                if (drawBg){
+                    for (x in xrange) {
+                        for (y in yrange) {
+                            val bitmapBgColor = options.background.color.invoke(
+                                x, y,width, height
+                            )
+                            val bgColor =  bgBitmapPixels?.get(x + y * width)?.takeIf { it.alpha > 0 }
+                                ?.let { QrUtil.mixColors(it, bitmapBgColor, it.alpha/255f * options.background.alpha) }
+                                ?: bitmapBgColor
 
-                        array[x + y * width] =bgColor
+                            array[x + y * width] =bgColor
+                        }
                     }
                 }
                 for (x in xrange) {
                     for (y in yrange) {
                         ensureActive()
 
-                        val inCodeRange = x in padding until width -padding - error &&
-                                y in padding until height-padding - error && options.shapes.hightlighting
+                        val inCodeRange = x in paddingX until width - paddingX - error &&
+                                y in paddingY until height - paddingY - error && options.shapes.highlighting
                             .invoke(
-                                x - padding,
-                                y - padding,
-                                width -  2*padding,
+                                x - paddingX,
+                                y - paddingY,
+                                width -  2 * minOf(paddingX, paddingY),
                                 Neighbors.Empty
                             )
 
                         if (inCodeRange){
-                            val pixel = bitMatrix[x - padding, y - padding]
+                            val pixel = bitMatrix[x - paddingX, y - paddingY]
 
-                            val realX = minOf(x - padding, width - x - error - padding)
-                            val realY = minOf(y - padding, height  - y - error - padding)
+                            val realX = minOf(x - paddingX, width - x - error - paddingX)
+                            val realY = minOf(y - paddingY, height  - y - error - paddingY)
 
                             val emptyCorner = width - x  < x && height - y < y
 
@@ -164,7 +131,8 @@ class QrGenerator(
                                        if (bottom && !options.colors.symmetry)
                                            ball.size - it else it
                                     },
-                                    elementSize = ball.size
+                                    width = ball.size,
+                                    height = ball.size
                                 )
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel &&
@@ -181,24 +149,26 @@ class QrGenerator(
                                         if (bottom && !options.colors.symmetry)
                                             frame.size - it else it
                                     },
-                                    elementSize = frame.size
+                                    width = frame.size,
+                                    height = frame.size,
                                 )
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel  && options.colors.dark.invoke(
-                                    x-padding, y-padding, width - 2*padding
+                                    x-paddingX, y-paddingY, width - 2* paddingX,height - 2* paddingY
                                 ).alpha > 0 -> options.colors.dark.invoke(
-                                    x-padding, y-padding, width - 2 * padding
+                                    x-paddingX, y-paddingY, width - 2 * paddingX, height - 2* paddingY
                                 )
                                 pixel == QrCodeMatrix.PixelType.LightPixel && options.colors.light.invoke(
-                                    x-padding, y-padding, width - 2 * padding
+                                    x-paddingX, y-paddingY, width - 2 * paddingX,height - 2* paddingY
                                 ).alpha > 0 -> options.colors.light.invoke(
-                                    x-padding, y-padding, width - 2 * padding
+                                    x-paddingX, y-paddingY, width - 2 * paddingX, height - 2* paddingY
                                 )
                                 else -> {
-                                    val bgColor = array[x+error/2 + (y+error/2) * width]
+                                    val bgColor = array[x+error/2- paddingX + offsetX +
+                                            (y+error/2- paddingY + offsetY) * width]
 
                                     val codeBg = options.colors.highlighting.invoke(
-                                        x-padding, y-padding, width - padding*2
+                                        x-paddingX, y-paddingY, width - 2* paddingX,height - 2* paddingY
                                     )
 
                                     if (codeBg.alpha >0)
@@ -207,25 +177,27 @@ class QrGenerator(
                                 }
                             }
 
-                            array[x+error/2 + (y+error/2) * width] = color
+                            array[x+error/2 - paddingX + offsetX +
+                                    (y+error/2 - paddingY + offsetY) * width] = color
                         }
                     }
                 }
             }
 
-            if (options.logo != null) kotlin.run {
-                val logoSize = ((width - padding*2) /
+            val logoDrawable = options.logo.drawable.get(context)
+            if (drawLogo && logoDrawable !is EmptyDrawable) kotlin.run {
+                val logoSize = ((width - minOf(paddingX,paddingY)*2) /
                         options.codeShape.shapeSizeIncrease *
                         options.logo.size)
                     .roundToInt()
 
-                val bitmapLogo = options.logo.scale.scale(options.logo.drawable, logoSize, logoSize)
+                val bitmapLogo = options.logo.scale
+                    .scale(logoDrawable, logoSize, logoSize)
                 val logoPixels = IntArray(logoSize*logoSize)
                 bitmapLogo.getPixels(logoPixels,0, logoSize, 0,0, logoSize, logoSize)
-                bitmapLogo.recycle()
 
-                val logoTopLeft = (width - logoSize) / 2
-
+                val logoLeft = (width - logoSize) / 2 - paddingX + offsetX
+                val logoTop = (height - logoSize) / 2 - paddingY + offsetY
 
                 for (i in 0 until logoSize) {
                     for (j in 0 until logoSize) {
@@ -240,11 +212,17 @@ class QrGenerator(
                             continue
                         }
 
-                        if (logoPixels[i + j * logoSize].alpha > 0) {
-                            runCatching {
-                                array[logoTopLeft + i + (logoTopLeft + j) * width] =
-                                    logoPixels[i + j * logoSize]
-                            }
+                        val bgColorPos = logoLeft + i + (logoTop + j) * width
+                        val logoPixel = logoPixels[i + j * logoSize]
+                        val logoBgColor = options.logo.backgroundColor.let {
+                            if (it is QrColor.Unspecified) array[bgColorPos]
+                            else it.invoke(i, j, logoSize, logoSize)
+                        }
+                        runCatching {
+
+                            array[bgColorPos] = QrUtil.mixColors(
+                                logoPixel, logoBgColor, logoPixel.alpha / 255f
+                            )
                         }
                     }
                 }
@@ -253,12 +231,11 @@ class QrGenerator(
             setPixels(array,0,width,0,0,width,height)
         }
     }
-
 }
 
-internal val QrOptions.actualEcl : QrErrorCorrectionLevel
+
+private val QrOptions.actualEcl : QrErrorCorrectionLevel
     get() = if (errorCorrectionLevel == QrErrorCorrectionLevel.Auto) when {
-        logo == null -> errorCorrectionLevel
         logo.size * (1 + logo.padding.value) > .3 ->
             QrErrorCorrectionLevel.High
         logo.size * (1 + logo.padding.value) in .2 .. .3

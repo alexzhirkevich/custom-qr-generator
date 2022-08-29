@@ -1,77 +1,91 @@
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
-import kotlin.math.pow
-import kotlin.math.sqrt
+import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 /**
  * Style of the qr-code eye internal ball.
  * */
-interface QrBallShape : QrShapeModifier {
+fun interface QrBallShape : QrShapeModifier {
 
-    object Default : QrShapeModifierDelegate(
-        delegate = DefaultShapeModifier
-    ), QrBallShape
+    @Serializable
+    @SerialName("Default")
+    object Default : QrBallShape by DefaultShapeModifier.asBallShape()
 
 
     /**
      * Special style for QR code ball - ball pixels will be counted as qr pixels.
      * For example, [QrPixelShape.Circle] style will make qr-code ball look like a square of 9 balls.
      * */
-    data class AsPixelShape(val shape: QrPixelShape)
-        : QrShapeModifierDelegate(
-            delegate = Default + shape % { size, _ -> size/3 }
-        ), QrBallShape
+    @Serializable
+    @SerialName("AsPixelShape")
+    data class AsPixelShape(val shape: QrPixelShape) : QrBallShape by
+        (Default.and(shape % { size, _ -> size/3 })).asBallShape()
 
 
+    @Serializable
+    @SerialName("Circle")
     data class Circle(
         @FloatRange(from = .75, to = 1.0)
         private val size : Float = 1f
-    ) : QrShapeModifierDelegate(
-            delegate = QrPixelShape.Circle(size)
-        ), QrBallShape
+    ) : QrBallShape by CircleShapeModifier(size)
+        .asBallShape()
 
 
-    object Rhombus : QrShapeModifierDelegate(
-        delegate = QrPixelShape.Rhombus
-    ), QrBallShape
+    @Serializable
+    @SerialName("Rhombus")
+    object Rhombus : QrBallShape by RhombusShapeModifier
+        .asBallShape()
 
 
+    @Serializable
+    @SerialName("RoundCorners")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         val outer: Boolean = true,
         val horizontalOuter: Boolean = true,
         val verticalOuter: Boolean = true,
         val inner: Boolean = true,
-    ) : QrBallShape {
-        override fun invoke(
-            i: Int, j: Int, elementSize: Int,
-            neighbors: Neighbors
-        ): Boolean {
-            val cornerRadius = (.5f - corner.coerceIn(0f, .5f)) * elementSize
-            val center = elementSize/2f
+    ) : QrBallShape by RoundCornersShapeModifier(
+        corner,false, outer,horizontalOuter,verticalOuter,inner
+    ).asBallShape()
 
-            val sub = center - cornerRadius
-            val sum = center + cornerRadius
 
-            val (x,y) = when{
-                outer && i < sub && j < sub -> sub to sub
-                horizontalOuter && i < sub && j > sum -> sub to sum
-                verticalOuter && i > sum && j < sub -> sum to sub
-                inner && i > sum && j > sum -> sum to sum
-                else -> return Default
-                    .invoke(i, j, elementSize, neighbors)
+    companion object : SerializationProvider {
+
+        @ExperimentalSerializationApi
+        @Suppress("unchecked_cast")
+        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
+            SerializersModule {
+                include(QrPixelShape.defaultSerializersModule)
+
+                polymorphicDefaultSerializer(QrBallShape::class){
+                    Default.serializer() as SerializationStrategy<QrBallShape>
+                }
+                polymorphicDefaultDeserializer(QrBallShape::class) {
+                    Default.serializer()
+                }
+                polymorphic(QrBallShape::class) {
+                    subclass(Default::class)
+                    subclass(AsPixelShape::class)
+                    subclass(Circle::class)
+                    subclass(Rhombus::class)
+                    subclass(RoundCorners::class)
+                }
             }
-            return sqrt((x-i).pow(2) + (y-j).pow(2)) < sub
         }
     }
 }
 
 fun QrShapeModifier.asBallShape() : QrBallShape = if (this is QrBallShape) this else
-    object : QrBallShape {
-        override fun invoke(
-            i: Int, j: Int, elementSize: Int,
-            neighbors: Neighbors
-        ): Boolean = this@asBallShape
+    QrBallShape { i, j, elementSize, neighbors ->
+        this@asBallShape
             .invoke(i, j, elementSize, neighbors)
     }

@@ -1,57 +1,108 @@
 package com.github.alexzhirkevich.customqrgenerator
 
-import android.graphics.Bitmap
+import android.annotation.SuppressLint
+import android.graphics.Color
+import android.graphics.Paint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.core.graphics.withRotation
 import androidx.lifecycle.lifecycleScope
+import com.github.alexzhirkevich.customqrgenerator.dsl.draw
 import com.github.alexzhirkevich.customqrgenerator.example.R
 import com.github.alexzhirkevich.customqrgenerator.example.databinding.ActivityMainBinding
 import com.github.alexzhirkevich.customqrgenerator.style.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlin.random.Random
 
+@ExperimentalSerializationApi
 class MainActivity : AppCompatActivity() {
 
     private val binding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    private val options by lazy {
-        createQrOptions(1024, .3f) {
-            backgroundImage = QrBackgroundImage(
-                drawable = ContextCompat
-                    .getDrawable(this@MainActivity, R.drawable.frame)!!
-            )
-            logo = QrLogo(
-                drawable = ContextCompat
-                    .getDrawable(this@MainActivity, R.drawable.tg)!!,
-                size = .25f,
-                padding = QrLogoPadding.Natural(.15f),
-                shape = QrLogoShape.Circle
-            )
-            colors = QrColors(
-                dark = QrColor.Solid(Color(0xff345288)),
-                highlighting = QrColor.Solid(Color(0xddffffff)),
-            )
-            elementsShapes = QrElementsShapes(
-                darkPixel = QrPixelShape.RoundCorners(),
-                lightPixel = QrPixelShape.RoundCorners(),
-                ball = QrBallShape.Default,
-                frame = QrFrameShape.RoundCorners(.25f),
-                hightlighting = QrHighlightingShape.RoundCorners(.05f)
-            )
+    //custom color for eyes
+    private val eyeColor = QrCanvasColor { canvas ->
+        with(canvas) {
+            val paint = Paint().apply {
+                color = 0xff345288.toColor()
+                isAntiAlias = true
+            }
+            withRotation(135f, width / 2f, height / 2f) {
+                drawRect(
+                    -width / 2f, -height / 2f,
+                    1.5f * width, height / 2f, paint
+                )
+                paint.color = 0xff31b4d5.toColor()
+                drawRect(
+                    -width / 2f, height / 2f,
+                    1.5f * width, 1.5f * height, paint
+                )
+            }
         }
     }
 
-    // Use wisely. More threads doesn't mean more performance.
-    // It depends on device and QrOptions.size
-    private val threadPolicy = when(Runtime.getRuntime().availableProcessors()){
-        in 1..3 -> QrGenerator.ThreadPolicy.SingleThread
-        in 4..6 -> QrGenerator.ThreadPolicy.DoubleThread
-        else -> QrGenerator.ThreadPolicy.QuadThread
+
+    // QR code styling options
+    private val options by lazy {
+        createQrOptions(1024, 1024, .3f) {
+
+            background {
+                drawable = DrawableSource.Resource(R.drawable.frame)
+                color = QrColor.Unspecified
+            }
+
+            logo {
+                drawable = DrawableSource.Resource(R.drawable.tg)
+                size = .25f
+                padding = QrLogoPadding.Natural(.1f)
+                shape = QrLogoShape.Circle
+            }
+
+            shapes {
+                darkPixel = QrPixelShape.
+                    RoundCorners()
+
+                frame = QrFrameShape.RoundCorners(
+                    .25f,
+                )
+                ball = QrBallShape.RoundCorners(
+                    .25f,
+                )
+                highlighting = QrHighlightingShape
+                    .RoundCorners(.05f)
+            }
+
+            colors {
+                dark = QrColor.RadialGradient(
+                    startColor = 0xff31b4d5.toColor(),
+                    endColor = 0xff345288.toColor(),
+                    radius = 2f
+                )
+                highlighting = QrColor.Solid(0xddffffff.toColor())
+                ball = draw(eyeColor::draw)
+
+                frame = draw {
+                    withRotation(180f, width/2f,
+                        height/2f, eyeColor::draw)
+                }
+            }
+        }
     }
 
-    private val qrGenerator: QrCodeGenerator = QrGenerator(threadPolicy)
 
+    // QR code generator thread policy.
+    // Use wisely. More threads doesn't mean more performance.
+    // It depends on device and QrOptions.size
+    private val threadPolicy = when (Runtime.getRuntime().availableProcessors()) {
+        in 1..3 -> ThreadPolicy.SingleThread
+        in 4..6 -> ThreadPolicy.DoubleThread
+        else -> ThreadPolicy.QuadThread
+    }
+
+    private val qrGenerator: QrCodeGenerator by lazy {
+        QrCodeGenerator(this@MainActivity, threadPolicy)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,20 +110,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        var oldBmp : Bitmap?=null
-        binding.create.setOnClickListener {
-            lifecycleScope.launchWhenStarted {
 
-                val bmp = qrGenerator.generateQrCodeSuspend(
-                    QrData.Url(binding.editText.text.toString()), options
-                )
-
-                with(binding.qrCode) {
-                    setImageBitmap(bmp)
-                    setBackgroundResource(0)
+        with(binding) {
+            editInput.setText(R.string.app_name)
+            btnCreate.setOnClickListener {
+                lifecycleScope.launchWhenStarted {
+                    val bmp = qrGenerator.generateQrCode(
+                        QrData.Url(editInput.text.toString()),
+                        options
+                    )
+                    ivQrcode.setImageBitmap(bmp)
                 }
-                oldBmp?.recycle()
-                oldBmp = bmp
             }
         }
     }

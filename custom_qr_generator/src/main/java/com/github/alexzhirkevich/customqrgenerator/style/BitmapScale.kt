@@ -3,6 +3,12 @@ package com.github.alexzhirkevich.customqrgenerator.style
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import androidx.core.graphics.drawable.toBitmap
+import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 /**
  * Way of getting [Bitmap] from [Drawable]
@@ -18,6 +24,8 @@ sealed interface BitmapScale {
     /**
      * Resize given image. Image's aspect ratio can be broken
      * */
+    @Serializable
+    @SerialName("FitCenter")
     object FitCenter : BitmapScale {
         override fun scale(drawable: Drawable, width: Int, height: Int): Bitmap {
             return drawable.toBitmap(width,height,
@@ -29,6 +37,8 @@ sealed interface BitmapScale {
      * Crop given image and cut necessary bitmap from center. Image's aspect ratio
      * will be kept.
      * */
+    @Serializable
+    @SerialName("CenterCrop")
     object CenterCrop : BitmapScale {
         override fun scale(drawable: Drawable, width: Int, height: Int): Bitmap {
             var iWidth = drawable.intrinsicWidth
@@ -59,6 +69,17 @@ sealed interface BitmapScale {
                 bitmap.recycle()
 
             return newBmp
+        }
+    }
+
+    companion object : SerializationProvider {
+        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
+            SerializersModule {
+                polymorphic(BitmapScale::class) {
+                    subclass(FitCenter::class)
+                    subclass(CenterCrop::class)
+                }
+            }
         }
     }
 }

@@ -28,26 +28,25 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
         <ImageView
-            android:id="@+id/qrCode"
+            android:id="@+id/iv_qrcode"
             android:layout_width="300dp"
             android:layout_height="300dp"
-            android:background="@drawable/qr_background"
             android:layout_gravity="center"/>
         <Space
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
         <EditText
-            android:id="@+id/editText"
+            android:id="@+id/edit_input"
             android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:text="http://t.me/alexzhirkevich"/>
+            android:layout_height="wrap_content" />
         <Space
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
         <Button
-            android:id="@+id/create"
+            android:id="@+id/btn_create"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Create"/>
