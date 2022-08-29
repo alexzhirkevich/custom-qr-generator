@@ -62,13 +62,13 @@ val options = QrOptions.Builder(1024)
     .setBackground(
         QrBackgroundImage(
             drawable = DrawableSource
-                  .Resource(context, R.drawable.frame)!,
+                  .Resource(context, R.drawable.frame),
         )
     )
     .setLogo(
         QrLogo(
             drawable = DrawableSource
-                  .Resource(context, R.drawable.tg)!,
+                  .Resource(context, R.drawable.tg),
             size = .25f,
             padding = QrLogoPadding.Accurate(.2f),
             shape = QrLogoShape
@@ -141,6 +141,7 @@ val generator = QrCodeGenerator(context)
 val bitmap = generator.generateQrCode(data, options)
 ```
 ‼️ QR codes must be generated in background thread. Generator supports cancellation with coroutines.
+`generateQrCodeSuspend` is always performed with `Dispatchers.Default`
 
 ```kotlin  
 //todo: don't use GlobalScope
