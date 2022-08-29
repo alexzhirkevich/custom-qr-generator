@@ -61,14 +61,14 @@ val options = QrOptions.Builder(1024)
     .setPadding(.3f)
     .setBackground(
         QrBackgroundImage(
-            drawable = ContextCompat
-                .getDrawable(this, R.drawable.frame)!!,
+            drawable = DrawableSource
+                  .Resource(context, R.drawable.frame)!,
         )
     )
     .setLogo(
         QrLogo(
-            drawable = ContextCompat
-                .getDrawable(this, R.drawable.tg)!!,
+            drawable = DrawableSource
+                  .Resource(context, R.drawable.tg)!,
             size = .25f,
             padding = QrLogoPadding.Accurate(.2f),
             shape = QrLogoShape
