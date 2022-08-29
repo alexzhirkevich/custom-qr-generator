@@ -101,7 +101,7 @@ val options = QrOptions.Builder(1024)
 Or using DSL:
 
 ```kotlin
-val options = createQrOptions(1024, .3f) {
+val options = createQrOptions(1024, 1024, .3f) {
     background {
         drawable = DrawableSource
             .Resource(context, R.drawable.frame)

@@ -1,7 +1,5 @@
 package com.github.alexzhirkevich.customqrgenerator
 
-import android.annotation.SuppressLint
-import android.graphics.Color
 import android.graphics.Paint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -12,7 +10,6 @@ import com.github.alexzhirkevich.customqrgenerator.example.R
 import com.github.alexzhirkevich.customqrgenerator.example.databinding.ActivityMainBinding
 import com.github.alexzhirkevich.customqrgenerator.style.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlin.random.Random
 
 @ExperimentalSerializationApi
 class MainActivity : AppCompatActivity() {
