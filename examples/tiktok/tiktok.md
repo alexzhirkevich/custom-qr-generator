@@ -9,10 +9,10 @@
     </tr>
     <tr>
         <td>
-            <img src="/original.jpeg">
+            <img width="450" height="250" src="/examples/tiktok/original.jpeg">
         </td>
         <td>
-             <img src="/generated.jpeg">
+             <img idth="250" height="250" src="/examples/tiktok/generated.jpeg">
         </td>
     </tr>
 </table>
