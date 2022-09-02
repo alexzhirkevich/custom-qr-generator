@@ -9,6 +9,7 @@ import com.google.zxing.qrcode.encoder.Encoder
 import com.google.zxing.qrcode.encoder.QRCode
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 private class ElementData (
@@ -64,52 +65,54 @@ internal class QrEncoder(private val options: QrOptions)  {
 
                 ensureActive()
 
-                val elementData = elementDataOrNull(
-                    inputX, inputY, diff, multiple, input.size
-                )
+                    val elementData = elementDataOrNull(
+                        inputX, inputY, diff, multiple, input.size
+                    )
 
-
-                if (elementData != null) {
-                    for (i in 0 until multiple) {
-                        for (j in 0 until multiple) {
-                            output[inputX * multiple + i, inputY * multiple + j] =
-                                if (elementData.modifier.invoke(
-                                        elementData.x(i),
-                                        elementData.y(j),
-                                        elementData.size,
-                                        Neighbors.Empty
-                                    )
-                            ) QrCodeMatrix.PixelType.DarkPixel
-                                else QrCodeMatrix.PixelType.Background
+                    if (elementData != null) {
+                        for (i in 0 until multiple) {
+                            for (j in 0 until multiple) {
+                                kotlin.runCatching {
+                                    output[inputX * multiple + i, inputY * multiple + j] =
+                                        if (elementData.modifier.invoke(
+                                                elementData.x(i),
+                                                elementData.y(j),
+                                                elementData.size,
+                                                Neighbors.Empty
+                                            )
+                                        ) QrCodeMatrix.PixelType.DarkPixel
+                                        else QrCodeMatrix.PixelType.Background
+                                }
+                            }
                         }
-                    }
-                } else {
-                    //pixels
+                    } else {
+                        //pixels
 
-                    val neighbors =  input.neighbors(inputX,inputY)
+                        val neighbors = input.neighbors(inputX, inputY)
 
-                    if (input[inputX,inputY] != QrCodeMatrix.PixelType.Logo) {
+                        if (input[inputX, inputY] != QrCodeMatrix.PixelType.Logo) {
 
-                        for (i in outputX until outputX + multiple) {
-                            for (j in outputY until outputY + multiple) {
-                                output[i, j] = when {
-                                    !options.codeShape.pixelInShape(inputX, inputY, input) ->
-                                        QrCodeMatrix.PixelType.Background
-                                    input[inputX, inputY] == QrCodeMatrix.PixelType.DarkPixel &&
-                                            options.shapes.darkPixel.invoke(
-                                                i - outputX, j - outputY,
-                                                multiple, neighbors
-                                            ) -> QrCodeMatrix.PixelType.DarkPixel
-                                    options.shapes.lightPixel.invoke(
-                                        i - outputX, j - outputY,
-                                        multiple, neighbors
-                                    ) -> QrCodeMatrix.PixelType.LightPixel
-                                    else -> QrCodeMatrix.PixelType.Background
+                            for (i in outputX until outputX + multiple) {
+                                for (j in outputY until outputY + multiple) {
+                                    output[i, j] = when {
+                                        !options.codeShape.pixelInShape(inputX, inputY, input) ->
+                                            QrCodeMatrix.PixelType.Background
+                                        input[inputX, inputY] == QrCodeMatrix.PixelType.DarkPixel &&
+                                                options.shapes.darkPixel.invoke(
+                                                    i - outputX, j - outputY,
+                                                    multiple, neighbors
+                                                ) -> QrCodeMatrix.PixelType.DarkPixel
+                                        options.shapes.lightPixel.invoke(
+                                            i - outputX, j - outputY,
+                                            multiple, neighbors
+                                        ) -> QrCodeMatrix.PixelType.LightPixel
+                                        else -> QrCodeMatrix.PixelType.Background
+                                    }
                                 }
                             }
                         }
                     }
-                }
+
                 inputX++
                 outputX += multiple
             }

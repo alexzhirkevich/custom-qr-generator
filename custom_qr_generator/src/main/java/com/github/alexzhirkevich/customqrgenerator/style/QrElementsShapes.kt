@@ -30,7 +30,7 @@ data class QrElementsShapes(
     override val lightPixel : QrPixelShape = QrPixelShape.Default,
     override val frame : QrFrameShape = QrFrameShape.Default,
     override val ball : QrBallShape = QrBallShape.Default,
-    override val highlighting : QrHighlightingShape = QrHighlightingShape.Default
+    override val highlighting : QrHighlightingShape = QrHighlightingShape.Default,
 ) : IQRElementsShapes {
     companion object : SerializationProvider {
 

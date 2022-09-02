@@ -1,6 +1,5 @@
 package com.github.alexzhirkevich.customqrgenerator
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic

@@ -30,6 +30,10 @@ fun interface QrBallShape : QrShapeModifier {
         (Default.and(shape % { size, _ -> size/3 })).asBallShape()
 
 
+    /**
+     * @property size size of circle. Should be from .75 to 1.
+     * Otherwise, QR code can be unreadable
+     * */
     @Serializable
     @SerialName("Circle")
     data class Circle(

@@ -1,8 +1,6 @@
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -73,7 +71,9 @@ internal class RoundCornersShapeModifier(
             bottomRight: Boolean
         ) : Boolean {
             if (useNeighbors) {
-                if (neighbors.hasAny.not()) {
+                if (neighbors.hasAny.not() &&
+                    corner in .5f - Float.MIN_VALUE .. .5f + Float.MIN_VALUE
+                ) {
                     return QrPixelShape.Circle(1f)
                         .invoke(i, j, elementSize, neighbors)
                 }

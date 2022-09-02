@@ -43,12 +43,13 @@ fun interface QrPixelShape : QrShapeModifier {
     @Serializable
     @SerialName("RoundCorners")
     data class RoundCorners(
+        val corner : Float = .5f,
         val topLeft : Boolean = true,
         val topRight : Boolean = true,
         val bottomLeft : Boolean = true,
         val bottomRight : Boolean = true
     ) : QrPixelShape by RoundCornersShapeModifier(
-        0.5f, true, topLeft, topRight, bottomLeft, bottomRight
+        corner, true, topLeft, topRight, bottomLeft, bottomRight
     ).asPixelShape()
 
 

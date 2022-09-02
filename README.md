@@ -44,7 +44,7 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.4.0'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.4.1'
 }
 ```
 
@@ -373,7 +373,7 @@ There is global value `QrSerializersModule`, that can be used to serialize any s
 
 ‼️ If you implemented custom shape, color or other option, it must be added to module.
 
-Example (requires `org.jetbrains.kotlinx:kotlinx-serialization-json` dependencyand `kotlinx-serialization` plugin):
+Example (requires `org.jetbrains.kotlinx:kotlinx-serialization-json` dependency and `kotlinx-serialization` plugin):
 
 ```kotlin
 

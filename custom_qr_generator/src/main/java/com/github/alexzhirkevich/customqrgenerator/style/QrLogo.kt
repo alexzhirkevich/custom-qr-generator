@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * @property drawable logo image
- * @property size logo size relative to qr-code size.
+ * @property size logo size relative to qr-code size. Should be from 0 to 1/3.
  * If logo size is bigger than allowed size, QR code might be unreadable.
  * @property padding logo padding relative to the logo [size]
  * @property shape shape of logo image and [padding].
@@ -35,7 +35,7 @@ interface IQRLogo {
 @Serializable
 data class QrLogo(
     override val drawable: DrawableSource = DrawableSource.Empty,
-    @FloatRange(from = 0.0, to = .33)
+    @FloatRange(from = 0.0, to = 1/3.0)
     override val size : Float = 0.2f,
     override val padding : QrLogoPadding = QrLogoPadding.Empty,
     override val shape: QrLogoShape = QrLogoShape.Default,

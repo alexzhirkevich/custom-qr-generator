@@ -13,8 +13,8 @@ import kotlin.reflect.KClass
  * And make sure it is able to scan.
  *
  * @return color linked to built [QrOptions].
- * Should not be used for [QrOptions] with changed [QrOptions.size] or
- * [QrOptions.padding] * */
+ * Should not be used for other [QrOptions]
+ */
 inline fun QrColorsBuilderScope.draw(
     crossinline action : Canvas.() -> Unit
 ) : QrColor = QrCanvasColor { canvas -> action(canvas) }
@@ -25,6 +25,22 @@ inline fun QrColorsBuilderScope.draw(
         it.toQrColor(width, height)
     }
 
+/**
+ * Draw anything you want on your QR code.
+ * And make sure it is able to scan.
+ *
+ * @return color linked to built [QrOptions].
+ * Should not be used for other [QrOptions]
+ */
+inline fun QrBackgroundBuilderScope.draw(
+    crossinline action : Canvas.() -> Unit
+) : QrColor = QrCanvasColor { canvas -> action(canvas) }
+    .let {
+        val (width, height)=when(this){
+            is InternalQrBackgroundBuilderScope -> builder.width to builder.height
+        }
+        it.toQrColor(width, height)
+    }
 
 
 /**

@@ -15,11 +15,12 @@ import kotlinx.serialization.modules.subclass
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+
+
 /**
  * Color of the different QR code elements.
  * */
 fun interface QrColor  {
-
 
     /**
      * @return Color of the [[i],[j]] pixel of current element

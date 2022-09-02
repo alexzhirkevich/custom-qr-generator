@@ -1,5 +1,6 @@
 package com.github.alexzhirkevich.customqrgenerator.dsl
 
+import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
 import com.github.alexzhirkevich.customqrgenerator.createQrOptions
 import com.github.alexzhirkevich.customqrgenerator.style.*
@@ -21,6 +22,8 @@ sealed interface QrOptionsBuilderScope {
     val width : Int
 
     val height : Int
+
+    var errorCorrectionLevel : QrErrorCorrectionLevel
 
     /**
      * Set QR code offset
@@ -103,4 +106,10 @@ private class InternalQrOptionsBuilderScope(
 
     override val height: Int
         get() = builder.height
+
+    override var errorCorrectionLevel: QrErrorCorrectionLevel
+        get() = builder.errorCorrectionLevel
+        set(value) {
+            builder.setErrorCorrectionLevel(value)
+        }
 }

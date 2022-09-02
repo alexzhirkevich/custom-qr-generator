@@ -45,15 +45,20 @@ fun interface QrFrameShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Circle")
-    object Circle : QrFrameShape {
+    class Circle(
+        @FloatRange(from = 0.0) val width : Float = 1f,
+        @FloatRange(from = 0.0) val radius : Float = 1f
+        ) : QrFrameShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int, neighbors: Neighbors
         ): Boolean {
-            val radius = elementSize / 2.0
-            val qrPixelSize = elementSize/7
+            val center = elementSize/2f
+            val scaledRadius = center * radius
+            val qrPixelSize = elementSize/7 * width
+                .coerceAtLeast(0f)
 
-            return sqrt((radius - i).pow(2) + (radius - j).pow(2)) in
-                    radius - qrPixelSize .. radius
+            return sqrt((center - i).pow(2) + (center - j).pow(2)) in
+                    scaledRadius - qrPixelSize .. scaledRadius
         }
     }
 

@@ -2,9 +2,7 @@ package com.github.alexzhirkevich.customqrgenerator
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Color
 import androidx.core.graphics.alpha
-import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrEncoder
@@ -12,6 +10,7 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.QrRenderResult
 import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.style.QrColor
+import com.github.alexzhirkevich.customqrgenerator.style.QrColorSeparatePixels
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.coroutines.*
 import kotlin.math.roundToInt
@@ -55,12 +54,26 @@ internal class QrCodeGeneratorImpl(
         }
     }
 
+    val colors = mutableMapOf<Pair<Int,Int>,Int>()
+
+    private fun QrColor.getColor(
+        i : Int, j : Int, width : Int, height : Int, pixelSize : Int
+    ) = if (this is QrColorSeparatePixels){
+        val ri = i / pixelSize
+        val rj = j / pixelSize
+            colors[ri to rj] ?: invoke(ri,rj, width/ pixelSize, height/pixelSize).also {
+                colors[ri to rj] = it
+            }
+        } else invoke(i, j, width, height)
+
+
     private suspend fun Bitmap.drawCode(
         result: QrRenderResult,
         options: QrOptions,
         drawBg: Boolean = true,
         drawLogo : Boolean = true
     ) = coroutineScope{
+        colors.clear()
         with(result) {
 
             val bgBitmap = options.background.drawable.get(context)
@@ -132,7 +145,7 @@ internal class QrCodeGeneratorImpl(
                                            ball.size - it else it
                                     },
                                     width = ball.size,
-                                    height = ball.size
+                                    height = ball.size,
                                 )
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel &&
@@ -150,13 +163,16 @@ internal class QrCodeGeneratorImpl(
                                             frame.size - it else it
                                     },
                                     width = frame.size,
-                                    height = frame.size,
+                                    height = frame.size
                                 )
 
                                 pixel == QrCodeMatrix.PixelType.DarkPixel  && options.colors.dark.invoke(
                                     x-paddingX, y-paddingY, width - 2* paddingX,height - 2* paddingY
-                                ).alpha > 0 -> options.colors.dark.invoke(
-                                    x-paddingX, y-paddingY, width - 2 * paddingX, height - 2* paddingY
+                                ).alpha > 0 -> options.colors.dark.getColor(
+                                    x-paddingX, y-paddingY,
+                                    width - 2 * paddingX,
+                                    height - 2* paddingY,
+                                    pixelSize = pixelSize
                                 )
                                 pixel == QrCodeMatrix.PixelType.LightPixel && options.colors.light.invoke(
                                     x-paddingX, y-paddingY, width - 2 * paddingX,height - 2* paddingY

@@ -17,7 +17,7 @@ sealed interface QrBackgroundBuilderScope : IQRBackground {
     override var color : QrColor
 }
 
-internal class InternalQrBackgroundBuilderScope(
+class InternalQrBackgroundBuilderScope internal constructor(
     val builder: QrOptions.Builder
 ) : QrBackgroundBuilderScope{
 
