@@ -9,6 +9,8 @@ Android library for creating QR-codes with logo, custom pixel/eyes shapes, backg
   </tr>
 </table>
 
+More examples copied from real social network QR codes together with their 
+code can be found [there](/examples).
 ## Table of contents
 - [Installation](#installation)
 - [Usage](#usage)
