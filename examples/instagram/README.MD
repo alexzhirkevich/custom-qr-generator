@@ -9,10 +9,10 @@
     </tr>
     <tr>
         <td>
-            <img width="250" height="450" src="/examples/intagram/original.jpeg">
+            <img width="250" height="416" src="/examples/instagram/original.jpeg">
         </td>
         <td>
-             <img width="250" height="250" src="/examples/intagram/generated.jpeg">
+             <img width="250" height="250" src="/examples/instagram/generated.jpeg">
         </td>
     </tr>
 </table>
