@@ -68,7 +68,7 @@ val data = QrData.Url("https://example.com")
 val options = QrOptions.Builder(1024)
     .setPadding(.3f)
     .setBackground(
-        QrBackgroundImage(
+        QrBackground(
             drawable = DrawableSource
                   .Resource(context, R.drawable.frame),
         )
