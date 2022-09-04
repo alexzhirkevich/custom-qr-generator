@@ -161,8 +161,8 @@ GlobalSope.launch {
 ```
 
 Generator can work in parallel threads (different Default coroutine dispatchers).
-By default generator works in SingleThread. To change it pass another ```QrGenerator.ThreadPolicy``` to
-```QrGenerator``` constructor.
+By default generator works in SingleThread. To change it pass another ```ThreadPolicy``` to
+```QrCodeGenerator``` function.
 
 For example:
 
