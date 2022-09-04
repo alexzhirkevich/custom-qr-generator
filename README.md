@@ -173,7 +173,7 @@ val threadPolicy = when(Runtime.getRuntime().availableProcessors()){
     else -> ThreadPolicy.QuadThread
 }
 
-val generator = QrCodeGenerator(threadPolicy)
+val generator = QrCodeGenerator(context, threadPolicy)
 
 ```
 
