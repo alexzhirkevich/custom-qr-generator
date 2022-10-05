@@ -36,7 +36,7 @@ internal class RoundCornersVectorShape(
 
         val corner = cornerRadius.coerceIn(0f,.5f) * size
 
-//        if (isDependOnNeighbors)
+        if (isDependOnNeighbors)
             addRoundRect(
                 RectF(0f,0f,size, size),
                 floatArrayOf(
@@ -51,10 +51,10 @@ internal class RoundCornersVectorShape(
                 ),
                 Path.Direction.CW
             )
-//        else addRoundRect(RectF(0f,0f,size, size),
-//                corner,
-//                corner,
-//                Path.Direction.CW
-//            )
+        else addRoundRect(RectF(0f,0f,size, size),
+                corner,
+                corner,
+                Path.Direction.CW
+            )
     }
 }

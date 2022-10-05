@@ -4,14 +4,23 @@ import android.graphics.Paint
 import android.graphics.Shader
 import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
+import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import kotlin.math.sqrt
 
 sealed interface QrVectorColor {
 
     fun createPaint(width: Float, height: Float): Paint
 
+    @Serializable
     object Unspecified : QrVectorColor by Solid(0)
 
+    @Serializable
     data class Solid(@ColorInt val color: Int) : QrVectorColor {
         override fun createPaint(width: Float, height: Float) = Paint().apply {
             color = this@Solid.color
@@ -19,6 +28,7 @@ sealed interface QrVectorColor {
         }
     }
 
+    @Serializable
     data class LinearGradient(
         val colors: List<Pair<Float, Int>>,
         val orientation: Orientation
@@ -49,6 +59,7 @@ sealed interface QrVectorColor {
         }
     }
 
+    @Serializable
     data class RadialGradient(
         val colors: List<Pair<Float, Int>>,
         @FloatRange(from = 0.0)
@@ -66,6 +77,7 @@ sealed interface QrVectorColor {
         }
     }
 
+    @Serializable
     data class SweepGradient(
         val colors: List<Pair<Float, Int>>
     ) : QrVectorColor {
@@ -76,6 +88,29 @@ sealed interface QrVectorColor {
                 colors.map { it.second }.toIntArray(),
                 colors.map { it.first }.toFloatArray()
             )
+        }
+    }
+
+    companion object : SerializationProvider {
+
+        @ExperimentalSerializationApi
+        @Suppress("unchecked_cast")
+        override val defaultSerializersModule: SerializersModule by lazy(LazyThreadSafetyMode.NONE) {
+            SerializersModule {
+                polymorphicDefaultSerializer(QrVectorColor::class){
+                    Unspecified.serializer() as SerializationStrategy<QrVectorColor>
+                }
+                polymorphicDefaultDeserializer(QrVectorColor::class) {
+                    Unspecified.serializer()
+                }
+                polymorphic(QrVectorColor::class){
+                    subclass(Unspecified::class)
+                    subclass(Solid::class)
+                    subclass(RadialGradient::class)
+                    subclass(LinearGradient::class)
+                    subclass(SweepGradient::class)
+                }
+            }
         }
     }
 }
