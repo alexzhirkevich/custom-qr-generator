@@ -10,7 +10,10 @@ Android library for creating QR-codes with logo, custom pixel/eyes shapes, backg
 </table>
 
 More examples copied from real social network QR codes together with their 
-code can be found [there](/examples).
+code can be found [here](/examples).
+
+Documentation can be found on [wiki](https://github.com/alexzhirkevich/custom-qr-generator/wiki) page.
+
 ## Table of contents
 - [Installation](#installation)
 - [Usage](#usage)
@@ -65,10 +68,11 @@ val data = QrData.Url("https://example.com")
 ```kotlin
 // Color(v : Long) and Long.toColor() functions take 
 // 0xAARRGGBB long and convert it to color int.
+// Colors from android resources also can be used.
 val options = QrOptions.Builder(1024)
     .setPadding(.3f)
     .setBackground(
-        QrBackgroundImage(
+        QrBackground(
             drawable = DrawableSource
                   .Resource(context, R.drawable.frame),
         )
@@ -155,14 +159,14 @@ val bitmap = generator.generateQrCode(data, options)
 
 ```kotlin  
 //todo: don't use GlobalScope
-GlobalSope.launch {
+GlobalScope.launch {
     val bitmap = generator.generateQrCodeSuspend(data, options)
 }
 ```
 
 Generator can work in parallel threads (different Default coroutine dispatchers).
-By default generator works in SingleThread. To change it pass another ```QrGenerator.ThreadPolicy``` to
-```QrGenerator``` constructor.
+By default generator works in SingleThread. To change it pass another ```ThreadPolicy``` to
+```QrCodeGenerator``` function.
 
 For example:
 
@@ -173,7 +177,7 @@ val threadPolicy = when(Runtime.getRuntime().availableProcessors()){
     else -> ThreadPolicy.QuadThread
 }
 
-val generator = QrCodeGenerator(threadPolicy)
+val generator = QrCodeGenerator(context, threadPolicy)
 
 ```
 
