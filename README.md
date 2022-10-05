@@ -145,7 +145,7 @@ val options = createQrVectorOptions {
 }
 ```
 
-<b>Step 1.</b> Create QR code drawable:
+<b>Step 3.</b> Create QR code drawable:
 
 ```kotlin
 val drawable = QrCodeDrawable(context, data, options)
