@@ -62,6 +62,7 @@ There are 2 types of QR code image - raster image and vector image.
 | --- | --- | --- |
 | Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` |
 | Speed | Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
+| Logo padding | Empty, shape-accurate and natural (shape accurate without pixels cut) | Only natural (any other types will be converted to natural wit the same padding amount)|
 | Default shapes | Wide range of default shapes | Rect, Circle, RoundCorners (will be replenished) |
 | QR code shape | Rect, circle, or your custom | Only rect, cannot be changed |
 | Shapes customization | Using math or canvas drawing (planned migration to Path) | Using `android.graphics.Path` |
