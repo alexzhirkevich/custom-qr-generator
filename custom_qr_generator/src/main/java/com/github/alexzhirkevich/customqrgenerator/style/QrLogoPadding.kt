@@ -34,7 +34,12 @@ interface QrLogoPadding {
      * [logoSize] is given in QR pixels (not bitmap pixels) therefore it
      * is not accurate. [matrix] also is not scaled
      * */
-    fun apply(matrix: QrCodeMatrix, logoSize: Int, logoPos : Int, logoShape: QrLogoShape)
+    fun apply(
+        matrix: QrCodeMatrix,
+        logoSize: Int,
+        logoPos : Int,
+        logoShape: QrLogoShape
+    )
 
     /**
      * Logo will be drawn on top of QR code. QR code might be visible through

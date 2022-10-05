@@ -77,7 +77,11 @@ private class InternalQrOptionsBuilderScope(
     }
 
     override fun logo(block: QrLogoBuilderScope.() -> Unit) {
-        InternalQrLogoBuilderScope(builder).apply(block)
+        InternalQrLogoBuilderScope(
+            builder,
+            width = builder.width,
+            height = builder.height
+        ).apply(block)
     }
 
     override fun background(block: QrBackgroundBuilderScope.() -> Unit) {
@@ -92,24 +96,24 @@ private class InternalQrOptionsBuilderScope(
         InternalQrElementsShapesBuilderScope(builder).apply(block)
     }
 
-    override var shape: QrShape
-        get() = builder.codeShape
-        set(value) {
-            builder.setCodeShape(value)
-        }
+    override var shape: QrShape by builder::codeShape
+//        get() = builder.codeShape
+//        set(value) {
+//            builder.setCodeShape(value)
+//        }
 
-    override val padding: Float
-        get() = builder.padding
+    override val padding: Float by builder::padding
+//        get() = builder.padding
 
-    override val width: Int
-        get() = builder.width
+    override val width: Int by builder::width
+//        get() = builder.width
 
-    override val height: Int
-        get() = builder.height
+    override val height: Int by builder::height
+//        get() = builder.height
 
-    override var errorCorrectionLevel: QrErrorCorrectionLevel
-        get() = builder.errorCorrectionLevel
-        set(value) {
-            builder.setErrorCorrectionLevel(value)
-        }
+    override var errorCorrectionLevel: QrErrorCorrectionLevel by builder::errorCorrectionLevel
+//        get() = builder.errorCorrectionLevel
+//        set(value) {
+//            builder.setErrorCorrectionLevel(value)
+//        }
 }

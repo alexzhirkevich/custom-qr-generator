@@ -75,8 +75,3 @@ fun QrShapeModifier.asLogoShape() : QrLogoShape =
             .invoke(i, j, elementSize, neighbors)
     }
 
-internal object UndefinedLogoShape : QrLogoShape {
-    override fun invoke(
-        i: Int, j: Int, elementSize: Int, neighbors: Neighbors
-    ): Boolean = true
-}

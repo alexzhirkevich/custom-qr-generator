@@ -13,7 +13,7 @@ import kotlinx.serialization.modules.subclass
 /**
  * Way of getting [Bitmap] from [Drawable]
  * */
-sealed interface BitmapScale {
+fun interface BitmapScale {
 
     /**
      * Create [Bitmap] from [Drawable] with desired [width] and [height]
@@ -25,8 +25,8 @@ sealed interface BitmapScale {
      * Resize given image. Image's aspect ratio can be broken
      * */
     @Serializable
-    @SerialName("FitCenter")
-    object FitCenter : BitmapScale {
+    @SerialName("FitXY")
+    object FitXY : BitmapScale {
         override fun scale(drawable: Drawable, width: Int, height: Int): Bitmap {
             return drawable.toBitmap(width,height,
                 config = Bitmap.Config.ARGB_8888)
@@ -34,8 +34,7 @@ sealed interface BitmapScale {
     }
 
     /**
-     * Crop given image and cut necessary bitmap from center. Image's aspect ratio
-     * will be kept.
+     * Crop given image and cut necessary bitmap from center. Image's aspect ratio will be kept.
      * */
     @Serializable
     @SerialName("CenterCrop")
@@ -76,7 +75,7 @@ sealed interface BitmapScale {
         override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
             SerializersModule {
                 polymorphic(BitmapScale::class) {
-                    subclass(FitCenter::class)
+                    subclass(FitXY::class)
                     subclass(CenterCrop::class)
                 }
             }

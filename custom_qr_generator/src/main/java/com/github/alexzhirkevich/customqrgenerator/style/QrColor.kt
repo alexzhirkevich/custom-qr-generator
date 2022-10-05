@@ -118,7 +118,7 @@ fun interface QrColor  {
         @ColorInt val startColor : Int,
         @ColorInt val endColor : Int,
         @FloatRange(from = 0.0)
-        val radius : Float = 1f
+        val radius : Float = sqrt(2f)
     ) : QrColor{
 
         @ColorInt
@@ -203,6 +203,7 @@ fun interface QrColor  {
                     subclass(RadialGradient::class)
                     subclass(CrossingGradient::class)
                 }
+                include(QrColorSeparatePixels.defaultSerializersModule)
             }
         }
     }

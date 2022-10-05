@@ -72,7 +72,7 @@ internal class QrCodeGeneratorImpl(
         options: QrOptions,
         drawBg: Boolean = true,
         drawLogo : Boolean = true
-    ) = coroutineScope{
+    ) = coroutineScope {
         colors.clear()
         with(result) {
 
@@ -129,6 +129,9 @@ internal class QrCodeGeneratorImpl(
                             val bottom = height - y < y
                             val right = height - x < x
 
+                            val idx  = x+error/2 - paddingX + offsetX +
+                                    (y+error/2 - paddingY + offsetY) * width
+
                             val color = when {
                                 pixel == QrCodeMatrix.PixelType.DarkPixel &&
                                         !emptyCorner && options.colors.ball !is QrColor.Unspecified &&
@@ -166,7 +169,7 @@ internal class QrCodeGeneratorImpl(
                                     height = frame.size
                                 )
 
-                                pixel == QrCodeMatrix.PixelType.DarkPixel  && options.colors.dark.invoke(
+                                pixel == QrCodeMatrix.PixelType.DarkPixel && options.colors.dark.invoke(
                                     x-paddingX, y-paddingY, width - 2* paddingX,height - 2* paddingY
                                 ).alpha > 0 -> options.colors.dark.getColor(
                                     x-paddingX, y-paddingY,
@@ -180,8 +183,7 @@ internal class QrCodeGeneratorImpl(
                                     x-paddingX, y-paddingY, width - 2 * paddingX, height - 2* paddingY
                                 )
                                 else -> {
-                                    val bgColor = array[x+error/2- paddingX + offsetX +
-                                            (y+error/2- paddingY + offsetY) * width]
+                                    val bgColor = array[idx]
 
                                     val codeBg = options.colors.highlighting.invoke(
                                         x-paddingX, y-paddingY, width - 2* paddingX,height - 2* paddingY
@@ -192,9 +194,7 @@ internal class QrCodeGeneratorImpl(
                                     else bgColor
                                 }
                             }
-
-                            array[x+error/2 - paddingX + offsetX +
-                                    (y+error/2 - paddingY + offsetY) * width] = color
+                            array[idx] = color
                         }
                     }
                 }

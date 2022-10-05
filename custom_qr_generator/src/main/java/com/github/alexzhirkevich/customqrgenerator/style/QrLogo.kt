@@ -39,7 +39,7 @@ data class QrLogo(
     override val size : Float = 0.2f,
     override val padding : QrLogoPadding = QrLogoPadding.Empty,
     override val shape: QrLogoShape = QrLogoShape.Default,
-    override val scale: BitmapScale = BitmapScale.FitCenter,
+    override val scale: BitmapScale = BitmapScale.FitXY,
     override val backgroundColor : QrColor = QrColor.Unspecified
 ) : IQRLogo {
 
@@ -55,5 +55,9 @@ data class QrLogo(
             )
         }
     }
+}
+
+interface QrLogoBuilder {
+    var logo : QrLogo
 }
 

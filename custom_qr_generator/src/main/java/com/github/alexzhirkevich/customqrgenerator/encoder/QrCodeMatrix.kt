@@ -4,7 +4,7 @@ class QrCodeMatrix(val size : Int){
 
     enum class PixelType { DarkPixel, LightPixel, Background, Logo }
 
-    private val types = MutableList(size * size) {
+    private var types = MutableList(size * size) {
         PixelType.Background
     }
 
@@ -39,5 +39,9 @@ class QrCodeMatrix(val size : Int){
 
 
         types[i + j*size ] = type
+    }
+
+    fun copy() : QrCodeMatrix = QrCodeMatrix(size).apply {
+        types = this@QrCodeMatrix.types.toMutableList()
     }
 }

@@ -17,42 +17,43 @@ sealed interface QrLogoBuilderScope : IQRLogo {
     override var backgroundColor : QrColor
 }
 
-
-
 internal class InternalQrLogoBuilderScope(
-     val builder: QrOptions.Builder
+     val builder: QrLogoBuilder,
+     val width : Int = -1,
+     val height : Int = -1,
+     val codePadding : Float = -1f
 ) : QrLogoBuilderScope {
 
     override var drawable: DrawableSource
         get() = builder.logo.drawable
         set(value) = with(builder) {
-            setLogo(logo.copy(drawable = value))
+            logo = logo.copy(drawable = value)
         }
     override var size: Float
         get() = builder.logo.size
         set(value) = with(builder) {
-            setLogo(logo.copy(size = value))
+            logo = logo.copy(size = value)
         }
 
     override var padding: QrLogoPadding
         get() = builder.logo.padding
         set(value) = with(builder) {
-            setLogo(logo.copy(padding = value))
+            logo =logo.copy(padding = value)
         }
     override var shape: QrLogoShape
         get() = builder.logo.shape
         set(value) = with(builder) {
-            setLogo(logo.copy(shape = value))
+            logo = logo.copy(shape = value)
         }
 
     override var scale: BitmapScale
         get() = builder.logo.scale
         set(value) = with(builder) {
-            setLogo(logo.copy(scale = value))
+            logo = logo.copy(scale = value)
         }
     override var backgroundColor: QrColor
         get() = builder.logo.backgroundColor
         set(value) = with(builder) {
-            setLogo(logo.copy(backgroundColor = value))
+            logo = logo.copy(backgroundColor = value)
         }
 }

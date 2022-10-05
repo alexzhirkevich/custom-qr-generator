@@ -2,8 +2,11 @@ package com.github.alexzhirkevich.customqrgenerator.dsl
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import androidx.annotation.IntRange
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
 import com.github.alexzhirkevich.customqrgenerator.style.*
+import com.github.alexzhirkevich.customqrgenerator.vector.QrCodeDrawable
+import com.github.alexzhirkevich.customqrgenerator.vector.createQrVectorOptions
 import kotlin.math.roundToInt
 import kotlin.reflect.KClass
 
@@ -94,10 +97,37 @@ fun <T : QrShapeModifier> QrLogoBuilderScope.drawShape(
     .let {
         val (size, padding) = when (this) {
             is InternalQrLogoBuilderScope ->
-                minOf(builder.width, builder.height) to builder.padding
+                if (width >= 0 && height >= 0 && codePadding >= 0)
+                    minOf(width, height) to codePadding
+                else throw IllegalStateException(
+                    "use overrideSize inside QrLogoBuilderScope to create custom QrLogoShape for vector QR code"
+                )
         }
         it.toTypedShapeModifier(clazz, size, padding)
     }
+
+/**
+ * Change QR code size for logo scaling.
+ * This function does not affect size of the returned QR code.
+ * This size is used by internal builders to minimize memory
+ * usage for custom logo.
+ *
+ * Should be used inside vector builder to specify view size.
+ * Allows to use custom canvas shapes inside QrCodeDrawable build
+ * @see createQrVectorOptions
+ * @see QrCodeDrawable
+ * */
+fun QrLogoBuilderScope.overrideSize(
+    @IntRange(from = 0) codeWidth : Int,
+    @IntRange(from = 0) codeHeight : Int,
+    block : QrLogoBuilderScope.() -> Unit
+) {
+    when (this) {
+        is InternalQrLogoBuilderScope -> InternalQrLogoBuilderScope(
+            builder, codeWidth, codeHeight, codePadding
+        ).apply(block)
+    }
+}
 
 @Suppress("unchecked_cast")
 private fun <T : QrShapeModifier> QrCanvasShape.toTypedShapeModifier(

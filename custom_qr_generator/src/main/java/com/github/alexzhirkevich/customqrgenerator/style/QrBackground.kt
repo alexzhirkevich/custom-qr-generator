@@ -29,7 +29,7 @@ data class QrBackground(
     override val drawable: DrawableSource = DrawableSource.Empty,
     @FloatRange(from = 0.0, to = 1.0)
     override val alpha : Float = 1f,
-    override val scale: BitmapScale = BitmapScale.FitCenter,
+    override val scale: BitmapScale = BitmapScale.FitXY,
     override val color: QrColor = QrColor.Solid(Color(0xffffffff))
 ) : IQRBackground {
     companion object : SerializationProvider {

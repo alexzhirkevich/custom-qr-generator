@@ -27,12 +27,12 @@ data class QrOptions(
     class Builder(
         @IntRange(from = 0) val width: Int,
         @IntRange(from = 0) val height: Int = width
-    ) {
+    ) : QrLogoBuilder, QrOffsetBuilder {
 
         var padding = .125f
-        var offset = QrOffset.Zero
+        override var offset = QrOffset.Zero
         var colors = QrColors()
-        var logo = QrLogo()
+        override var logo = QrLogo()
         var background = QrBackground()
         var elementsShapes = QrElementsShapes()
         var codeShape: QrShape = QrShape.Default
