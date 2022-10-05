@@ -92,7 +92,7 @@ val options = QrVectorOptions.Builder()
             drawable = DrawableSource
                 .Resource(context, R.drawable.tg),
             size = .25f,
-            padding = QrLogoPadding.Accurate(.2f),
+            padding = QrLogoPadding.Natural(.2f),
             shape = QrLogoShape
                 .Circle
         )
