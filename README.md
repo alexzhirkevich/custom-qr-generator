@@ -93,7 +93,7 @@ val options = QrVectorOptions.Builder()
     .setLogo(
         QrLogo(
             drawable = DrawableSource
-                .Resource(context, R.drawable.tg),
+                .Resource(R.drawable.tg),
             size = .25f,
             padding = QrLogoPadding.Natural(.2f),
             shape = QrLogoShape
@@ -128,7 +128,7 @@ val options = createQrVectorOptions {
 
     logo {
         drawable = DrawableSource
-            .Resource(context, R.drawable.tg)
+            .Resource(R.drawable.tg)
         size = .25f
         padding = QrLogoPadding.Natural(.2f)
         shape = QrLogoShape
@@ -175,13 +175,13 @@ val options = QrOptions.Builder(1024)
     .setBackground(
         QrBackground(
             drawable = DrawableSource
-                  .Resource(context, R.drawable.frame),
+                  .Resource(R.drawable.frame),
         )
     )
     .setLogo(
         QrLogo(
             drawable = DrawableSource
-                  .Resource(context, R.drawable.tg),
+                  .Resource(R.drawable.tg),
             size = .25f,
             padding = QrLogoPadding.Accurate(.2f),
             shape = QrLogoShape
@@ -217,11 +217,11 @@ Or using DSL:
 val options = createQrOptions(1024, 1024, .3f) {
     background {
         drawable = DrawableSource
-            .Resource(context, R.drawable.frame)
+            .Resource(R.drawable.frame)
     }
     logo {
         drawable = DrawableSource
-            .Resource(context, R.drawable.tg)
+            .Resource(R.drawable.tg)
         size = .25f
         padding = QrLogoPadding.Accurate(.2f)
         shape = QrLogoShape
