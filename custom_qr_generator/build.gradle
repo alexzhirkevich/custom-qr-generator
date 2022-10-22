@@ -48,7 +48,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     implementation 'com.google.zxing:core:3.5.0'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0"
 }
 
@@ -59,7 +59,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.alexzhirkevich'
                 artifactId = 'custom-qr-generator'
-                version = '1.4.0'
+                version = '1.5.1'
             }
         }
         repositories {

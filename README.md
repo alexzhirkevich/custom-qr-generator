@@ -49,12 +49,113 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.4.1'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.1'
 }
 ```
 
 
 ## Usage
+
+There are 2 types of QR code image - raster image and vector image.
+
+Both have basic shapes, solid/gradient colors, logo. 
+Vector codes are preffered, if they suit your needs. Raster codes provide more flexibility.
+
+| Comparison | Raster | Vector |
+| --- | --- | --- |
+| Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` |
+| Size | Fixed | Dynamic. Based on `View` size |
+| Speed | Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
+| Logo padding | Empty, shape-accurate and natural (shape accurate without pixels cut) | Only natural (any other types will be converted to natural with the same padding amount)|
+| Default shapes | Wide range of default shapes | Rect, Circle, RoundCorners (will be replenished) |
+| QR code shape | Rect, circle, or your custom | Only rect, cannot be changed |
+| Shapes customization | Using math or canvas drawing (planned migration to Path) | Using `android.graphics.Path` |
+| Colors customization | Unlimited, using math or canvas drawing | Only supported by `android.graphics.Paint` |
+| Background image | Supported | Not provided. Can be created using `LayerDrawable` of your image and code image (with transparent bg color) |
+
+### Vector code (Drawable)
+
+<b>Step 1.</b> Create QR code data. There are multiple QR types: Plain Text, Url, Wi-Fi,
+Email, GeoPos, Profile Cards, Phone, etc.
+
+```kotlin
+val data = QrData.Url("https://example.com")
+```
+
+<b>Step 2.</b> Define styling options using builder:
+
+```kotlin
+// Color(v : Long) and Long.toColor() functions take 
+// 0xAARRGGBB long and convert it to color int.
+// Colors from android resources also can be used.
+val options = QrVectorOptions.Builder()
+    .setPadding(.3f)
+    .setLogo(
+        QrLogo(
+            drawable = DrawableSource
+                .Resource(R.drawable.tg),
+            size = .25f,
+            padding = QrLogoPadding.Natural(.2f),
+            shape = QrLogoShape
+                .Circle
+        )
+    )
+    .setColors(
+        QrVectorColors(
+            dark = QrVectorColor
+                .Solid(Color(0xff345288)),
+        )
+    )
+    .setShapes(
+        QrVectorShapes(
+            darkPixel = QrVectorPixelShape
+                .RoundCorners(.5f),
+            ball = QrVectorBallShape
+                .RoundCorners(.25f),
+            frame = QrVectorFrameShape
+                .RoundCorners(.25f),
+        )
+    )
+    .build()
+```
+
+Or using DSL:
+
+```kotlin
+val options = createQrVectorOptions {
+    
+    padding = .3f
+
+    logo {
+        drawable = DrawableSource
+            .Resource(R.drawable.tg)
+        size = .25f
+        padding = QrLogoPadding.Natural(.2f)
+        shape = QrLogoShape
+            .Circle
+    }
+    colors {
+        dark = QrVectorColor
+            .Solid(Color(0xff345288))
+    }
+    shapes {
+        darkPixel = QrVectorPixelShape
+            .RoundCorners(.5f)
+        ball = QrVectorBallShape
+            .RoundCorners(.25f)
+        frame = QrVectorFrameShape
+            .RoundCorners(.25f)
+    }
+}
+```
+
+<b>Step 3.</b> Create QR code drawable:
+
+```kotlin
+val drawable = QrCodeDrawable(context, data, options)
+```
+
+### Raster code (Bitmap)
 
 <b>Step 1.</b> Create QR code data. There are multiple QR types: Plain Text, Url, Wi-Fi,
 Email, GeoPos, Profile Cards, Phone, etc.
@@ -74,13 +175,13 @@ val options = QrOptions.Builder(1024)
     .setBackground(
         QrBackground(
             drawable = DrawableSource
-                  .Resource(context, R.drawable.frame),
+                  .Resource(R.drawable.frame),
         )
     )
     .setLogo(
         QrLogo(
             drawable = DrawableSource
-                  .Resource(context, R.drawable.tg),
+                  .Resource(R.drawable.tg),
             size = .25f,
             padding = QrLogoPadding.Accurate(.2f),
             shape = QrLogoShape
@@ -116,11 +217,11 @@ Or using DSL:
 val options = createQrOptions(1024, 1024, .3f) {
     background {
         drawable = DrawableSource
-            .Resource(context, R.drawable.frame)
+            .Resource(R.drawable.frame)
     }
     logo {
         drawable = DrawableSource
-            .Resource(context, R.drawable.tg)
+            .Resource(R.drawable.tg)
         size = .25f
         padding = QrLogoPadding.Accurate(.2f)
         shape = QrLogoShape
@@ -154,7 +255,7 @@ val bitmap = generator.generateQrCode(data, options)
 ```
 `QrCodeGenerator` is an interface, but also is a function, that returns generator instance. 
 
-‼️ QR codes must be generated in background thread. Generator supports cancellation with coroutines.
+‼️ Raster QR codes must be generated in BACKGROUND THREAD. Generator supports cancellation with coroutines.
 `generateQrCodeSuspend` is always performed with `Dispatchers.Default`
 
 ```kotlin  
@@ -185,6 +286,8 @@ val generator = QrCodeGenerator(context, threadPolicy)
 and size of the QR code.
 
 ## Customization
+
+### Raster code (Bitmap)
 
 You can easily implement your own shapes and coloring for QR Code in 2 ways:
 using math formulas or by drawing on canvas. Second way is usually slower

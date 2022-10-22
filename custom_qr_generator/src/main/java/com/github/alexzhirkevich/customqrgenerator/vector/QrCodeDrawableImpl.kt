@@ -11,8 +11,10 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
 import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor
+import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.encoder.Encoder
 import kotlinx.coroutines.runBlocking
+import java.nio.charset.Charset
 import kotlin.math.roundToInt
 
 
@@ -20,6 +22,7 @@ fun QrCodeDrawable(
     context: Context,
     data: QrData,
     options: QrVectorOptions,
+    charset: Charset?=null
 ) : Drawable = QrCodeDrawableImpl(context, data, options)
 
 
@@ -30,10 +33,13 @@ internal class QrCodeDrawableImpl(
     private val context: Context,
     data: QrData,
     private val options: QrVectorOptions,
+    charset: Charset?=null
 ) : Drawable() {
 
     private var codeMatrix : QrCodeMatrix = Encoder.encode(
-        data.encode(), options.errorCorrectionLevel.lvl, null)
+        data.encode(), options.errorCorrectionLevel.lvl, charset?.let {
+            mapOf(EncodeHintType.CHARACTER_SET to it)
+        })
         .matrix.toQrMatrix()
 
     private var modifiedMatrix : QrCodeMatrix = codeMatrix
