@@ -1,14 +1,17 @@
 package com.github.alexzhirkevich.customqrgenerator.encoder
 
+import com.github.alexzhirkevich.customqrgenerator.QrData
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.style.QrLogoShape
 import com.github.alexzhirkevich.customqrgenerator.style.QrShapeModifier
+import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.encoder.ByteMatrix
 import com.google.zxing.qrcode.encoder.Encoder
 import com.google.zxing.qrcode.encoder.QRCode
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import java.nio.charset.Charset
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -27,11 +30,16 @@ internal class QrEncoder(private val options: QrOptions)  {
     }
 
     suspend fun encode(
-        contents: String,
+        contents: QrData, charset: Charset?
     ): QrRenderResult = coroutineScope {
 
-        require(contents.isNotEmpty()) { "Found empty contents" }
-        val code = Encoder.encode(contents, options.errorCorrectionLevel.lvl, null)
+        val text = contents.encode()
+        require(text.isNotEmpty()) { "Found empty contents" }
+        val code = Encoder.encode(
+            text, options.errorCorrectionLevel.lvl, charset?.let {
+                mapOf(EncodeHintType.CHARACTER_SET to it)
+            }
+        )
         renderResult(code)
     }
 

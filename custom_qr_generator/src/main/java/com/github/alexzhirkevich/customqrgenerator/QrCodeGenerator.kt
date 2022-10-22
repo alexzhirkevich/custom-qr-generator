@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import java.nio.charset.Charset
 
 /**
  * This exception can be thrown while generating code
@@ -25,14 +26,18 @@ interface QrCodeGenerator {
     /**
      * Generate a QR code bitmap.
      *
+     * @param charset charset used to encode [data].
+     * If [charset] is null, default charset for bytes is used.
      * */
-    fun generateQrCode(data: QrData, options: QrOptions) : Bitmap
+    fun generateQrCode(data: QrData, options: QrOptions, charset: Charset ?= null) : Bitmap
 
     /**
      * A [generateQrCode] wrap with cancellation support.
      * Always performed with [Dispatchers.Default].
+     *
+     * @see generateQrCode
      * */
-    suspend fun generateQrCodeSuspend(data: QrData, options: QrOptions) : Bitmap
+    suspend fun generateQrCodeSuspend(data: QrData, options: QrOptions, charset: Charset ?= null) : Bitmap
 }
 
 /**

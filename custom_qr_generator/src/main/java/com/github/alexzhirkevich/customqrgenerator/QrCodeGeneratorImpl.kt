@@ -13,6 +13,7 @@ import com.github.alexzhirkevich.customqrgenerator.style.QrColor
 import com.github.alexzhirkevich.customqrgenerator.style.QrColorSeparatePixels
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.coroutines.*
+import java.nio.charset.Charset
 import kotlin.math.roundToInt
 
 internal class QrCodeGeneratorImpl(
@@ -20,17 +21,18 @@ internal class QrCodeGeneratorImpl(
     private val threadPolicy: ThreadPolicy
 ) : QrCodeGenerator {
 
-    override fun generateQrCode(data: QrData, options: QrOptions): Bitmap = runBlocking {
-        kotlin.runCatching {
-            createQrCodeInternal(data, options)
-        }.getOrElse {
-            throw QrCodeCreationException(it)
+    override fun generateQrCode(data: QrData, options: QrOptions, charset: Charset?): Bitmap =
+        runBlocking {
+            kotlin.runCatching {
+                createQrCodeInternal(data, options, charset)
+            }.getOrElse {
+                throw QrCodeCreationException(it)
+            }
         }
-    }
-    override suspend fun generateQrCodeSuspend(data: QrData, options: QrOptions): Bitmap =
+    override suspend fun generateQrCodeSuspend(data: QrData, options: QrOptions, charset: Charset?): Bitmap =
         withContext(Dispatchers.Default) {
             kotlin.runCatching {
-                createQrCodeInternal(data, options)
+                createQrCodeInternal(data, options, charset)
             }.getOrElse {
                 throw if (it is CancellationException)
                      it else QrCodeCreationException(cause = it)
@@ -38,11 +40,11 @@ internal class QrCodeGeneratorImpl(
         }
 
     private suspend fun createQrCodeInternal(
-       data : QrData,  options: QrOptions
+        data: QrData, options: QrOptions, charset: Charset?
     ) : Bitmap {
 
         val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
-        val result = encoder.encode(data.encode())
+        val result = encoder.encode(data, charset)
 
         val bmp = Bitmap.createBitmap(
             options.width, options.height,
