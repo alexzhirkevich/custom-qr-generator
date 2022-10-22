@@ -23,7 +23,7 @@ fun QrCodeDrawable(
     data: QrData,
     options: QrVectorOptions,
     charset: Charset?=null
-) : Drawable = QrCodeDrawableImpl(context, data, options)
+) : Drawable = QrCodeDrawableImpl(context, data, options, charset)
 
 
 /**
