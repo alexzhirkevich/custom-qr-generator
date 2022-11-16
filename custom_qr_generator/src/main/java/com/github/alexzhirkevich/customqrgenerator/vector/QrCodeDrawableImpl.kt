@@ -142,11 +142,11 @@ internal class QrCodeDrawableImpl(
                     }
                 }
             }
-        }
-        val nLogo = logo
-        if (nLogo != null){
-            val (x,y) = (w - nLogo.width) /2f to (h - nLogo.height) /2f
-            canvas.drawBitmap(nLogo, x,y, null)
+            val nLogo = logo
+            if (nLogo != null){
+                val (x,y) = (size - nLogo.width) /2f to (size - nLogo.height) /2f
+                drawBitmap(nLogo, x,y, null)
+            }
         }
     }
 
