@@ -49,7 +49,7 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.1'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.2'
 }
 ```
 
@@ -66,10 +66,6 @@ Vector codes are preffered, if they suit your needs. Raster codes provide more f
 | Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` |
 | Size | Fixed | Dynamic. Based on `View` size |
 | Speed | Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
-| Logo padding | Empty, shape-accurate and natural (shape accurate without pixels cut) | Only natural (any other types will be converted to natural with the same padding amount)|
-| Default shapes | Wide range of default shapes | Rect, Circle, RoundCorners (will be replenished) |
-| QR code shape | Rect, circle, or your custom | Only rect, cannot be changed |
-| Shapes customization | Using math or canvas drawing (planned migration to Path) | Using `android.graphics.Path` |
 | Colors customization | Unlimited, using math or canvas drawing | Only supported by `android.graphics.Paint` |
 | Background image | Supported | Not provided. Can be created using `LayerDrawable` of your image and code image (with transparent bg color) |
 
