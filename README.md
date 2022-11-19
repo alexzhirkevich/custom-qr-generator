@@ -91,8 +91,8 @@ val options = QrVectorOptions.Builder()
             drawable = DrawableSource
                 .Resource(R.drawable.tg),
             size = .25f,
-            padding = QrLogoPadding.Natural(.2f),
-            shape = QrLogoShape
+            padding = QrVectorLogoPadding.Natural(.2f),
+            shape = QrVectorLogoShape
                 .Circle
         )
     )
@@ -126,8 +126,8 @@ val options = createQrVectorOptions {
         drawable = DrawableSource
             .Resource(R.drawable.tg)
         size = .25f
-        padding = QrLogoPadding.Natural(.2f)
-        shape = QrLogoShape
+        padding = QrVectorLogoPadding.Natural(.2f)
+        shape = QrVectorLogoShape
             .Circle
     }
     colors {
