@@ -376,7 +376,3 @@ internal class QrCodeDrawableImpl(
         } else null
     }
 }
-
-fun ClosedRange<Int>.containedIn(other: ClosedRange<Int>) =
-    (min(endInclusive, other.endInclusive) - max(start, other.start))
-        .coerceAtLeast(0)
