@@ -51,7 +51,8 @@ data class QrLogo(
                 DrawableSource,
                 QrLogoPadding,
                 QrLogoShape,
-                BitmapScale
+                BitmapScale,
+                QrColor
             )
         }
     }

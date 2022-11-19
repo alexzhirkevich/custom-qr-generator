@@ -20,7 +20,6 @@ fun interface QrPixelShape : QrShapeModifier {
     object Default : QrPixelShape by DefaultShapeModifier
         .asPixelShape()
 
-
     @Serializable
     @SerialName("Circle")
     data class Circle(
@@ -49,7 +48,12 @@ fun interface QrPixelShape : QrShapeModifier {
         val bottomLeft : Boolean = true,
         val bottomRight : Boolean = true
     ) : QrPixelShape by RoundCornersShapeModifier(
-        corner, true, topLeft, topRight, bottomLeft, bottomRight
+        corner = corner,
+        useNeighbors = true,
+        topLeft = topLeft,
+        topRight = topRight,
+        bottomLeft = bottomLeft,
+        bottomRight = bottomRight
     ).asPixelShape()
 
 

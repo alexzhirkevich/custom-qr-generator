@@ -2,7 +2,6 @@ package com.github.alexzhirkevich.customqrgenerator.vector.style
 
 import androidx.annotation.FloatRange
 import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.style.QrPixelShape
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -23,7 +22,7 @@ interface QrVectorPixelShape : QrVectorShapeModifier {
     @Serializable
     @SerialName("Circle")
     data class Circle(
-        @FloatRange(from = 0.0, to = 1.0) val size: Float
+        @FloatRange(from = 0.0, to = 1.0) val size: Float = 1f
     ) : QrVectorPixelShape, QrVectorShapeModifier by CircleVectorShape(size)
 
     @Serializable
@@ -34,6 +33,28 @@ interface QrVectorPixelShape : QrVectorShapeModifier {
 
         override val isDependOnNeighbors: Boolean get() = true
     }
+
+    @Serializable
+    @SerialName("Rhombus")
+    data class Rhombus(
+        @FloatRange(from = 0.0, to = 1.0) private val scale : Float = 1f
+    ): QrVectorPixelShape, QrVectorShapeModifier by RhombusVectorShape(scale)
+
+    @Serializable
+    @SerialName("Star")
+    object Star : QrVectorPixelShape, QrVectorShapeModifier by StarVectorShape
+
+    @Serializable
+    @SerialName("RoundCornersVertical")
+    data class RoundCornersVertical(
+        @FloatRange(from = 0.0, to = 1.0) private val width : Float = 1f
+    ): QrVectorPixelShape, QrVectorShapeModifier by RoundCornersVerticalVectorShape(width)
+
+    @Serializable
+    @SerialName("RoundCornersVertical")
+    data class RoundCornersHorizontal(
+        @FloatRange(from = 0.0, to = 1.0) private val width : Float = 1f
+    ): QrVectorPixelShape, QrVectorShapeModifier by RoundCornersHorizontalVectorShape(width)
 
     companion object : SerializationProvider {
 
@@ -51,6 +72,10 @@ interface QrVectorPixelShape : QrVectorShapeModifier {
                     subclass(Default::class)
                     subclass(Circle::class)
                     subclass(RoundCorners::class)
+                    subclass(RoundCornersVertical::class)
+                    subclass(RoundCornersHorizontal::class)
+                    subclass(Rhombus::class)
+                    subclass(Star::class)
                 }
             }
         }

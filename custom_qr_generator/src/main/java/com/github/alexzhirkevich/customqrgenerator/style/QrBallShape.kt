@@ -19,10 +19,24 @@ fun interface QrBallShape : QrShapeModifier {
     @SerialName("Default")
     object Default : QrBallShape by DefaultShapeModifier.asBallShape()
 
+    /**
+     * Special style for QR code ball.
+     *
+     * [AsPixelShape] with the shape of dark pixels will be used.
+     *
+     *
+     * */
+    @Serializable
+    @SerialName("AsDarkPixels")
+    object AsDarkPixels : QrBallShape {
+        override fun invoke(i: Int, j: Int, elementSize: Int, neighbors: Neighbors): Boolean = false
+    }
 
     /**
      * Special style for QR code ball - ball pixels will be counted as qr pixels.
      * For example, [QrPixelShape.Circle] style will make qr-code ball look like a square of 9 balls.
+     *
+     * Used pixel shape will not depend on [Neighbors]
      * */
     @Serializable
     @SerialName("AsPixelShape")
@@ -78,6 +92,7 @@ fun interface QrBallShape : QrShapeModifier {
                 }
                 polymorphic(QrBallShape::class) {
                     subclass(Default::class)
+                    subclass(AsDarkPixels::class)
                     subclass(AsPixelShape::class)
                     subclass(Circle::class)
                     subclass(Rhombus::class)

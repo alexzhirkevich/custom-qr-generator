@@ -20,7 +20,7 @@ interface IQrVectorColors {
 @Serializable
 data class QrVectorColors(
     override val dark : QrVectorColor = QrVectorColor.Solid(0xff000000.toColor()),
-    override val light : QrVectorColor = QrVectorColor.Solid(0),
+    override val light : QrVectorColor = QrVectorColor.Unspecified,
     override val ball : QrVectorColor = QrVectorColor.Unspecified,
     override val frame : QrVectorColor = QrVectorColor.Unspecified
 ) : IQrVectorColors {

@@ -2,10 +2,15 @@ package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
 import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
+import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
+import com.github.alexzhirkevich.customqrgenerator.encoder.neighbors
+import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
+import com.google.zxing.qrcode.encoder.ByteMatrix
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -34,8 +39,22 @@ fun interface QrFrameShape : QrShapeModifier {
 
 
     /**
+     * Special style for QR code frame.
+     *
+     * [AsPixelShape] with the shape of dark pixels will be used.
+     * */
+    @Serializable
+    @SerialName("AsDarkPixels")
+    object AsDarkPixels : QrFrameShape {
+        override fun invoke(i: Int, j: Int, elementSize: Int, neighbors: Neighbors): Boolean = false
+    }
+
+
+    /**
      * Special style for QR code eye frame - frame pixels will be counted as qr pixels.
      * For example, [QrPixelShape.Circle] style will make eye frame look like a chaplet.
+     *
+     * Used pixel shape will not depend on [Neighbors]
      * */
     @Serializable
     @SerialName("AsPixelShape")
@@ -108,6 +127,7 @@ fun interface QrFrameShape : QrShapeModifier {
                 }
                 polymorphic(QrFrameShape::class) {
                     subclass(Default::class)
+                    subclass(AsDarkPixels::class)
                     subclass(AsPixelShape::class)
                     subclass(Circle::class)
                     subclass(RoundCorners::class)

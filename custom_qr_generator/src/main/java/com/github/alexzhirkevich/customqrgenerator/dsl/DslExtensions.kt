@@ -2,11 +2,10 @@ package com.github.alexzhirkevich.customqrgenerator.dsl
 
 import android.graphics.Canvas
 import android.graphics.Paint
-import androidx.annotation.IntRange
+import android.graphics.Path
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
 import com.github.alexzhirkevich.customqrgenerator.style.*
 import com.github.alexzhirkevich.customqrgenerator.vector.QrCodeDrawable
-import com.github.alexzhirkevich.customqrgenerator.vector.createQrVectorOptions
 import kotlin.math.roundToInt
 import kotlin.reflect.KClass
 
@@ -37,36 +36,114 @@ inline fun QrColorsBuilderScope.draw(
  */
 inline fun QrBackgroundBuilderScope.draw(
     crossinline action : Canvas.() -> Unit
-) : QrColor = QrCanvasColor { canvas -> action(canvas) }
+) : QrColor = QrCanvasColor { action(it) }
     .let {
-        val (width, height)=when(this){
+        val (width, height) = when(this){
             is InternalQrBackgroundBuilderScope -> builder.width to builder.height
         }
         it.toQrColor(width, height)
     }
 
+enum class Efficiency {
+    /**
+     * Memory efficient way
+     * */
+    Memory,
+    /**
+     * Time efficient way
+     * */
+    Time
+}
+
+/**
+ * Create a custom [QrElementsShapes] properties from [Path].
+ *
+ *
+ * ADVICE: [QrCodeDrawable] can be better for you
+ * if you use such type of shape
+ *
+ * @return shape linked to built [QrOptions].
+ * Should not be used for other [QrOptions]
+ * */
+inline fun <reified T : QrShapeModifier> QrElementsShapesBuilderScope.pathShape(
+    efficiency: Efficiency = Efficiency.Time,
+    noinline builder: Path.(size: Int) -> Unit
+): T = pathShape(T::class, efficiency, builder)
+
+/**
+ * @see [pathShape]
+ * */
+@Suppress("unchecked_cast", "deprecation")
+fun <T : QrShapeModifier> QrElementsShapesBuilderScope.pathShape(
+    clazz: KClass<T>,
+    efficiency: Efficiency = Efficiency.Time,
+    builder: Path.(size: Int) -> Unit
+) : T = when(efficiency) {
+    Efficiency.Time -> drawShape(clazz) { drawPaint, _ ->
+        drawPath(Path().apply { builder(minOf(width, height)) }, drawPaint)
+    }
+    Efficiency.Memory -> QrShapeModifierFromPath(builder)
+        .toTypedShapeModifier(clazz)
+}
+
+/**
+ * Create a custom [QrLogoShape] from [Path].
+ *
+ * ADVICE: [QrCodeDrawable] can be better for you
+ * if you use such type of shape
+ *
+ * @return shape linked to built [QrOptions].
+ * Should not be used for other [QrOptions]
+ * */
+inline fun <reified T : QrShapeModifier> QrLogoBuilderScope.pathShape(
+    efficiency: Efficiency = Efficiency.Time,
+    noinline builder: Path.(size: Int) -> Unit
+): T = pathShape(T::class, efficiency, builder)
+
+@Suppress("deprecation")
+fun <T : QrShapeModifier> QrLogoBuilderScope.pathShape(
+    clazz: KClass<T>,
+    efficiency: Efficiency = Efficiency.Time,
+    builder: Path.(size: Int) -> Unit
+) : T = when(efficiency) {
+    Efficiency.Time -> drawShape(clazz) { drawPaint, _ ->
+        drawPath(Path().apply { builder(minOf(width, height)) }, drawPaint)
+    }
+    Efficiency.Memory -> QrShapeModifierFromPath(builder)
+        .toTypedShapeModifier(clazz)
+}
 
 /**
  * Create a custom [QrElementsShapes] properties by drawing on [Canvas].
- * And make sure it is able to scan.
-
+ *
  * @return [T] shape modifier linked to built [QrOptions].
  * Should not be used for other [QrOptions]
  * */
+@Deprecated(
+    "Use pathShape instead",
+    ReplaceWith("pathShape"),
+    level = DeprecationLevel.WARNING
+)
+@Suppress("deprecation")
 inline fun <reified T : QrShapeModifier> QrElementsShapesBuilderScope.drawShape(
-    noinline draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit
+    noinline draw : Canvas.(drawPaint : Paint, erasePaint : Paint) -> Unit
 ): T = drawShape(T::class, draw)
 
 
 /**
  * Create a custom [QrElementsShapes] properties by drawing on [Canvas].
- * And make sure it is able to scan.
-
+ *
  * @return [T] shape modifier linked to built [QrOptions].
  * Should not be used for other [QrOptions]
  * */
+@Deprecated(
+    "Use pathShape instead",
+    ReplaceWith("pathShape"),
+    level = DeprecationLevel.WARNING
+)
+@Suppress("deprecation")
 inline fun <reified T : QrShapeModifier> QrLogoBuilderScope.drawShape(
-    noinline draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit
+    noinline draw : Canvas.(drawPaint : Paint, erasePaint : Paint) -> Unit
 ): T = drawShape(T::class, draw)
 
 
@@ -74,9 +151,14 @@ inline fun <reified T : QrShapeModifier> QrLogoBuilderScope.drawShape(
  * @see [drawShape]
  */
 @Suppress("unchecked_cast")
+@Deprecated(
+    "Use pathShape instead",
+    ReplaceWith("pathShape"),
+    level = DeprecationLevel.WARNING
+)
 fun <T : QrShapeModifier> QrElementsShapesBuilderScope.drawShape(
     clazz: KClass<T>,
-    draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit
+    draw : Canvas.(drawPaint : Paint, erasePaint : Paint) -> Unit
 ) : T = QrCanvasShape(draw)
     .let {
         val (size, padding) = when (this) {
@@ -89,63 +171,50 @@ fun <T : QrShapeModifier> QrElementsShapesBuilderScope.drawShape(
 /**
  * @see [drawShape]
  */
+@Deprecated(
+    "Use pathShape instead",
+    ReplaceWith("pathShape"),
+    level = DeprecationLevel.WARNING
+)
 @Suppress("unchecked_cast")
 fun <T : QrShapeModifier> QrLogoBuilderScope.drawShape(
     clazz: KClass<T>,
-    draw : (canvas : Canvas, drawPaint : Paint, erasePaint : Paint) -> Unit
+    draw : Canvas.(drawPaint : Paint, erasePaint : Paint) -> Unit
 ) : T = QrCanvasShape(draw)
     .let {
         val (size, padding) = when (this) {
             is InternalQrLogoBuilderScope ->
-                if (width >= 0 && height >= 0 && codePadding >= 0)
-                    minOf(width, height) to codePadding
-                else throw IllegalStateException(
-                    "use overrideSize inside QrLogoBuilderScope to create custom QrLogoShape for vector QR code"
-                )
+                minOf(width, height) to codePadding
         }
         it.toTypedShapeModifier(clazz, size, padding)
     }
 
-/**
- * Change QR code size for logo scaling.
- * This function does not affect size of the returned QR code.
- * This size is used by internal builders to minimize memory
- * usage for custom logo.
- *
- * Should be used inside vector builder to specify view size.
- * Allows to use custom canvas shapes inside QrCodeDrawable build
- * @see createQrVectorOptions
- * @see QrCodeDrawable
- * */
-fun QrLogoBuilderScope.overrideSize(
-    @IntRange(from = 0) codeWidth : Int,
-    @IntRange(from = 0) codeHeight : Int,
-    block : QrLogoBuilderScope.() -> Unit
-) {
-    when (this) {
-        is InternalQrLogoBuilderScope -> InternalQrLogoBuilderScope(
-            builder, codeWidth, codeHeight, codePadding
-        ).apply(block)
-    }
-}
+@Suppress("unchecked_cast")
+private fun <T : QrShapeModifier> QrShapeModifier.toTypedShapeModifier(
+    clazz: KClass<T>
+) :T = when(clazz){
+    QrPixelShape::class -> asPixelShape()
+    QrBallShape::class -> asBallShape()
+    QrFrameShape::class -> asFrameShape()
+    QrLogoShape::class -> asLogoShape()
+    QrHighlightingShape::class -> asHighlightingShape()
+    else -> throw IllegalStateException(
+        "Only QrElementsShapes properties and QrLogoShape can be smart casted"
+    )
+} as T
 
 @Suppress("unchecked_cast")
 private fun <T : QrShapeModifier> QrCanvasShape.toTypedShapeModifier(
     clazz: KClass<T>,
     size: Int,
     padding : Float,
-) : T = when (clazz) {
-    QrPixelShape::class -> toShapeModifier((size * (1 - padding) / 21).roundToInt())
-        .asPixelShape()
-    QrBallShape::class -> toShapeModifier((size * (1 - padding) / 7).roundToInt())
-        .asBallShape()
-    QrFrameShape::class -> toShapeModifier((size * (1 - padding) / 3).roundToInt())
-        .asFrameShape()
-    QrLogoShape::class -> toShapeModifier((size * (1 - padding) / 3).roundToInt())
-        .asLogoShape()
-    QrHighlightingShape::class -> toShapeModifier((size * (1 - padding) / 3).roundToInt())
-        .asHighlightingShape()
-    else -> throw IllegalStateException(
-        "Only QrElementsShapes properties and QrLogoShape can be created via drawShape function"
-    )
-} as T
+) : T {
+    val mul = when(clazz){
+        QrPixelShape::class -> 21
+        QrBallShape::class -> 7
+        QrFrameShape::class, QrLogoShape::class -> 3
+        else -> 1
+    }
+    return toShapeModifier((size * (1 - padding) / mul).roundToInt())
+        .toTypedShapeModifier(clazz)
+}

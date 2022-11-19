@@ -6,6 +6,9 @@ import android.graphics.Color
 import android.graphics.Paint
 import androidx.core.graphics.applyCanvas
 
+
+
+
 /**
  * Create custom shape modifier by drawing on [Canvas].
  * This wrapper can be converted to [QrShapeModifier] using
@@ -37,6 +40,7 @@ private class QrCanvasToShapeModifier(
     private val size: Int,
     private val canvasShapeModifier : QrCanvasShape
 ) : QrShapeModifier {
+
     private val drawPaint = Paint().apply {
         color = Color.BLACK
         isAntiAlias = true

@@ -43,7 +43,10 @@ internal class QrCodeGeneratorImpl(
         data: QrData, options: QrOptions, charset: Charset?
     ) : Bitmap {
 
-        val encoder = QrEncoder(options.copy(errorCorrectionLevel = options.actualEcl))
+        val encoder = QrEncoder(options.copy(
+            errorCorrectionLevel = options.errorCorrectionLevel.fit(
+                options.logo.size, options.logo.padding.value
+            )))
         val result = encoder.encode(data, charset)
 
         val bmp = Bitmap.createBitmap(
@@ -60,13 +63,13 @@ internal class QrCodeGeneratorImpl(
 
     private fun QrColor.getColor(
         i : Int, j : Int, width : Int, height : Int, pixelSize : Int
-    ) = if (this is QrColorSeparatePixels){
+    ) = if (this is QrColorSeparatePixels) {
         val ri = i / pixelSize
         val rj = j / pixelSize
-            colors[ri to rj] ?: invoke(ri,rj, width/ pixelSize, height/pixelSize).also {
-                colors[ri to rj] = it
-            }
-        } else invoke(i, j, width, height)
+        colors[ri to rj] ?: invoke(ri, rj, width / pixelSize, height / pixelSize).also {
+            colors[ri to rj] = it
+        }
+    } else invoke(i, j, width, height)
 
 
     private suspend fun Bitmap.drawCode(
@@ -251,15 +254,15 @@ internal class QrCodeGeneratorImpl(
     }
 }
 
-
-private val QrOptions.actualEcl : QrErrorCorrectionLevel
-    get() = if (errorCorrectionLevel == QrErrorCorrectionLevel.Auto) when {
-        logo.size * (1 + logo.padding.value) > .3 ->
-            QrErrorCorrectionLevel.High
-        logo.size * (1 + logo.padding.value) in .2 .. .3
-                && errorCorrectionLevel.lvl < ErrorCorrectionLevel.Q ->
-            QrErrorCorrectionLevel.MediumHigh
-        errorCorrectionLevel.lvl < ErrorCorrectionLevel.M ->
-            QrErrorCorrectionLevel.Medium
-        else -> errorCorrectionLevel
-    } else errorCorrectionLevel
+fun QrErrorCorrectionLevel.fit(
+   logoSize : Float, logoPadding : Float
+) = if (this == QrErrorCorrectionLevel.Auto) when {
+    logoSize * (1 + logoPadding) > .3 ->
+    QrErrorCorrectionLevel.High
+    logoSize * (1 + logoPadding) in .2 .. .3
+            && lvl < ErrorCorrectionLevel.Q ->
+    QrErrorCorrectionLevel.MediumHigh
+    lvl < ErrorCorrectionLevel.M ->
+    QrErrorCorrectionLevel.Medium
+    else -> this
+} else this

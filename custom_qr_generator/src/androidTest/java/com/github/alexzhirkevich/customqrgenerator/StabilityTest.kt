@@ -8,7 +8,6 @@ import com.github.alexzhirkevich.customqrgenerator.style.*
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import org.junit.Assert.*
 import kotlin.random.Random
 
 @RunWith(AndroidJUnit4::class)
@@ -118,7 +117,7 @@ class StabilityTest {
                 drawable = DrawableSource.Resource(android.R.drawable.btn_star_big_on)
                 shape = QrLogoShape.Circle
                 backgroundColor = QrColor.Solid(0xddffffff.toColor())
-                scale = BitmapScale.FitCenter
+                scale = BitmapScale.FitXY
             }
         })
         generator.generateQrCode(data, createQrOptions(512,512){
@@ -135,7 +134,7 @@ class StabilityTest {
         generator.generateQrCode(data, createQrOptions(512,512){
             background {
                 drawable = DrawableSource.Resource(android.R.drawable.btn_star_big_on)
-                scale = BitmapScale.FitCenter
+                scale = BitmapScale.FitXY
                 alpha = .5f
             }
 

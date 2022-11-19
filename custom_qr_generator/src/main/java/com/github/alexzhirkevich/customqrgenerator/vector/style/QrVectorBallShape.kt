@@ -1,7 +1,15 @@
 package com.github.alexzhirkevich.customqrgenerator.vector.style
 
+import android.graphics.Path
 import androidx.annotation.FloatRange
 import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
+import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
+import com.github.alexzhirkevich.customqrgenerator.encoder.neighbors
+import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
+import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
+import com.github.alexzhirkevich.customqrgenerator.style.QrBallShape.AsPixelShape
+import com.github.alexzhirkevich.customqrgenerator.style.QrPixelShape
+import com.google.zxing.qrcode.encoder.ByteMatrix
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,9 +23,52 @@ import kotlinx.serialization.modules.subclass
  * */
 interface QrVectorBallShape : QrVectorShapeModifier {
 
+
     @Serializable
     @SerialName("Default")
     object Default : QrVectorBallShape, QrVectorShapeModifier by DefaultVectorShape
+
+    /**
+     * Special style for QR code ball.
+     *
+     * [AsPixelShape] with the shape of dark pixels will be used.
+     * */
+    @Serializable
+    @SerialName("AsDarkPixels")
+    object AsDarkPixels : QrVectorBallShape {
+        override val isDependOnNeighbors: Boolean get() = true
+
+        override fun createPath(size: Float, neighbors: Neighbors): Path {
+            return Path()
+        }
+    }
+
+    @Serializable
+    @SerialName("AsPixelShape")
+    class AsPixelShape(
+        val pixelShape: QrVectorPixelShape
+    ) : QrVectorBallShape {
+        override val isDependOnNeighbors: Boolean get() = false
+
+        override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
+
+            val matrix =  ByteMatrix(3,3).apply { clear(1) }
+                .toQrMatrix()
+            repeat(3){ i ->
+                repeat(3){ j ->
+                    addPath(
+                        pixelShape.createPath(
+                            size / 3,
+                            matrix.neighbors(i,j)
+                        ),
+                        size/3 * i, size/3 * j
+                    )
+                }
+            }
+        }
+    }
+
+
 
     @Serializable
     @SerialName("Circle")
@@ -31,12 +82,19 @@ interface QrVectorBallShape : QrVectorShapeModifier {
         @FloatRange(from = 0.0, to = .5) val radius: Float
     ) : QrVectorBallShape, QrVectorShapeModifier by RoundCornersVectorShape(radius)
 
+    @Serializable
+    @SerialName("Rhombus")
+    data class Rhombus(
+        @FloatRange(from = 0.0, to = 1.0) private val scale : Float = 1f
+    ) : QrVectorBallShape, QrVectorShapeModifier by RhombusVectorShape(scale)
+
     companion object : SerializationProvider {
 
         @ExperimentalSerializationApi
         @Suppress("unchecked_cast")
         override val defaultSerializersModule: SerializersModule by lazy(LazyThreadSafetyMode.NONE) {
             SerializersModule {
+                include(QrPixelShape.defaultSerializersModule)
                 polymorphicDefaultSerializer(QrVectorBallShape::class){
                     Default.serializer() as SerializationStrategy<QrVectorBallShape>
                 }
@@ -45,8 +103,11 @@ interface QrVectorBallShape : QrVectorShapeModifier {
                 }
                 polymorphic(QrVectorBallShape::class){
                     subclass(Default::class)
+                    subclass(AsDarkPixels::class)
                     subclass(Circle::class)
                     subclass(RoundCorners::class)
+                    subclass(Rhombus::class)
+                    subclass(AsPixelShape::class)
                 }
             }
         }

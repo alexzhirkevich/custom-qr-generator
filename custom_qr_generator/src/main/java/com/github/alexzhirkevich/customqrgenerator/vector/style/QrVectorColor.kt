@@ -1,11 +1,16 @@
 package com.github.alexzhirkevich.customqrgenerator.vector.style
 
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
 import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
+import androidx.core.graphics.alpha
 import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
+import com.github.alexzhirkevich.customqrgenerator.style.Color
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.SerializersModule
@@ -18,17 +23,30 @@ sealed interface QrVectorColor {
     fun createPaint(width: Float, height: Float): Paint
 
     @Serializable
-    object Unspecified : QrVectorColor by Solid(0)
-
-    @Serializable
-    data class Solid(@ColorInt val color: Int) : QrVectorColor {
-        override fun createPaint(width: Float, height: Float) = Paint().apply {
-            color = this@Solid.color
-            isAntiAlias = true
+    @SerialName("Transparent")
+    object Transparent : QrVectorColor {
+        override fun createPaint(width: Float, height: Float): Paint {
+            return Paint().apply {
+                color = Color(0)
+                xfermode = PorterDuffXfermode(PorterDuff.Mode.DST)
+            }
         }
     }
 
     @Serializable
+    @SerialName("Unspecified")
+    object Unspecified : QrVectorColor by Transparent
+
+    @Serializable
+    @SerialName("Solid")
+    data class Solid(@ColorInt val color: Int) : QrVectorColor {
+        override fun createPaint(width: Float, height: Float) = Paint().apply {
+            color = this@Solid.color
+        }
+    }
+
+    @Serializable
+    @SerialName("LinearGradient")
     data class LinearGradient(
         val colors: List<Pair<Float, Int>>,
         val orientation: Orientation
@@ -54,12 +72,12 @@ sealed interface QrVectorColor {
                     colors.map { it.first }.toFloatArray(),
                     Shader.TileMode.CLAMP
                 )
-                isAntiAlias = true
             }
         }
     }
 
     @Serializable
+    @SerialName("RadialGradient")
     data class RadialGradient(
         val colors: List<Pair<Float, Int>>,
         @FloatRange(from = 0.0)
@@ -73,11 +91,11 @@ sealed interface QrVectorColor {
                 colors.map { it.first }.toFloatArray(),
                 Shader.TileMode.CLAMP
             )
-            isAntiAlias = true
         }
     }
 
     @Serializable
+    @SerialName("SweepGradient")
     data class SweepGradient(
         val colors: List<Pair<Float, Int>>
     ) : QrVectorColor {
@@ -109,6 +127,7 @@ sealed interface QrVectorColor {
                     subclass(RadialGradient::class)
                     subclass(LinearGradient::class)
                     subclass(SweepGradient::class)
+                    subclass(Transparent::class)
                 }
             }
         }

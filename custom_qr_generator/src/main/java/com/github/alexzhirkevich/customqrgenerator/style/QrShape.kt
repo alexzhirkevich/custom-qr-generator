@@ -75,14 +75,14 @@ interface QrShape {
 
             for (i in 0 until newSize) {
                 for (j in 0 until newSize) {
-                    if (Random.nextBoolean() &&
-                        (i <= added-1 ||
+                    if ((i <= added-1 ||
                                 j <= added-1 ||
                                 i >= added + size ||
                                 j >= added + size ) &&
                         sqrt((center-i) *(center-i)+(center-j)*(center-j)) <= center
                     ){
-                        newMatrix[i, j] = QrCodeMatrix.PixelType.DarkPixel
+                        newMatrix[i, j] = if (Random.nextBoolean()) QrCodeMatrix.PixelType.DarkPixel
+                            else QrCodeMatrix.PixelType.LightPixel
                     }
                 }
             }
