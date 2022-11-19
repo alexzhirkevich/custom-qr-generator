@@ -100,6 +100,9 @@ val options = QrVectorOptions.Builder()
         QrVectorColors(
             dark = QrVectorColor
                 .Solid(Color(0xff345288)),
+            ball = QrVectorColor.Solid(
+                ContextCompat.getColor(context, R.color.your_color)
+            )
         )
     )
     .setShapes(
@@ -133,6 +136,9 @@ val options = createQrVectorOptions {
     colors {
         dark = QrVectorColor
             .Solid(Color(0xff345288))
+        ball = QrVectorColor.Solid(
+            ContextCompat.getColor(context, R.color.your_color)
+        )
     }
     shapes {
         darkPixel = QrVectorPixelShape
