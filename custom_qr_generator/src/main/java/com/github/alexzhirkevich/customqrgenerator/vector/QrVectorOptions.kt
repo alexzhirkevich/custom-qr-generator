@@ -9,10 +9,7 @@ import com.github.alexzhirkevich.customqrgenerator.style.QrOffsetBuilder
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
 import com.github.alexzhirkevich.customqrgenerator.vector.dsl.InternalQrVectorOptionsBuilderScope
 import com.github.alexzhirkevich.customqrgenerator.vector.dsl.QrVectorOptionsBuilderScope
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColors
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogo
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogoBuilder
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorShapes
+import com.github.alexzhirkevich.customqrgenerator.vector.style.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
@@ -26,6 +23,7 @@ data class QrVectorOptions(
     val codeShape : QrShape,
     val colors : QrVectorColors,
     val logo : QrVectorLogo,
+    val background: QrVectorBackground,
     val errorCorrectionLevel: QrErrorCorrectionLevel
 )  {
     class Builder : QrOffsetBuilder, QrVectorLogoBuilder {
@@ -37,6 +35,7 @@ data class QrVectorOptions(
         var shape : QrShape = QrShape.Default
         var colors : QrVectorColors = QrVectorColors()
         override var logo : QrVectorLogo = QrVectorLogo()
+        var background: QrVectorBackground = QrVectorBackground()
         var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Low
 
         fun setPadding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
@@ -63,12 +62,16 @@ data class QrVectorOptions(
             this.logo = logo
         }
 
+        fun setBackground(background: QrVectorBackground) = apply {
+            this.background = background
+        }
+
         fun setErrorCorrectionLevel(errorCorrectionLevel: QrErrorCorrectionLevel) = apply {
             this.errorCorrectionLevel = errorCorrectionLevel
         }
 
         fun build() : QrVectorOptions = QrVectorOptions(
-            padding, offset, shapes, shape, colors, logo, errorCorrectionLevel
+            padding, offset, shapes, shape, colors, logo, background, errorCorrectionLevel
         )
     }
 
@@ -76,7 +79,7 @@ data class QrVectorOptions(
         @ExperimentalSerializationApi
         override val defaultSerializersModule: SerializersModule by lazy(LazyThreadSafetyMode.NONE) {
             SerializersModuleFromProviders(
-                QrVectorShapes, QrVectorColors, QrVectorLogo, QrShape
+                QrVectorShapes, QrVectorColors, QrVectorLogo, QrShape, QrVectorBackground
             )
         }
     }

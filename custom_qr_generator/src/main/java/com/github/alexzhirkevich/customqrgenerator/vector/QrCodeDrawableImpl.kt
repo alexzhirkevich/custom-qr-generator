@@ -20,9 +20,9 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.encoder.Encoder
 import kotlinx.coroutines.runBlocking
 import java.nio.charset.Charset
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.log
 import kotlin.math.roundToInt
+import kotlin.system.measureTimeMillis
 
 /**
  * Vector QR code image
@@ -65,6 +65,37 @@ internal class QrCodeDrawableImpl(
         options.logo.drawable.get(context)
     }
 
+    private val backgroundDrawable = runBlocking {
+        options.background.drawable.get(context)
+    }
+
+    private val ballShape = options.shapes.ball.takeIf {
+        it !is QrVectorBallShape.AsDarkPixels
+    } ?: QrVectorBallShape.AsPixelShape(options.shapes.darkPixel)
+
+    private val frameShape = options.shapes.frame.takeIf {
+        it !is QrVectorFrameShape.AsDarkPixels
+    } ?: QrVectorFrameShape.AsPixelShape(options.shapes.darkPixel)
+
+    private var size : Float = 0f
+
+    private var pixelSize : Float = 0f
+    private var ballPath : Path = Path()
+    private var framePath : Path = Path()
+
+    private var logo : Bitmap?= null
+    private var logoBg : Bitmap?= null
+
+    private var background : Bitmap?=null
+
+    private var darkPixelPath : Path = Path()
+    private var lightPixelPath : Path = Path()
+
+    private var darkPixelPaint : Paint = Paint()
+    private var lightPixelPaint: Paint = Paint()
+    private var framePaint: Paint = Paint()
+    private var ballPaint: Paint = Paint()
+
     override fun setAlpha(alpha: Int) {
         mAlpha = alpha
         listOf(darkPixelPaint, lightPixelPaint,ballPaint,framePaint)
@@ -87,31 +118,6 @@ internal class QrCodeDrawableImpl(
     )
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
 
-    private val ballShape = options.shapes.ball.takeIf {
-        it !is QrVectorBallShape.AsDarkPixels
-    } ?: QrVectorBallShape.AsPixelShape(options.shapes.darkPixel)
-
-    private val frameShape = options.shapes.frame.takeIf {
-        it !is QrVectorFrameShape.AsDarkPixels
-    } ?: QrVectorFrameShape.AsPixelShape(options.shapes.darkPixel)
-
-    private var size : Float = 0f
-
-    private var pixelSize : Float = 0f
-    private var ballPath : Path = Path()
-    private var framePath : Path = Path()
-
-    private var logo : Bitmap?= null
-    private var logoBg : Bitmap?= null
-
-    private var darkPixelPath : Path = Path()
-    private var lightPixelPath : Path = Path()
-
-    private var darkPixelPaint : Paint = Paint()
-    private var lightPixelPaint: Paint = Paint()
-    private var framePaint: Paint = Paint()
-    private var ballPaint: Paint = Paint()
-
     override fun setBounds(bounds: Rect) {
         super.setBounds(bounds)
         resize()
@@ -124,12 +130,18 @@ internal class QrCodeDrawableImpl(
 
     override fun draw(canvas: Canvas) {
 
+        measureTimeMillis {
         if (pixelSize < Float.MIN_VALUE)
             return
 
         val (w,h) = with(bounds){ width() to height() }
         val (offsetX, offsetY) = with(options.offset){ listOf(x,y) }
             .map { it.coerceIn(-1f, 1f) + 1 }
+
+        canvas.drawPaint(options.background.color.createPaint(w.toFloat(),h.toFloat()))
+        background?.let {
+            canvas.drawBitmap(it, 0f, 0f, null)
+        }
 
         canvas.withTranslation(
             (w - size)/2f * offsetX,
@@ -180,199 +192,201 @@ internal class QrCodeDrawableImpl(
                 drawBitmap(nLogoBg, x,y, null)
             }
         }
-
-
+        }.let { println("Draw time: $it") }
     }
 
     private fun resize(){
-        size = minOf(bounds.width(), bounds.height()) *
-                (1 - options.padding.coerceIn(0f,.5f))
-        pixelSize = size / codeMatrix.size
+        measureTimeMillis {
+            size = minOf(bounds.width(), bounds.height()) *
+                    (1 - options.padding.coerceIn(0f, .5f))
+            pixelSize = size / codeMatrix.size
 
-        ballPath = ballShape.createPath(pixelSize * 3f, Neighbors.Empty)
-        framePath = frameShape.createPath(pixelSize * 7f, Neighbors.Empty)
+            ballPath = ballShape.createPath(pixelSize * 3f, Neighbors.Empty)
+            framePath = frameShape.createPath(pixelSize * 7f, Neighbors.Empty)
 
-        val singleDarkPixelPath = with(options.shapes.darkPixel) {
-            if (isDependOnNeighbors)
-                null else createPath(
-                pixelSize,
-                Neighbors.Empty
-            )
-        }
-        val singleLightPixelPath = with(options.shapes.lightPixel){
-            if (isDependOnNeighbors)
-                null else createPath(pixelSize, Neighbors.Empty)
-        }
-        darkPixelPaint = options.colors.dark.createPaint(
+            val singleDarkPixelPath = with(options.shapes.darkPixel) {
+                if (isDependOnNeighbors)
+                    null else createPath(
+                    pixelSize,
+                    Neighbors.Empty
+                )
+            }
+            val singleLightPixelPath = with(options.shapes.lightPixel) {
+                if (isDependOnNeighbors)
+                    null else createPath(pixelSize, Neighbors.Empty)
+            }
+            darkPixelPaint = options.colors.dark.createPaint(
                 codeMatrix.size * pixelSize,
                 codeMatrix.size * pixelSize,
-        ).apply { isAntiAlias = true }
-        lightPixelPaint = options.colors.light.createPaint(
+            ).apply { isAntiAlias = true }
+            lightPixelPaint = options.colors.light.createPaint(
                 codeMatrix.size * pixelSize,
                 codeMatrix.size * pixelSize
-        ).apply { isAntiAlias = true }
-        ballPaint = options.colors.ball.createPaint(
+            ).apply { isAntiAlias = true }
+            ballPaint = options.colors.ball.createPaint(
                 pixelSize * 3f,
                 pixelSize * 3f,
-        ).apply { isAntiAlias = true }
-        framePaint = options.colors.frame.createPaint(
+            ).apply { isAntiAlias = true }
+            framePaint = options.colors.frame.createPaint(
                 pixelSize * 7f,
                 pixelSize * 7f,
-        ).apply { isAntiAlias = true }
+            ).apply { isAntiAlias = true }
 
-        colorFilter = mColorFilter
-        alpha = mAlpha
+            colorFilter = mColorFilter
+            alpha = mAlpha
 
-        darkPixelPath = Path()
-        lightPixelPath = Path()
+            darkPixelPath = Path()
+            lightPixelPath = Path()
 
-        val logoSize = size * options.logo.size
-        val logoBgSize = (logoSize * (1 + options.logo.padding.value)).roundToInt()
+            val logoSize = size * options.logo.size
+            val logoBgSize = (logoSize * (1 + options.logo.padding.value)).roundToInt()
 
-        val bgPath1 = options.logo.shape.createPath(
-            size = logoBgSize.toFloat(),
-            neighbors = Neighbors.Empty
-        ).apply {
-            transform(translationMatrix(
-                (size - logoBgSize) / 2f,
-                (size - logoBgSize) / 2f,
-            ))
-        }
-        repeat(2) {
-            for (x in 0 until codeMatrix.size) {
-                for (y in 0 until codeMatrix.size) {
-
-                    val neighbors = codeMatrix.neighbors(x, y)
-
-                    val darkPath = singleDarkPixelPath ?: options.shapes.darkPixel
-                        .createPath(pixelSize, neighbors)
-                    val lightPath = singleLightPixelPath ?: options.shapes.lightPixel
-                        .createPath(pixelSize, neighbors)
-
-
-                    when {
-                        options.colors.frame is QrVectorColor.Unspecified &&
-                                x - shapeIncrease == 0 && y - shapeIncrease == 0 ||
-                                x - shapeIncrease == 0 && y + shapeIncrease == codeMatrix.size - 7 ||
-                                x + shapeIncrease == codeMatrix.size - 7 && y - shapeIncrease == 0 -> darkPixelPath.addPath(
-                            framePath,
-                            x * pixelSize,
-                            y * pixelSize
-                        )
-
-                        options.colors.ball is QrVectorColor.Unspecified &&
-                                x - shapeIncrease == 2 && y + shapeIncrease == codeMatrix.size - 5 ||
-                                x + shapeIncrease == codeMatrix.size - 5 && y - shapeIncrease == 2 ||
-                                x - shapeIncrease == 2 && y - shapeIncrease == 2 -> {
-                            darkPixelPath.addPath(
-                                ballPath,
-                                x.toFloat() * pixelSize,
-                                y.toFloat() * pixelSize
-                            )
-                        }
-
-                        x - shapeIncrease in -1..7 && y - shapeIncrease in -1..7 ||
-                                x - shapeIncrease in -1..7 && y + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 ||
-                                x + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 && y - shapeIncrease in -1..7 -> Unit
-
-                        options.logo.padding is QrVectorLogoPadding.Natural &&
-                                (codeMatrix[x, y] == QrCodeMatrix.PixelType.DarkPixel &&
-                                        bgPath1.and(
-                                            Path(darkPath).apply {
-                                                transform(
-                                                    translationMatrix(
-                                                        x * pixelSize,
-                                                        y * pixelSize
-                                                    )
-                                                )
-                                            }).isEmpty.not()) ||
-                                (codeMatrix[x, y] == QrCodeMatrix.PixelType.LightPixel &&
-                                        bgPath1.and(
-                                            Path(lightPath).apply {
-                                                transform(
-                                                    translationMatrix(
-                                                        x * pixelSize,
-                                                        y * pixelSize
-                                                    )
-                                                )
-                                            }).isEmpty.not()
-                                        ) -> {
-                            codeMatrix[x, y] = QrCodeMatrix.PixelType.Logo
-                        }
-
-                        else -> when (codeMatrix[x, y]) {
-                            QrCodeMatrix.PixelType.DarkPixel ->
-                                darkPixelPath.addPath(
-                                    darkPath,
-                                    x.toFloat() * pixelSize,
-                                    y.toFloat() * pixelSize
-                                )
-                            QrCodeMatrix.PixelType.LightPixel ->
-                                lightPixelPath.addPath(
-                                    lightPath,
-                                    x.toFloat() * pixelSize,
-                                    y.toFloat() * pixelSize
-                                )
-                        }
-                    }
-                }
-            }
-        }
-
-        if (options.logo.padding is QrVectorLogoPadding.Accurate) {
-
-            val bgPath = options.logo.shape.createPath(
+            val bgPath1 = options.logo.shape.createPath(
                 size = logoBgSize.toFloat(),
                 neighbors = Neighbors.Empty
-            )
-
-            logoBg =if (options.logo.backgroundColor != QrVectorColor.Unspecified) {
-
-                 Bitmap.createBitmap(
-                    logoBgSize, logoBgSize, Bitmap.Config.ARGB_8888
-                ).applyCanvas {
-                    drawPath(
-                        bgPath,
-                        options.logo.backgroundColor.createPaint(
-                            logoBgSize.toFloat(), logoBgSize.toFloat()
-                        )
-                    )
-                }
-            } else {
-                bgPath.transform(
+            ).apply {
+                transform(
                     translationMatrix(
                         (size - logoBgSize) / 2f,
                         (size - logoBgSize) / 2f,
                     )
                 )
-                darkPixelPath -= bgPath
-                lightPixelPath -= bgPath
-                null
             }
-        }
+            repeat(2) {
+                for (x in 0 until codeMatrix.size) {
+                    for (y in 0 until codeMatrix.size) {
 
-        logo = if (options.logo.drawable != DrawableSource.Empty) {
-            options.logo.scale.scale(
-                logoDrawable, logoSize.roundToInt(), logoSize.roundToInt()
-            ).applyCanvas {
-                val clip = Path().apply { addRect(0f, 0f, logoSize, logoSize, Path.Direction.CW) }-
-                        (options.logo.shape.createPath(logoSize, Neighbors.Empty))
+                        val neighbors = codeMatrix.neighbors(x, y)
 
-                withClip(clip) {
-                    drawRect(0f,0f, width.toFloat(), height.toFloat(), Paint().apply {
-                        color = Color.TRANSPARENT
-                        xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
-                        isAntiAlias = true
-                    })
+                        val darkPath = singleDarkPixelPath ?: options.shapes.darkPixel
+                            .createPath(pixelSize, neighbors)
+                        val lightPath = singleLightPixelPath ?: options.shapes.lightPixel
+                            .createPath(pixelSize, neighbors)
+
+
+                        when {
+                            options.colors.frame is QrVectorColor.Unspecified &&
+                                    x - shapeIncrease == 0 && y - shapeIncrease == 0 ||
+                                    x - shapeIncrease == 0 && y + shapeIncrease == codeMatrix.size - 7 ||
+                                    x + shapeIncrease == codeMatrix.size - 7 && y - shapeIncrease == 0 -> darkPixelPath.addPath(
+                                framePath,
+                                x * pixelSize,
+                                y * pixelSize
+                            )
+
+                            options.colors.ball is QrVectorColor.Unspecified &&
+                                    x - shapeIncrease == 2 && y + shapeIncrease == codeMatrix.size - 5 ||
+                                    x + shapeIncrease == codeMatrix.size - 5 && y - shapeIncrease == 2 ||
+                                    x - shapeIncrease == 2 && y - shapeIncrease == 2 -> {
+                                darkPixelPath.addPath(
+                                    ballPath,
+                                    x.toFloat() * pixelSize,
+                                    y.toFloat() * pixelSize
+                                )
+                            }
+
+                            x - shapeIncrease in -1..7 && y - shapeIncrease in -1..7 ||
+                                    x - shapeIncrease in -1..7 && y + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 ||
+                                    x + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 && y - shapeIncrease in -1..7 -> Unit
+
+                            options.logo.padding is QrVectorLogoPadding.Natural &&
+                                    (codeMatrix[x, y] == QrCodeMatrix.PixelType.DarkPixel &&
+                                            bgPath1.and(
+                                                Path(darkPath).apply {
+                                                    transform(
+                                                        translationMatrix(
+                                                            x * pixelSize,
+                                                            y * pixelSize
+                                                        )
+                                                    )
+                                                }).isEmpty.not()) ||
+                                    (codeMatrix[x, y] == QrCodeMatrix.PixelType.LightPixel &&
+                                            bgPath1.and(
+                                                Path(lightPath).apply {
+                                                    transform(
+                                                        translationMatrix(
+                                                            x * pixelSize,
+                                                            y * pixelSize
+                                                        )
+                                                    )
+                                                }).isEmpty.not()
+                                            ) -> {
+                                codeMatrix[x, y] = QrCodeMatrix.PixelType.Logo
+                            }
+
+                            else -> when (codeMatrix[x, y]) {
+                                QrCodeMatrix.PixelType.DarkPixel ->
+                                    darkPixelPath.addPath(
+                                        darkPath,
+                                        x.toFloat() * pixelSize,
+                                        y.toFloat() * pixelSize
+                                    )
+                                QrCodeMatrix.PixelType.LightPixel ->
+                                    lightPixelPath.addPath(
+                                        lightPath,
+                                        x.toFloat() * pixelSize,
+                                        y.toFloat() * pixelSize
+                                    )
+                            }
+                        }
+                    }
                 }
             }
 
-//            Bitmap.createBitmap(bmp.width, bmp.height, Bitmap.Config.ARGB_8888).applyCanvas {
-//                withClip() {
-//                    drawBitmap(bmp, 0f, 0f, null)
-//                    this.drawColor(Color.TRANSPARENT)
-//                }
-//            }
-        } else null
+            if (options.logo.padding is QrVectorLogoPadding.Accurate) {
+
+                val bgPath = options.logo.shape.createPath(
+                    size = logoBgSize.toFloat(),
+                    neighbors = Neighbors.Empty
+                )
+
+                logoBg = if (options.logo.backgroundColor != QrVectorColor.Unspecified) {
+
+                    Bitmap.createBitmap(
+                        logoBgSize, logoBgSize, Bitmap.Config.ARGB_8888
+                    ).applyCanvas {
+                        drawPath(
+                            bgPath,
+                            options.logo.backgroundColor.createPaint(
+                                logoBgSize.toFloat(), logoBgSize.toFloat()
+                            )
+                        )
+                    }
+                } else {
+                    bgPath.transform(
+                        translationMatrix(
+                            (size - logoBgSize) / 2f,
+                            (size - logoBgSize) / 2f,
+                        )
+                    )
+                    darkPixelPath -= bgPath
+                    lightPixelPath -= bgPath
+                    null
+                }
+            }
+
+            logo = if (options.logo.drawable != DrawableSource.Empty) {
+                options.logo.scale.scale(
+                    logoDrawable, logoSize.roundToInt(), logoSize.roundToInt()
+                ).applyCanvas {
+                    val clip =
+                        Path().apply { addRect(0f, 0f, logoSize, logoSize, Path.Direction.CW) } -
+                                (options.logo.shape.createPath(logoSize, Neighbors.Empty))
+
+                    withClip(clip) {
+                        drawRect(0f, 0f, width.toFloat(), height.toFloat(), Paint().apply {
+                            color = Color.TRANSPARENT
+                            xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
+                            isAntiAlias = true
+                        })
+                    }
+                }
+
+            } else null
+
+            background = if (options.background.drawable != DrawableSource.Empty) {
+                options.background.scale.scale(backgroundDrawable, bounds.width(), bounds.height())
+            } else null
+        }.let { print("Resize time: $it") }
     }
 }

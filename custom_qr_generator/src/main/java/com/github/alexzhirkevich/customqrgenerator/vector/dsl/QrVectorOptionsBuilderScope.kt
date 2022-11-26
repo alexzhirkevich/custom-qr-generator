@@ -15,6 +15,7 @@ sealed interface QrVectorOptionsBuilderScope  {
     fun offset(block: QrOffsetBuilderScope.() -> Unit)
     fun shapes(block: QrVectorShapesBuilderScope.() -> Unit)
     fun colors(block: QrVectorColorsBuilderScope.() -> Unit)
+    fun background(block: QrVectorBackgroundBuilderScope.() -> Unit)
     fun logo(block: QrVectorLogoBuilderScope.() -> Unit)
 }
 
@@ -38,6 +39,10 @@ internal class InternalQrVectorOptionsBuilderScope(
 
     override fun colors(block: QrVectorColorsBuilderScope.() -> Unit) {
         InternalQrVectorColorsBuilderScope(builder).apply(block)
+    }
+
+    override fun background(block: QrVectorBackgroundBuilderScope.() -> Unit) {
+        InternalQrVectorBackgroundBuilderScope(builder).apply(block)
     }
 
     override fun logo(block: QrVectorLogoBuilderScope.() -> Unit) {

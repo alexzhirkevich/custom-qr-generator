@@ -27,7 +27,7 @@ interface QrVectorLogoShape : QrVectorShapeModifier {
     ) : QrVectorLogoShape, QrVectorShapeModifier by RoundCornersVectorShape(radius)
 
     @Serializable
-    @SerialName("Default")
+    @SerialName("Rhombus")
     object Rhombus : QrVectorLogoShape, QrVectorShapeModifier by RhombusVectorShape(1f)
 
     companion object : SerializationProvider {
@@ -51,5 +51,4 @@ interface QrVectorLogoShape : QrVectorShapeModifier {
             }
         }
     }
-
 }
