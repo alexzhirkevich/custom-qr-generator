@@ -56,17 +56,16 @@ dependencies {
 
 ## Usage
 
-There are 2 types of QR code image - raster image and vector image.
+There are 2 types of QR code image - raster (deprecated) image and vector image.
 
-Both have basic shapes, solid/gradient colors, logo. 
-Vector codes are preffered, if they suit your needs. Raster codes provide more flexibility.
-
-|  | Raster | Vector |
+|  | Raster (deprecated)| Vector |
 | --- | --- | --- |
 | Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` |
 | Size | Fixed | Dynamic. Based on `View` size |
 | Speed | Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
 | Colors customization | Unlimited, using math or canvas drawing | Only supported by `android.graphics.Paint` |
+
+---
 
 ### Vector code (Drawable)
 
@@ -167,7 +166,11 @@ val options = createQrVectorOptions {
 val drawable = QrCodeDrawable(context, data, options)
 ```
 
+---
+
 ### Raster code (Bitmap)
+
+‼️ Deprecated, use Vector codes instead
 
 <b>Step 1.</b> Create QR code data. There are multiple QR types: Plain Text, Url, Wi-Fi,
 Email, GeoPos, Profile Cards, Phone, etc.
