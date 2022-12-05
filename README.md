@@ -64,7 +64,7 @@ There are 2 types of QR code image - raster (deprecated) image and vector image.
 | Size | ❌ Fixed | ✅ Dynamic. Based on `View` size |
 | Speed | ❌ Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | ✅ Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
 
-P.S. If you need a <b>Bitmap</b> for Jetpack Compose or smth, it still will be faster to <b>convert Drawable QR code to Bitmap</b> rather then use Raster code.
+P.S. If you need a <b>Bitmap</b> for Jetpack Compose or smth, it still will be much faster to <b>convert Drawable QR code to Bitmap</b> rather than use Raster code.
 
 ---
 
