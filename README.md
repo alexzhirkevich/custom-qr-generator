@@ -86,7 +86,7 @@ val data = QrData.Url("https://example.com")
 val options = QrVectorOptions.Builder()
     .setPadding(.3f)
     .setLogo(
-        QrLogo(
+        QrVectorLogo(
             drawable = DrawableSource
                 .Resource(R.drawable.tg),
             size = .25f,
