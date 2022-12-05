@@ -56,13 +56,15 @@ dependencies {
 
 ## Usage
 
-There are 2 types of QR code image - raster (deprecated) image and vector image.
+There are 2 types of QR code image - raster (deprecated) image and vector image. 
 
 |  | Raster (deprecated)| Vector |
 | --- | --- | --- |
 | Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` |
 | Size | ❌ Fixed | ✅ Dynamic. Based on `View` size |
 | Speed | ❌ Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | ✅ Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
+
+P.S. If you need a <b>Bitmap</b> for Jetpack Compose or smth, it still will be faster to <b>convert Drawable QR code to Bitmap</b> rather then use Raster code.
 
 ---
 
@@ -169,7 +171,9 @@ val drawable = QrCodeDrawable(context, data, options)
 
 ### Raster code (Bitmap)
 
-‼️ <b> Deprecated, use Vector codes instead </b>
+
+<details>
+<summary>Deprecated (click to show)</summary>
 
 <b>Step 1.</b> Create QR code data. There are multiple QR types: Plain Text, Url, Wi-Fi,
 Email, GeoPos, Profile Cards, Phone, etc.
@@ -299,9 +303,56 @@ val generator = QrCodeGenerator(context, threadPolicy)
 ‼️ <b>NOTE: Use wisely! More threads doesn't mean more performance!</b> It depends on device
 and size of the QR code.
 
+</details>
+
 ## Customization
 
-### Raster code (Bitmap)
+### Vector code (Drawable)
+
+Shapes of QR code elements can be customized using `android.graphics.Path`.
+
+For example, this is an implementation of circle pixels:
+
+<img src="./screenshots/circlepixels.png" width="230" height="230">
+
+```kotlin
+object Circle : QrVectorPixelShape {
+
+    override val isDependOnNeighbors: Boolean get() = false
+
+    override fun createPath(size: Float, neighbors: Neighbors): Path = 
+      Path().apply {
+        addCircle(size/2f, size/2f, size/2, Path.Direction.CW)
+      }
+}
+```
+
+Colors of QR code elements can be customized using `android.graphics.Paint`.
+
+For example, this is an implementation of sweep gradient:
+
+```kotlin
+ class SweepGradient(
+        val colors: List<Pair<Float, Int>>
+    ) : QrVectorColor {
+
+        override fun createPaint(width: Float, height: Float): Paint =
+          Paint().apply {
+            shader = android.graphics.SweepGradient(
+                width / 2, height / 2,
+                colors.map { it.second }.toIntArray(),
+                colors.map { it.first }.toFloatArray()
+            )
+          }
+    }
+    
+```
+
+
+### Raster code (Bitmap) 
+
+<details>
+<summary>Deprecated (click to show)</summary>
 
 You can easily implement your own shapes and coloring for QR Code in 2 ways:
 using math formulas or by drawing on canvas. Second way is usually slower
@@ -484,9 +535,11 @@ val options =  createQrOptions(1024, .2f) {
 
 ‼️ NOTE: Created color should not be used with other QrOptions with larger size!
 
+</details>
+
 ## Serialization
 
-`QrOptions` and `QrData` can be serialized using kotlinx-serialization (actually any class
+`QrOptions`, `QrVectorOptions` and `QrData` can be serialized using kotlinx-serialization (actually any class
 from style package can be serialized). All options and QrData classes have `@Serializable` annotation.
 Every class with interface preperties (or property interfaces themselve) have companion object with
 `defaultSerializersModule` property. It provides kotlinx-serialization `SerializersModule` that
