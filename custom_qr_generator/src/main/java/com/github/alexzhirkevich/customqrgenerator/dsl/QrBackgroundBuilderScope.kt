@@ -24,24 +24,24 @@ class InternalQrBackgroundBuilderScope internal constructor(
     override var drawable: DrawableSource
         get() = builder.background.drawable
         set(value) = with(builder) {
-            setBackground(background.copy(drawable = value))
+            background(background.copy(drawable = value))
         }
 
     override var alpha: Float
         get() = builder.background.alpha
         set(value) = with(builder) {
-            setBackground(background.copy(alpha = value))
+            background(background.copy(alpha = value))
         }
 
     override var scale: BitmapScale
         get() = builder.background.scale
         set(value) = with(builder) {
-            setBackground(background.copy(scale = value))
+            background(background.copy(scale = value))
         }
 
     override var color: QrColor
         get() = builder.background.color
         set(value) = with(builder) {
-            setBackground(background.copy(color = value))
+            background(background.copy(color = value))
         }
 }

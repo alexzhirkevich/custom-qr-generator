@@ -38,35 +38,35 @@ data class QrVectorOptions(
         var background: QrVectorBackground = QrVectorBackground()
         var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Low
 
-        fun setPadding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
+        fun padding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
             this.padding = padding
         }
 
-        fun setOffset(offset: QrOffset) = apply {
+        fun offset(offset: QrOffset) = apply {
             this.offset = offset
         }
 
-        fun setShapes(shapes: QrVectorShapes) = apply {
+        fun shapes(shapes: QrVectorShapes) = apply {
             this.shapes = shapes
         }
 
-        fun setColors(colors: QrVectorColors) = apply {
+        fun colors(colors: QrVectorColors) = apply {
             this.colors = colors
         }
 
-        fun setCodeShape(shape: QrShape) = apply{
+        fun codeShape(shape: QrShape) = apply{
             this.shape = shape
         }
 
-        fun setLogo(logo: QrVectorLogo) = apply {
+        fun logo(logo: QrVectorLogo) = apply {
             this.logo = logo
         }
 
-        fun setBackground(background: QrVectorBackground) = apply {
+        fun background(background: QrVectorBackground) = apply {
             this.background = background
         }
 
-        fun setErrorCorrectionLevel(errorCorrectionLevel: QrErrorCorrectionLevel) = apply {
+        fun errorCorrectionLevel(errorCorrectionLevel: QrErrorCorrectionLevel) = apply {
             this.errorCorrectionLevel = errorCorrectionLevel
         }
 

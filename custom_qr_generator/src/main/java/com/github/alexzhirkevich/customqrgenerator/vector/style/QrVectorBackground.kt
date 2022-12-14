@@ -19,7 +19,7 @@ interface IQRVectorBackground  {
 data class QrVectorBackground(
     override val drawable: DrawableSource = DrawableSource.Empty,
     override val scale: BitmapScale = BitmapScale.FitXY,
-    override val color : QrVectorColor = QrVectorColor.Unspecified
+    override val color : QrVectorColor = QrVectorColor.Transparent
 ) : IQRVectorBackground{
 
     companion object : SerializationProvider {

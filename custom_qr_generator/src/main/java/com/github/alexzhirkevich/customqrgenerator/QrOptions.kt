@@ -46,35 +46,35 @@ data class QrOptions(
         /**
          * Padding of the QR code relative to [width] and [height].
          * */
-        fun setPadding(@FloatRange(from = 0.0, to = .5) padding: Float) = apply {
+        fun padding(@FloatRange(from = 0.0, to = .5) padding: Float) = apply {
             this.padding = padding
         }
 
-        fun setOffset(offset: QrOffset) = apply {
+        fun offset(offset: QrOffset) = apply {
             this.offset = offset
         }
 
-        fun setColors(colors: QrColors) = apply {
+        fun colors(colors: QrColors) = apply {
             this.colors = colors
         }
 
-        fun setLogo(logo: QrLogo?) = apply {
+        fun logo(logo: QrLogo?) = apply {
             this.logo = logo ?: QrLogo()
         }
 
-        fun setBackground(background: QrBackground?) = apply {
+        fun background(background: QrBackground?) = apply {
             this.background = background ?: QrBackground()
         }
 
-        fun setCodeShape(shape: QrShape): Builder = apply {
+        fun codeShape(shape: QrShape): Builder = apply {
             this.codeShape = shape
         }
 
-        fun setElementsShapes(shapes: QrElementsShapes) = apply {
+        fun shapes(shapes: QrElementsShapes) = apply {
             this.elementsShapes = shapes
         }
 
-        fun setErrorCorrectionLevel(level: QrErrorCorrectionLevel) = apply {
+        fun errorCorrectionLevel(level: QrErrorCorrectionLevel) = apply {
             errorCorrectionLevel = level
         }
     }
@@ -102,7 +102,7 @@ inline fun createQrOptions(
     height: Int = width,
     padding: Float = .125f,
     crossinline build : QrOptionsBuilderScope.() -> Unit
-) : QrOptions = with(QrOptions.Builder(width, height).setPadding(padding)) {
+) : QrOptions = with(QrOptions.Builder(width, height).padding(padding)) {
     QrOptionsBuilderScope(this).apply(build)
     build()
 }

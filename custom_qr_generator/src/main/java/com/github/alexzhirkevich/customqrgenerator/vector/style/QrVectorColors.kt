@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 
 interface IQrVectorColors {
+
     val dark : QrVectorColor
     val light : QrVectorColor
     val ball : QrVectorColor
@@ -22,7 +23,7 @@ data class QrVectorColors(
     override val dark : QrVectorColor = QrVectorColor.Solid(0xff000000.toColor()),
     override val light : QrVectorColor = QrVectorColor.Unspecified,
     override val ball : QrVectorColor = QrVectorColor.Unspecified,
-    override val frame : QrVectorColor = QrVectorColor.Unspecified
+    override val frame : QrVectorColor = QrVectorColor.Unspecified,
 ) : IQrVectorColors {
 
     companion object : SerializationProvider {

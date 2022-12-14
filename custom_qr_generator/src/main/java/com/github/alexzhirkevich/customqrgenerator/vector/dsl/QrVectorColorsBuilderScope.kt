@@ -2,6 +2,7 @@ package com.github.alexzhirkevich.customqrgenerator.vector.dsl
 
 import com.github.alexzhirkevich.customqrgenerator.vector.QrVectorOptions
 import com.github.alexzhirkevich.customqrgenerator.vector.style.IQrVectorColors
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrBlendMode
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor
 
 sealed interface QrVectorColorsBuilderScope : IQrVectorColors {
@@ -17,7 +18,7 @@ internal class InternalQrVectorColorsBuilderScope(
     override var dark: QrVectorColor
         get() = builder.colors.dark
         set(value) = with(builder){
-            setColors(colors.copy(
+            colors(colors.copy(
                 dark = value
             ))
         }
@@ -25,21 +26,22 @@ internal class InternalQrVectorColorsBuilderScope(
     override var light: QrVectorColor
         get() = builder.colors.light
         set(value) = with(builder){
-            setColors(colors.copy(
+            colors(colors.copy(
                 light = value
             ))
         }
+
     override var ball: QrVectorColor
         get() = builder.colors.ball
         set(value) = with(builder){
-            setColors(colors.copy(
+            colors(colors.copy(
                 ball = value
             ))
         }
     override var frame: QrVectorColor
         get() = builder.colors.frame
         set(value) = with(builder){
-            setColors(colors.copy(
+            colors(colors.copy(
                 frame = value
             ))
         }

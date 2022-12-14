@@ -23,9 +23,17 @@ internal class InternalQrVectorOptionsBuilderScope(
     val builder: QrVectorOptions.Builder
 ) : QrVectorOptionsBuilderScope {
 
-    override var padding: Float by builder::padding
+    override var padding: Float
+        get() = builder.padding
+        set(value) {
+            builder.padding(padding)
+        }
 
-    override var errorCorrectionLevel: QrErrorCorrectionLevel by builder::errorCorrectionLevel
+    override var errorCorrectionLevel: QrErrorCorrectionLevel
+        get() = builder.errorCorrectionLevel
+        set(value) {
+            builder.errorCorrectionLevel(value)
+        }
 
     override var codeShape: QrShape by builder::shape
 

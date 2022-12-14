@@ -32,6 +32,7 @@ data class QrElementsShapes(
     override val ball : QrBallShape = QrBallShape.Default,
     override val highlighting : QrHighlightingShape = QrHighlightingShape.Default,
 ) : IQRElementsShapes {
+
     companion object : SerializationProvider {
 
         @ExperimentalSerializationApi

@@ -21,36 +21,36 @@ class InternalColorsBuilderScope internal constructor(
     override var light: QrColor
         get() = builder.colors.light
         set(value)  = with(builder) {
-            setColors(colors.copy(light = value))
+            colors(colors.copy(light = value))
         }
 
     override var dark: QrColor
         get() = builder.colors.dark
         set(value) = with(builder) {
-                setColors(colors.copy(dark = value))
+                colors(colors.copy(dark = value))
             }
 
     override var frame: QrColor
         get() = builder.colors.frame
         set(value) = with(builder) {
-            setColors(colors.copy(frame = value))
+            colors(colors.copy(frame = value))
         }
 
     override var ball: QrColor
         get() = builder.colors.ball
         set(value) = with(builder) {
-            setColors(colors.copy(ball = value))
+            colors(colors.copy(ball = value))
         }
 
     override var highlighting: QrColor
         get() = builder.colors.highlighting
         set(value) = with(builder) {
-            setColors(colors.copy(highlighting = value))
+            colors(colors.copy(highlighting = value))
         }
 
     override var symmetry: Boolean
         get() = builder.colors.symmetry
         set(value) = with(builder) {
-            setColors(colors.copy(symmetry = value))
+            colors(colors.copy(symmetry = value))
         }
 }

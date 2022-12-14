@@ -18,7 +18,7 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import kotlin.math.sqrt
 
-sealed interface QrVectorColor {
+interface QrVectorColor {
 
     fun createPaint(width: Float, height: Float): Paint
 
