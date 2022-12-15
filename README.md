@@ -52,6 +52,7 @@ dependencies {
     implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.3'
 }
 ```
+<b>Step 3.</b> Press ⭐ if you liked this lib
 
 
 ## Usage
