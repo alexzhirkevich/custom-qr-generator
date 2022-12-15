@@ -9,7 +9,6 @@ import kotlin.math.sqrt
 
 internal object DefaultVectorShape : QrVectorShapeModifier {
 
-    override val isDependOnNeighbors: Boolean get() = false
 
     override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
         addRect(0f,0f, size,size, Path.Direction.CW)
@@ -20,7 +19,6 @@ internal class CircleVectorShape(
     @FloatRange(from = 0.0, to = 1.0) val size: Float
     ) : QrVectorShapeModifier {
 
-    override val isDependOnNeighbors: Boolean get() = false
 
     override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
         addCircle(size/2f, size/2f, size/2 * this@CircleVectorShape.size.coerceIn(0f,1f), Path.Direction.CW)
@@ -28,16 +26,15 @@ internal class CircleVectorShape(
 }
 
 internal class RoundCornersVectorShape(
-    @FloatRange(from = 0.0, to = 0.5) val cornerRadius : Float,
+    @FloatRange(from = 0.0, to = 0.5) val cornerRadius : Float, val withNeighbors : Boolean
 )  : QrVectorShapeModifier {
 
-    override val isDependOnNeighbors: Boolean get() = true
 
     override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
 
         val corner = cornerRadius.coerceIn(0f,.5f) * size
 
-        if (isDependOnNeighbors)
+        if (withNeighbors)
             addRoundRect(
                 RectF(0f,0f,size, size),
                 floatArrayOf(
@@ -64,8 +61,6 @@ internal class RoundCornersVerticalVectorShape(
     @FloatRange(from = 0.0, to = 1.0) val width : Float
 ) : QrVectorShapeModifier {
 
-    override val isDependOnNeighbors: Boolean get() = true
-
     override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
         if (neighbors.top){
             addRect(0f,0f, size, size/2f, Path.Direction.CW)
@@ -84,7 +79,6 @@ internal class RoundCornersHorizontalVectorShape(
     @FloatRange(from = 0.0, to = 1.0) val width : Float
 ) : QrVectorShapeModifier {
 
-    override val isDependOnNeighbors: Boolean get() = true
 
     override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
 
@@ -102,7 +96,6 @@ internal class RoundCornersHorizontalVectorShape(
 }
 
 internal object StarVectorShape : QrVectorShapeModifier {
-    override val isDependOnNeighbors: Boolean get() = false
 
     override fun createPath(size: Float, neighbors: Neighbors): Path =
         Path().apply { addRect(0f, 0f, size, size, Path.Direction.CW) } -
@@ -117,7 +110,6 @@ internal object StarVectorShape : QrVectorShapeModifier {
 internal class RhombusVectorShape(
     @FloatRange(from = 0.0, to = 1.0) private val scale : Float
 ) : QrVectorShapeModifier {
-    override val isDependOnNeighbors: Boolean get() = false
 
     override fun createPath(size: Float, neighbors: Neighbors): Path =
         Path().apply {

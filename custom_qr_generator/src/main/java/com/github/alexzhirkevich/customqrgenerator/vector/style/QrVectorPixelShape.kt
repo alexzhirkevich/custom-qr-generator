@@ -29,9 +29,8 @@ interface QrVectorPixelShape : QrVectorShapeModifier {
     @SerialName("RoundCorners")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val radius : Float
-    ) : QrVectorPixelShape, QrVectorShapeModifier by RoundCornersVectorShape(radius)  {
+    ) : QrVectorPixelShape, QrVectorShapeModifier by RoundCornersVectorShape(radius,true)  {
 
-        override val isDependOnNeighbors: Boolean get() = true
     }
 
     @Serializable

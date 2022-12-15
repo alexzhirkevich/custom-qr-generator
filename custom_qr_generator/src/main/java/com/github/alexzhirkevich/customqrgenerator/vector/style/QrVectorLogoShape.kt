@@ -24,7 +24,7 @@ interface QrVectorLogoShape : QrVectorShapeModifier {
     @SerialName("RoundCorners")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = .5) val radius: Float
-    ) : QrVectorLogoShape, QrVectorShapeModifier by RoundCornersVectorShape(radius)
+    ) : QrVectorLogoShape, QrVectorShapeModifier by RoundCornersVectorShape(radius, false)
 
     @Serializable
     @SerialName("Rhombus")

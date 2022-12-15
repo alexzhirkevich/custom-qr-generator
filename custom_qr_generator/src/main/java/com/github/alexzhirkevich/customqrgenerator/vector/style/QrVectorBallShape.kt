@@ -36,8 +36,6 @@ interface QrVectorBallShape : QrVectorShapeModifier {
     @Serializable
     @SerialName("AsDarkPixels")
     object AsDarkPixels : QrVectorBallShape {
-        override val isDependOnNeighbors: Boolean get() = true
-
         override fun createPath(size: Float, neighbors: Neighbors): Path {
             return Path()
         }
@@ -48,7 +46,6 @@ interface QrVectorBallShape : QrVectorShapeModifier {
     class AsPixelShape(
         val pixelShape: QrVectorPixelShape
     ) : QrVectorBallShape {
-        override val isDependOnNeighbors: Boolean get() = false
 
         override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
 
@@ -80,7 +77,7 @@ interface QrVectorBallShape : QrVectorShapeModifier {
     @SerialName("RoundCorners")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = .5) val radius: Float
-    ) : QrVectorBallShape, QrVectorShapeModifier by RoundCornersVectorShape(radius)
+    ) : QrVectorBallShape, QrVectorShapeModifier by RoundCornersVectorShape(radius,false)
 
     @Serializable
     @SerialName("Rhombus")

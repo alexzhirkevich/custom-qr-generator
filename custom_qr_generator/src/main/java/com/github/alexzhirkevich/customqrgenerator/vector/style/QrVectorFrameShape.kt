@@ -26,8 +26,6 @@ import kotlinx.serialization.modules.subclass
  */
 interface QrVectorFrameShape : QrVectorShapeModifier {
 
-    override val isDependOnNeighbors: Boolean get() = false
-
     @Serializable
     @SerialName("Default")
     object Default : QrVectorFrameShape {
@@ -49,7 +47,6 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
     @Serializable
     @SerialName("AsDarkPixels")
     object AsDarkPixels : QrVectorFrameShape {
-        override val isDependOnNeighbors: Boolean get() = true
 
         override fun createPath(size: Float, neighbors: Neighbors): Path {
             return Path()
@@ -61,7 +58,6 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
     class AsPixelShape(
         val pixelShape: QrVectorPixelShape
     ) : QrVectorFrameShape {
-        override val isDependOnNeighbors: Boolean get() = false
 
         override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
 
