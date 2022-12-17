@@ -67,7 +67,7 @@ There are 2 types of QR code image - raster (deprecated) image and vector image.
 
 You should use deprecated Raster QR codes only if you need extra customizability or special features like in [this example](/examples/tiktok).
 
-Drawable QR codes with logo or background image <b>should not</b> be converted to Bitmap. Use [this Accompanist library](https://google.github.io/accompanist/drawablepainter/) for <b><i>Jetpack Compose</i></b> interop.
+Drawable QR codes <b>should not</b> be converted to Bitmap. Use [this Accompanist library](https://google.github.io/accompanist/drawablepainter/) for <b><i>Jetpack Compose</i></b> interop.
 
 ---
 
