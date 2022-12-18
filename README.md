@@ -49,7 +49,7 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.3'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.4'
 }
 ```
 <b>Step 3.</b> Press ⭐ if you liked this lib
@@ -65,9 +65,11 @@ There are 2 types of QR code image - raster (deprecated) image and vector image.
 | Size | ❌ Fixed | ✅ Dynamic. Based on `View` size |
 | Speed | ❌ Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | ✅ Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
 
-‼️ P.S. If you need a <b>Bitmap</b> for Jetpack Compose or smth, it still will be much faster to <b>convert Drawable QR code to Bitmap</b> rather than use Raster code. 
-
 You should use deprecated Raster QR codes only if you need extra customizability or special features like in [this example](/examples/tiktok).
+
+### Jetpack Compose
+
+Drawable QR codes <b>should not</b> be converted to Bitmap. Use [this Accompanist library](https://google.github.io/accompanist/drawablepainter/) or `AndroidView` for <b><i>Jetpack Compose</i></b> interop.
 
 ---
 
