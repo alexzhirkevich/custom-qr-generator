@@ -26,7 +26,7 @@ internal class InternalQrVectorOptionsBuilderScope(
     override var padding: Float
         get() = builder.padding
         set(value) {
-            builder.padding(padding)
+            builder.padding(value)
         }
 
     override var errorCorrectionLevel: QrErrorCorrectionLevel

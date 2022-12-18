@@ -20,6 +20,7 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.encoder.Encoder
 import kotlinx.coroutines.runBlocking
 import java.nio.charset.Charset
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -96,6 +97,8 @@ private class QrCodeDrawableImpl(
     private var framePaint: Paint = Paint()
     private var ballPaint: Paint = Paint()
 
+
+
     override fun setAlpha(alpha: Int) {
         mAlpha = alpha
         listOf(darkPixelPaint, lightPixelPaint, ballPaint, framePaint)
@@ -121,29 +124,65 @@ private class QrCodeDrawableImpl(
 
     override fun setBounds(bounds: Rect) {
         super.setBounds(bounds)
-        resize()
+        resize(bounds.width(), bounds.height())
     }
 
     override fun setBounds(left: Int, top: Int, right: Int, bottom: Int) {
         super.setBounds(left, top, right, bottom)
-        resize()
+        resize(right-left, bottom-top)
+    }
+
+    private fun Canvas.drawBg(){
+        if (options.background.color !is QrVectorColor.Unspecified &&
+            options.background.color !is QrVectorColor.Transparent
+        ) {
+            drawPaint(
+                options.background.color.createPaint(
+                    bounds.width().toFloat(), bounds.height().toFloat()
+                )
+            )
+        }
+
+        background?.let {
+            drawBitmap(it, 0f, 0f, null)
+        }
+    }
+
+    private fun Canvas.drawBalls(){
+        listOf(
+            2 to 2,
+            2 to codeMatrix.size - 5,
+            codeMatrix.size - 5 to 2
+        ).forEach {
+            withTranslation(
+                it.first * pixelSize,
+                it.second * pixelSize
+            ) {
+                drawPath(ballPath, ballPaint)
+            }
+        }
+    }
+
+    private fun Canvas.drawFrames(){
+        listOf(0 to 0, 0 to codeMatrix.size - 7, codeMatrix.size - 7 to 0).forEach {
+            withTranslation(
+                it.first * pixelSize,
+                it.second * pixelSize
+            ) {
+                drawPath(framePath, framePaint)
+            }
+        }
     }
 
     override fun draw(canvas: Canvas) {
 
-        val (w, h) = with(bounds) { width() to height() }
+        val (w, h) = bounds.width() to bounds.height()
+
         val (offsetX, offsetY) = with(options.offset) { listOf(x, y) }
             .map { it.coerceIn(-1f, 1f) + 1 }
 
-        if (options.background.color !is QrVectorColor.Unspecified &&
-            options.background.color !is QrVectorColor.Transparent
-        ) {
-            canvas.drawPaint(options.background.color.createPaint(w.toFloat(), h.toFloat()))
-        }
+        canvas.drawBg()
 
-        background?.let {
-            canvas.drawBitmap(it, 0f, 0f, null)
-        }
         canvas.withTranslation(
             (w - size) / 2f * offsetX,
             (h - size) / 2f * offsetY
@@ -152,36 +191,13 @@ private class QrCodeDrawableImpl(
             drawPath(darkPixelPath, darkPixelPaint)
             drawPath(lightPixelPath, lightPixelPaint)
 
-            if (options.colors.ball !is QrVectorColor.Unspecified) {
-                listOf(
-                    2 to 2,
-                    2 to codeMatrix.size - 5,
-                    codeMatrix.size - 5 to 2
-                ).forEach {
-                    withTranslation(
-                        it.first * pixelSize,
-                        it.second * pixelSize
-                    ) {
-                        drawPath(ballPath, ballPaint)
-                    }
-                }
-            }
-
             if (options.colors.frame !is QrVectorColor.Unspecified) {
-                listOf(
-                    0 to 0,
-                    0 to codeMatrix.size - 7,
-                    codeMatrix.size - 7 to 0
-                ).forEach {
-                    withTranslation(
-                        it.first * pixelSize,
-                        it.second * pixelSize
-                    ) {
-                        drawPath(framePath, framePaint)
-                    }
-                }
+                drawFrames()
             }
 
+            if (options.colors.ball !is QrVectorColor.Unspecified) {
+                drawBalls()
+            }
             val nLogoBg = logoBg
             if (nLogoBg != null) {
                 val (x, y) = (size - nLogoBg.width) / 2f to (size - nLogoBg.height) / 2f
@@ -320,9 +336,9 @@ private class QrCodeDrawableImpl(
             options.logo.scale.scale(
                 logoDrawable, logoSize.roundToInt(), logoSize.roundToInt()
             ).applyCanvas {
-                val clip =
-                    Path().apply { addRect(0f, 0f, logoSize, logoSize, Path.Direction.CW) } -
-                            (options.logo.shape.createPath(logoSize, Neighbors.Empty))
+                val clip = Path().apply {
+                    addRect(0f, 0f, logoSize, logoSize, Path.Direction.CW)
+                } - (options.logo.shape.createPath(logoSize, Neighbors.Empty))
 
                 withClip(clip) {
                     drawRect(0f, 0f, width.toFloat(), height.toFloat(), Paint().apply {
@@ -341,29 +357,7 @@ private class QrCodeDrawableImpl(
             )
         } else null
 
-    private fun resize() {
-        size = minOf(bounds.width(), bounds.height()) *
-                (1 - options.padding.coerceIn(0f, .5f))
-        pixelSize = size / codeMatrix.size
-
-        colorFilter = mColorFilter
-        alpha = mAlpha
-
-        ballPath = ballShape.createPath(pixelSize * 3f, Neighbors.Empty)
-        framePath = frameShape.createPath(pixelSize * 7f, Neighbors.Empty)
-
-        createPaints()
-
-        darkPixelPath = Path()
-        lightPixelPath = Path()
-
-        val logoSize = size * options.logo.size
-        val logoBgSize = (logoSize * (1 + options.logo.padding.value)).roundToInt()
-
-        if (options.logo.padding is QrVectorLogoPadding.Natural) {
-            applyNaturalLogo(logoBgSize)
-        }
-
+    private fun createMainElements(){
         for (x in 0 until codeMatrix.size) {
             for (y in 0 until codeMatrix.size) {
 
@@ -393,6 +387,40 @@ private class QrCodeDrawableImpl(
                 }
             }
         }
+    }
+
+    private fun resize(width : Int, height : Int) {
+
+        darkPixelPath = Path()
+        lightPixelPath = Path()
+        logo = null
+        background = null
+
+        size = minOf(width, height) * (1 - options.padding.coerceIn(0f, .5f))
+
+        if (size <= Float.MIN_VALUE) {
+            return
+        }
+
+        pixelSize = size / codeMatrix.size
+
+        colorFilter = mColorFilter
+        alpha = mAlpha
+
+        ballPath = ballShape.createPath(pixelSize * 3f, Neighbors.Empty)
+        framePath = frameShape.createPath(pixelSize * 7f, Neighbors.Empty)
+
+        createPaints()
+
+
+        val logoSize = size * options.logo.size
+        val logoBgSize = (logoSize * (1 + options.logo.padding.value)).roundToInt()
+
+        if (options.logo.padding is QrVectorLogoPadding.Natural) {
+            applyNaturalLogo(logoBgSize)
+        }
+
+        createMainElements()
 
         if (options.logo.padding is QrVectorLogoPadding.Accurate) {
             applyAccurateLogo(logoBgSize)
