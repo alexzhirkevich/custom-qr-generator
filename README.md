@@ -69,7 +69,7 @@ You should use deprecated Raster QR codes only if you need extra customizability
 
 ### Jetpack Compose
 
-Drawable QR codes <b>should not</b> be converted to Bitmap. Use [this Accompanist library](https://google.github.io/accompanist/drawablepainter/) or `AndroidView` for <b><i>Jetpack Compose</i></b> interop.
+Drawable QR codes <ins>should not</ins> be converted to Bitmap. Use [this Accompanist library](https://google.github.io/accompanist/drawablepainter/) or `AndroidView` for Jetpack Compose interop.
 
 ---
 
@@ -82,53 +82,9 @@ Email, GeoPos, Profile Cards, Phone, etc.
 val data = QrData.Url("https://example.com")
 ```
 
-<b>Step 2.</b> Define styling options using builder:
+<b>Step 2.</b> Define styling options.
 
-```kotlin
-// Color(v : Long) and Long.toColor() functions take 
-// 0xAARRGGBB long and convert it to color int.
-// Colors from android resources also can be used.
-val options = QrVectorOptions.Builder()
-    .setPadding(.3f)
-    .setLogo(
-        QrVectorLogo(
-            drawable = DrawableSource
-                .Resource(R.drawable.tg),
-            size = .25f,
-            padding = QrVectorLogoPadding.Natural(.2f),
-            shape = QrVectorLogoShape
-                .Circle
-        )
-    )
-    .setBackground(
-        QrVectorBackground(
-            drawable = DrawableSource
-                .Resource(R.drawable.frame),
-        )
-    )
-    .setColors(
-        QrVectorColors(
-            dark = QrVectorColor
-                .Solid(Color(0xff345288)),
-            ball = QrVectorColor.Solid(
-                ContextCompat.getColor(context, R.color.your_color)
-            )
-        )
-    )
-    .setShapes(
-        QrVectorShapes(
-            darkPixel = QrVectorPixelShape
-                .RoundCorners(.5f),
-            ball = QrVectorBallShape
-                .RoundCorners(.25f),
-            frame = QrVectorFrameShape
-                .RoundCorners(.25f),
-        )
-    )
-    .build()
-```
-
-Or using DSL:
+#### 1. Using DSL:
 
 ```kotlin
 val options = createQrVectorOptions {
@@ -166,6 +122,49 @@ val options = createQrVectorOptions {
 }
 ```
 
+#### 2. Using builder:
+
+```kotlin
+val options = QrVectorOptions.Builder()
+    .padding(.3f)
+    .logo(
+        QrVectorLogo(
+            drawable = DrawableSource
+                .Resource(R.drawable.tg),
+            size = .25f,
+            padding = QrVectorLogoPadding.Natural(.2f),
+            shape = QrVectorLogoShape
+                .Circle
+        )
+    )
+    .background(
+        QrVectorBackground(
+            drawable = DrawableSource
+                .Resource(R.drawable.frame),
+        )
+    )
+    .colors(
+        QrVectorColors(
+            dark = QrVectorColor
+                .Solid(Color(0xff345288)),
+            ball = QrVectorColor.Solid(
+                ContextCompat.getColor(context, R.color.your_color)
+            )
+        )
+    )
+    .shapes(
+        QrVectorShapes(
+            darkPixel = QrVectorPixelShape
+                .RoundCorners(.5f),
+            ball = QrVectorBallShape
+                .RoundCorners(.25f),
+            frame = QrVectorFrameShape
+                .RoundCorners(.25f),
+        )
+    )
+    .build()
+```
+
 <b>Step 3.</b> Create QR code drawable:
 
 ```kotlin
@@ -194,14 +193,14 @@ val data = QrData.Url("https://example.com")
 // 0xAARRGGBB long and convert it to color int.
 // Colors from android resources also can be used.
 val options = QrOptions.Builder(1024)
-    .setPadding(.3f)
-    .setBackground(
+    .padding(.3f)
+    .background(
         QrBackground(
             drawable = DrawableSource
                   .Resource(R.drawable.frame),
         )
     )
-    .setLogo(
+    .logo(
         QrLogo(
             drawable = DrawableSource
                   .Resource(R.drawable.tg),
@@ -211,7 +210,7 @@ val options = QrOptions.Builder(1024)
                 .Circle
         )
     )
-    .setColors(
+    .colors(
         QrColors(
             dark = QrColor
                 .Solid(Color(0xff345288)),
@@ -219,7 +218,7 @@ val options = QrOptions.Builder(1024)
                 .Solid(0xddffffff.toColor()),
         )
     )
-    .setElementsShapes(
+    .shapes(
         QrElementsShapes(
             darkPixel = QrPixelShape
                 .RoundCorners(),
@@ -323,12 +322,9 @@ For example, this is an implementation of circle pixels:
 ```kotlin
 object Circle : QrVectorPixelShape {
 
-    override val isDependOnNeighbors: Boolean get() = false
-
-    override fun createPath(size: Float, neighbors: Neighbors): Path = 
-      Path().apply {
+    override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
         addCircle(size/2f, size/2f, size/2, Path.Direction.CW)
-      }
+    }
 }
 ```
 
@@ -342,13 +338,13 @@ For example, this is an implementation of sweep gradient:
     ) : QrVectorColor {
 
         override fun createPaint(width: Float, height: Float): Paint =
-          Paint().apply {
-            shader = android.graphics.SweepGradient(
-                width / 2, height / 2,
-                colors.map { it.second }.toIntArray(),
-                colors.map { it.first }.toFloatArray()
-            )
-          }
+            Paint().apply {
+              shader = android.graphics.SweepGradient(
+                  width / 2, height / 2,
+                  colors.map { it.second }.toIntArray(),
+                  colors.map { it.first }.toFloatArray()
+              )
+        }
     }
     
 ```
