@@ -12,6 +12,7 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
 import com.github.alexzhirkevich.customqrgenerator.fit
 import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
+import com.github.alexzhirkevich.customqrgenerator.style.QrColor
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorBallShape
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorFrameShape
@@ -97,8 +98,6 @@ private class QrCodeDrawableImpl(
     private var framePaint: Paint = Paint()
     private var ballPaint: Paint = Paint()
 
-
-
     override fun setAlpha(alpha: Int) {
         mAlpha = alpha
         listOf(darkPixelPaint, lightPixelPaint, ballPaint, framePaint)
@@ -149,11 +148,27 @@ private class QrCodeDrawableImpl(
     }
 
     private fun Canvas.drawBalls(){
+
+        var ballNumber = -1
         listOf(
             2 to 2,
             2 to codeMatrix.size - 5,
             codeMatrix.size - 5 to 2
         ).forEach {
+
+            val ballPath = if (options.shapes.centralSymmetry){
+                ballNumber = (ballNumber+1%3)
+                Path(ballPath).apply {
+                    val angle = when(ballNumber){
+                        0 -> 0f
+                        1 -> -90f
+                        else -> 90f
+                    }
+                    transform(rotationMatrix(angle, pixelSize*3/2,pixelSize*3/2))
+                }
+            } else {
+                ballPath
+            }
             withTranslation(
                 it.first * pixelSize,
                 it.second * pixelSize
@@ -164,11 +179,25 @@ private class QrCodeDrawableImpl(
     }
 
     private fun Canvas.drawFrames(){
+        var frameNumber = -1
         listOf(0 to 0, 0 to codeMatrix.size - 7, codeMatrix.size - 7 to 0).forEach {
             withTranslation(
                 it.first * pixelSize,
                 it.second * pixelSize
             ) {
+                val framePath = if (options.shapes.centralSymmetry){
+                    frameNumber = (frameNumber+1%3)
+                    Path(framePath).apply {
+                        val angle = when(frameNumber){
+                            0 -> 0f
+                            1 -> -90f
+                            else -> 90f
+                        }
+                        transform(rotationMatrix(angle, pixelSize*7/2,pixelSize*7/2))
+                    }
+                } else {
+                    framePath
+                }
                 drawPath(framePath, framePaint)
             }
         }
@@ -371,7 +400,7 @@ private class QrCodeDrawableImpl(
                 val lightPath = options.shapes.lightPixel
                     .createPath(pixelSize, neighbors)
                 when {
-                    isFrameStart(x, y) -> {
+                    options.colors.frame is QrVectorColor.Unspecified && isFrameStart(x, y) -> {
                         val framePath = if (options.shapes.centralSymmetry){
                             frameNumber = (frameNumber+1%3)
                             Path(framePath).apply {
@@ -389,7 +418,7 @@ private class QrCodeDrawableImpl(
                             .addPath(framePath, x * pixelSize, y * pixelSize)
                     }
 
-                    isBallStart(x, y) -> {
+                    options.colors.ball is QrVectorColor.Unspecified && isBallStart(x, y) -> {
                         val ballPath = if (options.shapes.centralSymmetry){
                             ballNumber = (ballNumber+1%3)
                             Path(ballPath).apply {

@@ -26,7 +26,13 @@ internal class CircleVectorShape(
 }
 
 internal class RoundCornersVectorShape(
-    @FloatRange(from = 0.0, to = 0.5) val cornerRadius : Float, val withNeighbors : Boolean
+    @FloatRange(from = 0.0, to = 0.5)
+    val cornerRadius : Float,
+    val withNeighbors : Boolean,
+    val topLeft: Boolean = true,
+    val bottomLeft: Boolean = true,
+    val topRight: Boolean = true,
+    val bottomRight: Boolean = true,
 )  : QrVectorShapeModifier {
 
 
@@ -38,14 +44,14 @@ internal class RoundCornersVectorShape(
             addRoundRect(
                 RectF(0f,0f,size, size),
                 floatArrayOf(
-                    if (neighbors.top.not() && neighbors.left.not()) corner else 0f,
-                    if (neighbors.top.not() && neighbors.left.not()) corner else 0f,
-                    if (neighbors.top.not() && neighbors.right.not()) corner else 0f,
-                    if (neighbors.top.not() && neighbors.right.not()) corner else 0f,
-                    if (neighbors.bottom.not() && neighbors.right.not()) corner else 0f,
-                    if (neighbors.bottom.not() && neighbors.right.not()) corner else 0f,
-                    if (neighbors.bottom.not() && neighbors.left.not()) corner else 0f,
-                    if (neighbors.bottom.not() && neighbors.left.not()) corner else 0f,
+                    if (topLeft && neighbors.top.not() && neighbors.left.not()) corner else 0f,
+                    if (topLeft && neighbors.top.not() && neighbors.left.not()) corner else 0f,
+                    if (topRight && neighbors.top.not() && neighbors.right.not()) corner else 0f,
+                    if (topRight && neighbors.top.not() && neighbors.right.not()) corner else 0f,
+                    if (bottomRight && neighbors.bottom.not() && neighbors.right.not()) corner else 0f,
+                    if (bottomRight && neighbors.bottom.not() && neighbors.right.not()) corner else 0f,
+                    if (bottomLeft && neighbors.bottom.not() && neighbors.left.not()) corner else 0f,
+                    if (bottomLeft && neighbors.bottom.not() && neighbors.left.not()) corner else 0f,
                 ),
                 Path.Direction.CW
             )

@@ -76,8 +76,19 @@ interface QrVectorBallShape : QrVectorShapeModifier {
     @Serializable
     @SerialName("RoundCorners")
     data class RoundCorners(
-        @FloatRange(from = 0.0, to = .5) val radius: Float
-    ) : QrVectorBallShape, QrVectorShapeModifier by RoundCornersVectorShape(radius,false)
+        @FloatRange(from = 0.0, to = .5) val radius: Float,
+        val topLeft: Boolean = true,
+        val bottomLeft: Boolean = true,
+        val topRight: Boolean = true,
+        val bottomRight: Boolean = true,
+    ) : QrVectorBallShape, QrVectorShapeModifier by RoundCornersVectorShape(
+        cornerRadius = radius,
+        withNeighbors = false,
+        topLeft = topLeft,
+        bottomLeft = bottomLeft,
+        topRight = topRight,
+        bottomRight = bottomRight
+    )
 
     @Serializable
     @SerialName("Rhombus")

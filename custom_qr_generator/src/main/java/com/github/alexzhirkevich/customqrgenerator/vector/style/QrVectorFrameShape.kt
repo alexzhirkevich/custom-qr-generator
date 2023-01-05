@@ -9,9 +9,7 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.neighbors
 import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
-import com.github.alexzhirkevich.customqrgenerator.style.QrFrameShape
 import com.github.alexzhirkevich.customqrgenerator.style.QrPixelShape
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorBallShape.AsPixelShape
 import com.google.zxing.qrcode.encoder.ByteMatrix
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -105,24 +103,46 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         @FloatRange(from = 0.0) val width: Float = 1f,
+        val topLeft: Boolean = true,
+        val bottomLeft: Boolean = true,
+        val topRight: Boolean = true,
+        val bottomRight: Boolean = true,
     ) : QrVectorFrameShape {
         override fun createPath(size: Float, neighbors: Neighbors): Path {
 
             val width = size / 7f * width.coerceAtLeast(0f)
 
+            val outerCornerSize = corner * size
+            val innerCornerSize = corner * (size - 4 * width)
 
             return Path().apply {
                 addRoundRect(
                     RectF(0f, 0f, size, size),
-                    corner * size,
-                    corner * size,
+                    floatArrayOf(
+                        if (topLeft) outerCornerSize else 0f,
+                        if (topLeft) outerCornerSize else 0f,
+                        if (topRight) outerCornerSize else 0f,
+                        if (topRight) outerCornerSize else 0f,
+                        if (bottomRight) outerCornerSize else 0f,
+                        if (bottomRight) outerCornerSize else 0f,
+                        if (bottomLeft) outerCornerSize else 0f,
+                        if (bottomLeft) outerCornerSize else 0f,
+                    ),
                     Path.Direction.CW
                 )
             } - Path().apply {
                 addRoundRect(
                     RectF(width, width, size - width, size - width),
-                    corner * (size - 4 * width),
-                    corner * (size - 4 * width),
+                    floatArrayOf(
+                        if (topLeft) innerCornerSize else 0f,
+                        if (topLeft) innerCornerSize else 0f,
+                        if (topRight) innerCornerSize else 0f,
+                        if (topRight) innerCornerSize else 0f,
+                        if (bottomRight) innerCornerSize else 0f,
+                        if (bottomRight) innerCornerSize else 0f,
+                        if (bottomLeft) innerCornerSize else 0f,
+                        if (bottomLeft) innerCornerSize else 0f,
+                    ),
                     Path.Direction.CCW
                 )
             }
