@@ -19,6 +19,7 @@ Some useful links:
 - [Usage](#usage)
 - [Customization](#customization)
 - [Serialization](#serialization)
+- [FAQ](#faq)
 
 
 ## Installation
@@ -603,4 +604,28 @@ assert(options == decoded) //true
 
 Serialization can be useful for remote config QR code style changing or to store
 generated codes with their options for later modification (for ex, in QR code generator apps)
+
+## FAQ
+
+### I can't scan my code
+
+- Some combinations of shapes are not compatible.
+- If you create custom shapes, always test if they corrupt your qr code. 
+- Choose contrast colors for your code and dont't use too many of them at once. 
+- If you are using logo, make it smaller or apply next advice.
+- Set `errorCorrectionLevel` explicitly to `QrErrorCorrectionLevel.High`
+
+---
+
+### I'm trying to encode non-latin symbols and getting a corrupted QR code
+
+See [Issue #6](https://github.com/alexzhirkevich/custom-qr-generator/issues/6)
+
+---
+
+### I want to create shapes for frame or ball with central symmetry
+
+See [Issue #13](https://github.com/alexzhirkevich/custom-qr-generator/issues/13)
+
+--- 
 
