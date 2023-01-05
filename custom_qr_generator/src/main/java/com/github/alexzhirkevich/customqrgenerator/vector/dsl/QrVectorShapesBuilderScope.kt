@@ -14,8 +14,16 @@ sealed interface QrVectorShapesBuilderScope : IQrVectorShapes {
 }
 
 internal class InternalQrVectorShapesBuilderScope(
-    private val builder: QrVectorOptions.Builder
+    private val builder: QrVectorOptions.Builder,
+    override val centralSymmetry : Boolean,
 ) : QrVectorShapesBuilderScope {
+
+    init {
+        builder.shapes(builder.shapes.copy(
+            centralSymmetry = centralSymmetry
+        ))
+    }
+
     override var darkPixel: QrVectorPixelShape
         get() = builder.shapes.darkPixel
         set(value) = with(builder){

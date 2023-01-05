@@ -13,7 +13,7 @@ sealed interface QrVectorOptionsBuilderScope  {
     var codeShape : QrShape
 
     fun offset(block: QrOffsetBuilderScope.() -> Unit)
-    fun shapes(block: QrVectorShapesBuilderScope.() -> Unit)
+    fun shapes(centralSymmetry : Boolean = true, block: QrVectorShapesBuilderScope.() -> Unit)
     fun colors(block: QrVectorColorsBuilderScope.() -> Unit)
     fun background(block: QrVectorBackgroundBuilderScope.() -> Unit)
     fun logo(block: QrVectorLogoBuilderScope.() -> Unit)
@@ -41,8 +41,12 @@ internal class InternalQrVectorOptionsBuilderScope(
         InternalQrOffsetBuilderScope(builder).apply(block)
     }
 
-    override fun shapes(block: QrVectorShapesBuilderScope.() -> Unit) {
-        InternalQrVectorShapesBuilderScope(builder).apply(block)
+    override fun shapes(
+        centralSymmetry : Boolean,
+        block: QrVectorShapesBuilderScope.() -> Unit
+    ) {
+        InternalQrVectorShapesBuilderScope(builder,centralSymmetry)
+            .apply(block)
     }
 
     override fun colors(block: QrVectorColorsBuilderScope.() -> Unit) {

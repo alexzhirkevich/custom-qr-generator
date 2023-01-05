@@ -358,6 +358,9 @@ private class QrCodeDrawableImpl(
         } else null
 
     private fun createMainElements(){
+
+        var frameNumber = -1
+        var ballNumber = -1
         for (x in 0 until codeMatrix.size) {
             for (y in 0 until codeMatrix.size) {
 
@@ -367,13 +370,42 @@ private class QrCodeDrawableImpl(
                     .createPath(pixelSize, neighbors)
                 val lightPath = options.shapes.lightPixel
                     .createPath(pixelSize, neighbors)
-
                 when {
-                    isFrameStart(x, y) -> darkPixelPath
-                        .addPath(framePath, x * pixelSize, y * pixelSize)
+                    isFrameStart(x, y) -> {
+                        val framePath = if (options.shapes.centralSymmetry){
+                            frameNumber = (frameNumber+1%3)
+                            Path(framePath).apply {
+                                val angle = when(frameNumber){
+                                    0 -> 0f
+                                    1 -> -90f
+                                    else -> 90f
+                                }
+                                transform(rotationMatrix(angle, pixelSize*7/2,pixelSize*7/2))
+                            }
+                        } else {
+                            framePath
+                        }
+                        darkPixelPath
+                            .addPath(framePath, x * pixelSize, y * pixelSize)
+                    }
 
-                    isBallStart(x, y) -> darkPixelPath
-                        .addPath(ballPath, x * pixelSize, y * pixelSize)
+                    isBallStart(x, y) -> {
+                        val ballPath = if (options.shapes.centralSymmetry){
+                            ballNumber = (ballNumber+1%3)
+                            Path(ballPath).apply {
+                                val angle = when(ballNumber){
+                                    0 -> 0f
+                                    1 -> -90f
+                                    else -> 90f
+                                }
+                                transform(rotationMatrix(angle, pixelSize*3/2,pixelSize*3/2))
+                            }
+                        } else {
+                            ballPath
+                        }
+                        darkPixelPath
+                            .addPath(ballPath, x * pixelSize, y * pixelSize)
+                    }
 
                     isInsideFrameOrBall(x, y) -> Unit
 
