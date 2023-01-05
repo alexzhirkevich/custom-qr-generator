@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
  * @param padding padding of the QR code relative to [width] and [height].
  * */
 @Serializable
+@Deprecated("Use QrCodeDrawable with QrVectorOptions instead")
 data class QrOptions(
     @IntRange(from = 0) val width : Int,
     @IntRange(from = 0) val height : Int,
@@ -24,6 +25,7 @@ data class QrOptions(
     val errorCorrectionLevel: QrErrorCorrectionLevel
 ) {
 
+    @Deprecated("Use QrCodeDrawable with QrVectorOptions.Builder")
     class Builder(
         @IntRange(from = 0) val width: Int,
         @IntRange(from = 0) val height: Int = width
@@ -97,6 +99,7 @@ data class QrOptions(
 /**
  * Build [QrOptions] with DSL
  * */
+@Deprecated("Use QrVectorDrawable with createQrVectorOptions instead")
 inline fun createQrOptions(
     width: Int,
     height: Int = width,

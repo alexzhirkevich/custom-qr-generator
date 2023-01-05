@@ -13,6 +13,7 @@ import kotlinx.serialization.modules.subclass
 /**
  * Padding of the QR code logo
  * */
+@Deprecated("Use QrCodeDrawable with QrVectorLogoPadding instead")
 interface QrLogoPadding {
 
     /**

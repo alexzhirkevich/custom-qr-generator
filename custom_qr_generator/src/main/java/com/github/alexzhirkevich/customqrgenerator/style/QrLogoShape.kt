@@ -13,28 +13,33 @@ import kotlinx.serialization.modules.subclass
 /**
  * Shape of the qr-code logo padding.
  * */
+@Deprecated("Use QrCodeDrawable with QrVectorLogoShape instead")
 fun interface QrLogoShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Default")
+    @Deprecated("Use QrCodeDrawable with QrVectorLogoShape instead")
     object Default : QrLogoShape by DefaultShapeModifier
         .asLogoShape()
 
 
     @Serializable
     @SerialName("Circle")
+    @Deprecated("Use QrCodeDrawable with QrVectorLogoShape instead")
     object Circle : QrLogoShape by CircleShapeModifier(1f)
         .asLogoShape()
 
 
     @Serializable
     @SerialName("Rhombus")
+    @Deprecated("Use QrCodeDrawable with QrVectorLogoShape instead")
     object Rhombus : QrLogoShape by RhombusShapeModifier
         .asLogoShape()
 
 
     @Serializable
     @SerialName("RoundCorners")
+    @Deprecated("Use QrCodeDrawable with QrVectorLogoShape instead")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         val outer: Boolean = true,
@@ -69,6 +74,7 @@ fun interface QrLogoShape : QrShapeModifier {
     }
 }
 
+@Deprecated("Use QrCodeDrawable with QrVectorLogoShape instead")
 fun QrShapeModifier.asLogoShape() : QrLogoShape =
     QrLogoShape { i, j, elementSize, neighbors ->
         this@asLogoShape

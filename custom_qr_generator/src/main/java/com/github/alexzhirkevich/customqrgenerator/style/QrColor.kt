@@ -20,6 +20,7 @@ import kotlin.math.sqrt
 /**
  * Color of the different QR code elements.
  * */
+@Deprecated("Use QrCodeDrawable with QrVectorColor instead")
 fun interface QrColor  {
 
     /**
@@ -39,11 +40,13 @@ fun interface QrColor  {
      * */
     @Serializable
     @SerialName("Unspecified")
+    @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     object Unspecified : QrColor by Solid(0)
 
 
     @Serializable
     @SerialName("Solid")
+    @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class Solid(@ColorInt val color : Int) : QrColor {
 
         @ColorInt
@@ -53,6 +56,7 @@ fun interface QrColor  {
 
     @Serializable
     @SerialName("LinearGradient")
+    @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class LinearGradient(
         @ColorInt val startColor : Int,
         @ColorInt val endColor : Int,
@@ -78,6 +82,7 @@ fun interface QrColor  {
 
     @Serializable
     @SerialName("SquareGradient")
+    @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class SquareGradient(
         val startColor : Int,
         val endColor : Int,
@@ -96,6 +101,7 @@ fun interface QrColor  {
 
     @Serializable
     @SerialName("RhombusGradient")
+    @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class RhombusGradient(
         val startColor : Int,
         val endColor : Int,
@@ -114,6 +120,7 @@ fun interface QrColor  {
 
     @Serializable
     @SerialName("RadialGradient")
+    @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class RadialGradient(
         @ColorInt val startColor : Int,
         @ColorInt val endColor : Int,
@@ -137,6 +144,7 @@ fun interface QrColor  {
 
     @Serializable
     @SerialName("CrossingGradient")
+    @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class CrossingGradient(
         @ColorInt val colorLeftDiagonal : Int,
         @ColorInt val colorRightDiagonal : Int,

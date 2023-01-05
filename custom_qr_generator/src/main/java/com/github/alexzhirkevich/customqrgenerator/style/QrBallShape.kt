@@ -13,10 +13,12 @@ import kotlinx.serialization.modules.subclass
 /**
  * Style of the qr-code eye internal ball.
  * */
+@Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
 fun interface QrBallShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Default")
+    @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     object Default : QrBallShape by DefaultShapeModifier.asBallShape()
 
     /**
@@ -28,6 +30,7 @@ fun interface QrBallShape : QrShapeModifier {
      * */
     @Serializable
     @SerialName("AsDarkPixels")
+    @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     object AsDarkPixels : QrBallShape {
         override fun invoke(i: Int, j: Int, elementSize: Int, neighbors: Neighbors): Boolean = false
     }
@@ -40,6 +43,7 @@ fun interface QrBallShape : QrShapeModifier {
      * */
     @Serializable
     @SerialName("AsPixelShape")
+    @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     data class AsPixelShape(val shape: QrPixelShape) : QrBallShape by
         (Default.and(shape % { size, _ -> size/3 })).asBallShape()
 
@@ -50,6 +54,7 @@ fun interface QrBallShape : QrShapeModifier {
      * */
     @Serializable
     @SerialName("Circle")
+    @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     data class Circle(
         @FloatRange(from = .75, to = 1.0)
         private val size : Float = 1f
@@ -59,12 +64,14 @@ fun interface QrBallShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Rhombus")
+    @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     object Rhombus : QrBallShape by RhombusShapeModifier
         .asBallShape()
 
 
     @Serializable
     @SerialName("RoundCorners")
+    @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         val outer: Boolean = true,
@@ -103,6 +110,7 @@ fun interface QrBallShape : QrShapeModifier {
     }
 }
 
+@Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
 fun QrShapeModifier.asBallShape() : QrBallShape = if (this is QrBallShape) this else
     QrBallShape { i, j, elementSize, neighbors ->
         this@asBallShape

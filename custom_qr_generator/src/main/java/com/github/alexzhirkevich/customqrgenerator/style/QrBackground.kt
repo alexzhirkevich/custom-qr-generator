@@ -25,6 +25,7 @@ interface IQRBackground {
  * Background image of the QR code bitmap.
  */
 @Serializable
+@Deprecated("Use QrCodeDrawable with QrVectorBackground instead")
 data class QrBackground(
     override val drawable: DrawableSource = DrawableSource.Empty,
     @FloatRange(from = 0.0, to = 1.0)

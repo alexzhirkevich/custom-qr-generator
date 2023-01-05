@@ -33,6 +33,7 @@ interface IQRLogo {
  * Logo of the QR code
  * */
 @Serializable
+@Deprecated("Use QrCodeDrawable with QrVectorLogo instead")
 data class QrLogo(
     override val drawable: DrawableSource = DrawableSource.Empty,
     @FloatRange(from = 0.0, to = 1/3.0)

@@ -22,10 +22,12 @@ import kotlin.math.sqrt
  *
  * Frame width should be equal to elementSize/7.
  * */
+@Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
 fun interface QrFrameShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Default")
+    @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     object Default : QrFrameShape {
         override fun invoke(
             i: Int, j: Int, elementSize: Int, neighbors: Neighbors
@@ -45,6 +47,7 @@ fun interface QrFrameShape : QrShapeModifier {
      * */
     @Serializable
     @SerialName("AsDarkPixels")
+    @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     object AsDarkPixels : QrFrameShape {
         override fun invoke(i: Int, j: Int, elementSize: Int, neighbors: Neighbors): Boolean = false
     }
@@ -58,12 +61,14 @@ fun interface QrFrameShape : QrShapeModifier {
      * */
     @Serializable
     @SerialName("AsPixelShape")
+    @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     data class AsPixelShape(val shape: QrPixelShape) : QrFrameShape by
         (Default.and(shape % { size, _, -> size /7})).asFrameShape()
 
 
     @Serializable
     @SerialName("Circle")
+    @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     class Circle(
         @FloatRange(from = 0.0) val width : Float = 1f,
         @FloatRange(from = 0.0) val radius : Float = 1f
@@ -84,6 +89,7 @@ fun interface QrFrameShape : QrShapeModifier {
 
     @Serializable
     @SerialName("RoundCorners")
+    @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         val outer: Boolean = true,
@@ -137,10 +143,7 @@ fun interface QrFrameShape : QrShapeModifier {
     }
 }
 
-fun QrShape.Companion.pizedc(){
-
-}
-
+@Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
 fun QrShapeModifier.asFrameShape() : QrFrameShape = if (this is QrFrameShape) this else
     QrFrameShape { i, j, elementSize, neighbors ->
         this@asFrameShape

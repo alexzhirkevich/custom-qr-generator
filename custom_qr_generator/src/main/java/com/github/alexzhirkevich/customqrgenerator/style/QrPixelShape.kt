@@ -13,15 +13,18 @@ import kotlin.math.*
 /**
  * Style of the qr-code pixels.
  * */
+@Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
 fun interface QrPixelShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Default")
+    @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     object Default : QrPixelShape by DefaultShapeModifier
         .asPixelShape()
 
     @Serializable
     @SerialName("Circle")
+    @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     data class Circle(
         @FloatRange(from = .5, to = 1.0)
         private val size : Float = 1f
@@ -31,6 +34,7 @@ fun interface QrPixelShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Rhombus")
+    @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     object Rhombus : QrPixelShape by RhombusShapeModifier
         .asPixelShape()
 
@@ -41,6 +45,7 @@ fun interface QrPixelShape : QrShapeModifier {
      * */
     @Serializable
     @SerialName("RoundCorners")
+    @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     data class RoundCorners(
         val corner : Float = .5f,
         val topLeft : Boolean = true,
@@ -63,6 +68,7 @@ fun interface QrPixelShape : QrShapeModifier {
      * */
     @Serializable
     @SerialName("RoundCornersHorizontal")
+    @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     class RoundCornersHorizontal(
         @FloatRange(from = .0, to = .5)
         val sidePadding : Float = 0f
@@ -98,6 +104,7 @@ fun interface QrPixelShape : QrShapeModifier {
      * */
     @Serializable
     @SerialName("RoundCornersVertical")
+    @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     data class RoundCornersVertical(
         @FloatRange(from = .0, to = .5)
         val sidePadding : Float = 0f
@@ -129,8 +136,8 @@ fun interface QrPixelShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Star")
+    @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     object Star : QrPixelShape by StarShapeModifier
-
 
     companion object : SerializationProvider {
 
@@ -159,6 +166,7 @@ fun interface QrPixelShape : QrShapeModifier {
 }
 
 
+@Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
 fun QrShapeModifier.asPixelShape() : QrPixelShape = if (this is QrPixelShape) this else
     QrPixelShape { i, j, elementSize, neighbors ->
         this@asPixelShape

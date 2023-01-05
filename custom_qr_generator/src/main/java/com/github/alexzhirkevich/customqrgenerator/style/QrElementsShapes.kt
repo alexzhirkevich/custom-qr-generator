@@ -25,6 +25,7 @@ interface IQRElementsShapes {
  * Shapes of QR code elements
  * */
 @Serializable
+@Deprecated("Use QrCodeDrawable with QrVectorShapes instead")
 data class QrElementsShapes(
     override val darkPixel : QrPixelShape = QrPixelShape.Default,
     override val lightPixel : QrPixelShape = QrPixelShape.Default,

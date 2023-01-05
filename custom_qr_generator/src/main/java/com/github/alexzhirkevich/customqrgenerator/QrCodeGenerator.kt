@@ -21,6 +21,7 @@ class QrCodeCreationException(cause : Throwable? = null, message: String? = null
 /**
  * Used to generate QR codes
  * */
+@Deprecated("Use QrCodeDrawable instead")
 interface QrCodeGenerator {
 
     /**
@@ -43,6 +44,7 @@ interface QrCodeGenerator {
 /**
  * Creates an instance of [QrCodeGenerator]
  * */
+@Deprecated("Use QrCodeDrawable instead")
 fun QrCodeGenerator(
     context: Context,
     threadPolicy: ThreadPolicy = ThreadPolicy.SingleThread

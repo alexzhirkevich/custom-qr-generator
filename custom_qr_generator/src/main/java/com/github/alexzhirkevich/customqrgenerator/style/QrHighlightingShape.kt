@@ -10,22 +10,26 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
+@Deprecated("Use QrCodeDrawable instead")
 fun interface QrHighlightingShape : QrShapeModifier {
 
     @Serializable
     @SerialName("Default")
+    @Deprecated("Use QrCodeDrawable instead")
     object Default : QrHighlightingShape by DefaultShapeModifier
         .asHighlightingShape()
 
 
     @Serializable
     @SerialName("Circle")
+    @Deprecated("Use QrCodeDrawable instead")
     object Circle : QrHighlightingShape by CircleShapeModifier(1f)
         .asHighlightingShape()
 
 
     @Serializable
     @SerialName("RoundCorners")
+    @Deprecated("Use QrCodeDrawable instead")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
         val  outer: Boolean = true,
@@ -58,6 +62,7 @@ fun interface QrHighlightingShape : QrShapeModifier {
     }
 }
 
+@Deprecated("Use QrCodeDrawable instead")
 fun QrShapeModifier.asHighlightingShape() : QrHighlightingShape = if (this is QrHighlightingShape) this else
     QrHighlightingShape { i, j, elementSize, neighbors ->
         this@asHighlightingShape
