@@ -70,7 +70,13 @@ You should use deprecated Raster QR codes only if you need extra customizability
 
 ### Jetpack Compose
 
-Drawable QR codes <ins>should not</ins> be converted to Bitmap. Use [this Accompanist library](https://google.github.io/accompanist/drawablepainter/) or `AndroidView` for Jetpack Compose interop.
+#### Before 1.5.5 
+
+`Drawable` QR codes <ins>should not</ins> be converted to `Bitmap`. Use [this Accompanist library](https://google.github.io/accompanist/drawablepainter/) or `AndroidView` for Jetpack Compose interop.
+
+#### After 1.5.5 
+
+`Drawable` QR codes can be safely coverted to `Bitmap` and used as Compose `ImageBitmap`. Previous solutions work too.
 
 ---
 
