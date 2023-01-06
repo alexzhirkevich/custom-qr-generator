@@ -48,7 +48,7 @@ interface QrVectorPixelShape : QrVectorShapeModifier {
     ): QrVectorPixelShape, QrVectorShapeModifier by RoundCornersVerticalVectorShape(width)
 
     @Serializable
-    @SerialName("RoundCornersVertical")
+    @SerialName("RoundCornersHorizontal")
     data class RoundCornersHorizontal(
         @FloatRange(from = 0.0, to = 1.0) private val width : Float = 1f
     ): QrVectorPixelShape, QrVectorShapeModifier by RoundCornersHorizontalVectorShape(width)
