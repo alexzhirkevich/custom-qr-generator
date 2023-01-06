@@ -209,6 +209,7 @@ private class QrCodeDrawableImpl(
 
         val (offsetX, offsetY) = with(options.offset) { listOf(x, y) }
             .map { it.coerceIn(-1f, 1f) + 1 }
+        canvas.density = Bitmap.DENSITY_NONE
 
         canvas.drawBg()
 
@@ -476,7 +477,6 @@ private class QrCodeDrawableImpl(
 
         val logoSize = size * options.logo.size
         val logoBgSize = (logoSize * (1 + options.logo.padding.value)).roundToInt()
-
         if (options.logo.padding is QrVectorLogoPadding.Natural) {
             applyNaturalLogo(logoBgSize)
         }
