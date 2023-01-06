@@ -65,8 +65,6 @@ interface QrVectorBallShape : QrVectorShapeModifier {
         }
     }
 
-
-
     @Serializable
     @SerialName("Circle")
     data class Circle(
@@ -102,7 +100,6 @@ interface QrVectorBallShape : QrVectorShapeModifier {
         @Suppress("unchecked_cast")
         override val defaultSerializersModule: SerializersModule by lazy(LazyThreadSafetyMode.NONE) {
             SerializersModule {
-                include(QrPixelShape.defaultSerializersModule)
                 polymorphicDefaultSerializer(QrVectorBallShape::class){
                     Default.serializer() as SerializationStrategy<QrVectorBallShape>
                 }

@@ -53,7 +53,7 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
 
     @Serializable
     @SerialName("AsPixelShape")
-    class AsPixelShape(
+    data class AsPixelShape(
         val pixelShape: QrVectorPixelShape
     ) : QrVectorFrameShape {
 
@@ -87,7 +87,7 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
 
     @Serializable
     @SerialName("Circle")
-    class Circle(
+    data class Circle(
         @FloatRange(from = 0.0) val width : Float = 1f,
         @FloatRange(from = 0.0) val radius : Float = 1f
     ) : QrVectorFrameShape {
@@ -155,7 +155,6 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
         @Suppress("unchecked_cast")
         override val defaultSerializersModule: SerializersModule by lazy(LazyThreadSafetyMode.NONE) {
             SerializersModule {
-                include(QrPixelShape.defaultSerializersModule)
                 polymorphicDefaultSerializer(QrVectorFrameShape::class){
                     Default.serializer() as SerializationStrategy<QrVectorFrameShape>
                 }
@@ -165,9 +164,9 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
                 polymorphic(QrVectorFrameShape::class){
                     subclass(Default::class)
                     subclass(AsDarkPixels::class)
+                    subclass(AsPixelShape::class)
                     subclass(Circle::class)
                     subclass(RoundCorners::class)
-                    subclass(AsPixelShape::class)
                 }
             }
         }

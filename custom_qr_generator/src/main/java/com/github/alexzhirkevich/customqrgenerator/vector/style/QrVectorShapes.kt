@@ -32,7 +32,7 @@ data class QrVectorShapes(
             SerializersModuleFromProviders(
                 QrVectorPixelShape,
                 QrVectorBallShape,
-                QrFrameShape
+                QrVectorFrameShape
             )
         }
     }

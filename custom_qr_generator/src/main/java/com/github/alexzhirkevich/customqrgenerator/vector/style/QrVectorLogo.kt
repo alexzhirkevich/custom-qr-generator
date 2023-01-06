@@ -79,7 +79,7 @@ data class QrVectorLogo(
     companion object : SerializationProvider {
         @ExperimentalSerializationApi
         override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModuleFromProviders(QrLogoPadding, QrLogoShape, QrVectorColor)
+            SerializersModuleFromProviders(BitmapScale, QrVectorLogoPadding, QrVectorLogoShape, QrVectorColor)
         }
     }
 }
