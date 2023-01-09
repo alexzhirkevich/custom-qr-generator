@@ -16,6 +16,10 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 
+interface RandomBased {
+    val seed : Long
+}
+
 /**
  * Shape of the QR-code pattern.
  * */
@@ -52,7 +56,8 @@ interface QrShape {
     data class Circle(
         @FloatRange(from = 1.0, to = 2.0)
         val padding : Float = 1.1f,
-    ) : QrShape {
+        override val seed: Long = 233
+    ) : QrShape, RandomBased {
 
         override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix): Boolean =
             with(modifiedByteMatrix) {
@@ -73,6 +78,8 @@ interface QrShape {
 
             val center = newSize / 2f
 
+            val random = Random(seed)
+
             for (i in 0 until newSize) {
                 for (j in 0 until newSize) {
                     if ((i <= added-1 ||
@@ -81,7 +88,7 @@ interface QrShape {
                                 j >= added + size ) &&
                         sqrt((center-i) *(center-i)+(center-j)*(center-j)) <= center
                     ){
-                        newMatrix[i, j] = if (Random.nextBoolean()) QrCodeMatrix.PixelType.DarkPixel
+                        newMatrix[i, j] = if (random.nextBoolean()) QrCodeMatrix.PixelType.DarkPixel
                             else QrCodeMatrix.PixelType.LightPixel
                     }
                 }
