@@ -38,28 +38,22 @@ internal class RoundCornersVectorShape(
 
     override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
 
-        val corner = cornerRadius.coerceIn(0f,.5f) * size
+        val corner = cornerRadius.coerceIn(0f, .5f) * size
 
-        if (withNeighbors)
-            addRoundRect(
-                RectF(0f,0f,size, size),
-                floatArrayOf(
-                    if (topLeft && neighbors.top.not() && neighbors.left.not()) corner else 0f,
-                    if (topLeft && neighbors.top.not() && neighbors.left.not()) corner else 0f,
-                    if (topRight && neighbors.top.not() && neighbors.right.not()) corner else 0f,
-                    if (topRight && neighbors.top.not() && neighbors.right.not()) corner else 0f,
-                    if (bottomRight && neighbors.bottom.not() && neighbors.right.not()) corner else 0f,
-                    if (bottomRight && neighbors.bottom.not() && neighbors.right.not()) corner else 0f,
-                    if (bottomLeft && neighbors.bottom.not() && neighbors.left.not()) corner else 0f,
-                    if (bottomLeft && neighbors.bottom.not() && neighbors.left.not()) corner else 0f,
-                ),
-                Path.Direction.CW
-            )
-        else addRoundRect(RectF(0f,0f,size, size),
-                corner,
-                corner,
-                Path.Direction.CW
-            )
+        addRoundRect(
+            RectF(0f, 0f, size, size),
+            floatArrayOf(
+                if (topLeft && (withNeighbors.not() || neighbors.top.not() && neighbors.left.not())) corner else 0f,
+                if (topLeft && (withNeighbors.not() || neighbors.top.not() && neighbors.left.not())) corner else 0f,
+                if (topRight && (withNeighbors.not() || neighbors.top.not() && neighbors.right.not())) corner else 0f,
+                if (topRight && (withNeighbors.not() || neighbors.top.not() && neighbors.right.not())) corner else 0f,
+                if (bottomRight && (withNeighbors.not() || neighbors.bottom.not() && neighbors.right.not())) corner else 0f,
+                if (bottomRight && (withNeighbors.not() || neighbors.bottom.not() && neighbors.right.not())) corner else 0f,
+                if (bottomLeft && (withNeighbors.not() || neighbors.bottom.not() && neighbors.left.not())) corner else 0f,
+                if (bottomLeft && (withNeighbors.not() || neighbors.bottom.not() && neighbors.left.not())) corner else 0f,
+            ),
+            Path.Direction.CW
+        )
     }
 }
 
