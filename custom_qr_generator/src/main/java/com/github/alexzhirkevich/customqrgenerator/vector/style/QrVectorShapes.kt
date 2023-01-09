@@ -2,7 +2,6 @@ package com.github.alexzhirkevich.customqrgenerator.vector.style
 
 import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
 import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
-import com.github.alexzhirkevich.customqrgenerator.style.QrFrameShape
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule

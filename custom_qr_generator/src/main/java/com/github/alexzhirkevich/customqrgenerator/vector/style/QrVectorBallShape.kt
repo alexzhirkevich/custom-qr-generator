@@ -3,12 +3,9 @@ package com.github.alexzhirkevich.customqrgenerator.vector.style
 import android.graphics.Path
 import androidx.annotation.FloatRange
 import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.neighbors
 import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
-import com.github.alexzhirkevich.customqrgenerator.style.QrBallShape.AsPixelShape
-import com.github.alexzhirkevich.customqrgenerator.style.QrPixelShape
 import com.google.zxing.qrcode.encoder.ByteMatrix
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName

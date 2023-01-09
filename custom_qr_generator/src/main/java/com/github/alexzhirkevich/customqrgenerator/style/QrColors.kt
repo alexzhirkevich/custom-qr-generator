@@ -30,6 +30,7 @@ interface IQRColors {
  * Colors of QR code elements
  */
 @Serializable
+@Deprecated("Use QrCodeDrawable with QrVectorColors instead")
 data class QrColors(
     override val light : QrColor = QrColor.Unspecified,
     override val dark : QrColor = QrColor.Solid(Color(0xff000000)),
