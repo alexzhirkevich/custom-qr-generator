@@ -20,11 +20,11 @@ sealed interface QrVectorLogoPadding {
 
     @kotlinx.serialization.Serializable
     @SerialName("Accurate")
-    class Accurate(override val value: Float) : QrVectorLogoPadding
+    data class Accurate(override val value: Float) : QrVectorLogoPadding
 
     @kotlinx.serialization.Serializable
     @SerialName("Natural")
-    class Natural(override val value: Float) : QrVectorLogoPadding
+    data class Natural(override val value: Float) : QrVectorLogoPadding
 
     companion object : SerializationProvider {
 

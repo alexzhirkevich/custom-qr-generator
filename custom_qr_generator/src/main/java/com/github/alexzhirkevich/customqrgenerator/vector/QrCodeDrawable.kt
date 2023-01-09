@@ -12,16 +12,11 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
 import com.github.alexzhirkevich.customqrgenerator.fit
 import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
-import com.github.alexzhirkevich.customqrgenerator.style.QrColor
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorBallShape
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorFrameShape
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogoPadding
+import com.github.alexzhirkevich.customqrgenerator.vector.style.*
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.encoder.Encoder
 import kotlinx.coroutines.runBlocking
 import java.nio.charset.Charset
-import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -209,6 +204,8 @@ private class QrCodeDrawableImpl(
 
         val (offsetX, offsetY) = with(options.offset) { listOf(x, y) }
             .map { it.coerceIn(-1f, 1f) + 1 }
+
+        val density = canvas.density
         canvas.density = Bitmap.DENSITY_NONE
 
         canvas.drawBg()
@@ -240,6 +237,7 @@ private class QrCodeDrawableImpl(
                 drawBitmap(nLogo, x, y, null)
             }
         }
+        canvas.density = density
     }
 
     private fun createPaints() {
@@ -393,6 +391,7 @@ private class QrCodeDrawableImpl(
         var ballNumber = -1
         for (x in 0 until codeMatrix.size) {
             for (y in 0 until codeMatrix.size) {
+
 
                 val neighbors = codeMatrix.neighbors(x, y)
 

@@ -43,7 +43,7 @@ interface QrVectorBallShape : QrVectorShapeModifier {
 
     @Serializable
     @SerialName("AsPixelShape")
-    class AsPixelShape(
+    data class AsPixelShape(
         val pixelShape: QrVectorPixelShape
     ) : QrVectorBallShape {
 
@@ -100,6 +100,7 @@ interface QrVectorBallShape : QrVectorShapeModifier {
         @Suppress("unchecked_cast")
         override val defaultSerializersModule: SerializersModule by lazy(LazyThreadSafetyMode.NONE) {
             SerializersModule {
+                include(QrVectorPixelShape.defaultSerializersModule)
                 polymorphicDefaultSerializer(QrVectorBallShape::class){
                     Default.serializer() as SerializationStrategy<QrVectorBallShape>
                 }
@@ -109,10 +110,10 @@ interface QrVectorBallShape : QrVectorShapeModifier {
                 polymorphic(QrVectorBallShape::class){
                     subclass(Default::class)
                     subclass(AsDarkPixels::class)
+                    subclass(AsPixelShape::class)
                     subclass(Circle::class)
                     subclass(RoundCorners::class)
                     subclass(Rhombus::class)
-                    subclass(AsPixelShape::class)
                 }
             }
         }
