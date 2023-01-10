@@ -147,9 +147,9 @@ private class QrCodeDrawableImpl(
 
         var ballNumber = -1
         listOf(
-            2 to 2,
-            2 to codeMatrix.size - 5,
-            codeMatrix.size - 5 to 2
+            2 + shapeIncrease to 2 + shapeIncrease,
+            2 + shapeIncrease to codeMatrix.size - 5 - shapeIncrease,
+            codeMatrix.size - 5 - shapeIncrease to 2 + shapeIncrease
         ).forEach {
 
             val ballPath = if (options.shapes.centralSymmetry){
@@ -176,7 +176,11 @@ private class QrCodeDrawableImpl(
 
     private fun Canvas.drawFrames(){
         var frameNumber = -1
-        listOf(0 to 0, 0 to codeMatrix.size - 7, codeMatrix.size - 7 to 0).forEach {
+        listOf(
+            shapeIncrease to shapeIncrease,
+            shapeIncrease to codeMatrix.size - 7 - shapeIncrease,
+            codeMatrix.size - 7 - shapeIncrease to shapeIncrease
+        ).forEach {
             withTranslation(
                 it.first * pixelSize,
                 it.second * pixelSize
@@ -341,12 +345,12 @@ private class QrCodeDrawableImpl(
         }
     }
 
-    private fun isFrameStart(x: Int, y: Int) = options.colors.frame is QrVectorColor.Unspecified &&
+    private fun isFrameStart(x: Int, y: Int) =
             x - shapeIncrease == 0 && y - shapeIncrease == 0 ||
             x - shapeIncrease == 0 && y + shapeIncrease == codeMatrix.size - 7 ||
             x + shapeIncrease == codeMatrix.size - 7 && y - shapeIncrease == 0
 
-    private fun isBallStart(x: Int, y: Int) = options.colors.ball is QrVectorColor.Unspecified &&
+    private fun isBallStart(x: Int, y: Int) =
             x - shapeIncrease == 2 && y + shapeIncrease == codeMatrix.size - 5 ||
             x + shapeIncrease == codeMatrix.size - 5 && y - shapeIncrease == 2 ||
             x - shapeIncrease == 2 && y - shapeIncrease == 2
