@@ -36,7 +36,7 @@ data class QrVectorOptions(
         var colors : QrVectorColors = QrVectorColors()
         override var logo : QrVectorLogo = QrVectorLogo()
         var background: QrVectorBackground = QrVectorBackground()
-        var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Low
+        var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
 
         fun padding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
             this.padding = padding

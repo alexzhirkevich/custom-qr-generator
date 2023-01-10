@@ -7,13 +7,13 @@ import androidx.core.graphics.drawable.toBitmap
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrEncoder
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrRenderResult
+import com.github.alexzhirkevich.customqrgenerator.style.*
 import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
-import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
-import com.github.alexzhirkevich.customqrgenerator.style.QrColor
-import com.github.alexzhirkevich.customqrgenerator.style.QrColorSeparatePixels
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogo
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.coroutines.*
 import java.nio.charset.Charset
+import kotlin.math.log
 import kotlin.math.roundToInt
 
 internal class QrCodeGeneratorImpl(
@@ -45,7 +45,7 @@ internal class QrCodeGeneratorImpl(
 
         val encoder = QrEncoder(options.copy(
             errorCorrectionLevel = options.errorCorrectionLevel.fit(
-                options.logo.size, options.logo.padding.value
+                options.logo
             )))
         val result = encoder.encode(data, charset)
 
@@ -254,15 +254,19 @@ internal class QrCodeGeneratorImpl(
     }
 }
 
-fun QrErrorCorrectionLevel.fit(
-   logoSize : Float, logoPadding : Float
-) = if (this == QrErrorCorrectionLevel.Auto) when {
-    logoSize * (1 + logoPadding) > .3 ->
-    QrErrorCorrectionLevel.High
-    logoSize * (1 + logoPadding) in .2 .. .3
-            && lvl < ErrorCorrectionLevel.Q ->
-    QrErrorCorrectionLevel.MediumHigh
-    lvl < ErrorCorrectionLevel.M ->
-    QrErrorCorrectionLevel.Medium
-    else -> this
-} else this
+private fun QrErrorCorrectionLevel.fit(
+   logo: QrLogo,
+) : QrErrorCorrectionLevel  {
+    val size = logo.size * (1 + logo.padding.value)
+    val hasLogo = size > Float.MIN_VALUE && logo.drawable != DrawableSource.Empty ||
+            logo.padding != QrLogoPadding.Empty
+    return if (this == QrErrorCorrectionLevel.Auto)
+        when {
+            size > .3 -> QrErrorCorrectionLevel.High
+            size in .2 .. .3 && lvl < ErrorCorrectionLevel.Q ->
+                QrErrorCorrectionLevel.MediumHigh
+            hasLogo && size > .05f && lvl < ErrorCorrectionLevel.M ->
+                QrErrorCorrectionLevel.Medium
+            else -> this
+        } else this
+}

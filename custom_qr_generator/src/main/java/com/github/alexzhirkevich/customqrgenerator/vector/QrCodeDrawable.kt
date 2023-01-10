@@ -9,11 +9,11 @@ import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.neighbors
 import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
-import com.github.alexzhirkevich.customqrgenerator.fit
 import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.vector.style.*
 import com.google.zxing.EncodeHintType
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.Encoder
 import kotlinx.coroutines.runBlocking
 import java.nio.charset.Charset
@@ -41,7 +41,7 @@ private class QrCodeDrawableImpl(
         /* content = */ data.encode(),
         /* ecLevel = */ with(options.errorCorrectionLevel) {
             if (this == QrErrorCorrectionLevel.Auto)
-                fit(options.logo.size, options.logo.padding.value).lvl
+                fit(options.logo).lvl
             else lvl
         },
         /* hints = */ charset?.let {
@@ -490,4 +490,21 @@ private class QrCodeDrawableImpl(
 
         background = createBackground()
     }
+}
+
+private fun QrErrorCorrectionLevel.fit(
+    logo: QrVectorLogo,
+) : QrErrorCorrectionLevel  {
+    val size = logo.size * (1 + logo.padding.value)
+    val hasLogo = size > Float.MIN_VALUE && logo.drawable != DrawableSource.Empty ||
+            logo.padding != QrVectorLogoPadding.Empty
+    return if (this == QrErrorCorrectionLevel.Auto)
+        when {
+            size > .3 -> QrErrorCorrectionLevel.High
+            size in .2 .. .3 && lvl < ErrorCorrectionLevel.Q ->
+                QrErrorCorrectionLevel.MediumHigh
+            hasLogo && size > .05f && lvl < ErrorCorrectionLevel.M ->
+                QrErrorCorrectionLevel.Medium
+            else -> this
+        } else this
 }
