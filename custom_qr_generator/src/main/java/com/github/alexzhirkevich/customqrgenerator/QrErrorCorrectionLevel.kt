@@ -48,5 +48,19 @@ enum class QrErrorCorrectionLevel(
      * If your code has logo, it's better to use [Auto].
      * */
     High(ErrorCorrectionLevel.H)
+}
 
+internal fun QrErrorCorrectionLevel.fit(
+    hasLogo: Boolean,
+    logoSize : Float,
+) : QrErrorCorrectionLevel  {
+    return if (this == QrErrorCorrectionLevel.Auto)
+        when {
+            logoSize > .3 -> QrErrorCorrectionLevel.High
+            logoSize in .2 .. .3 && lvl < ErrorCorrectionLevel.Q ->
+                QrErrorCorrectionLevel.MediumHigh
+            hasLogo && logoSize > .05f && lvl < ErrorCorrectionLevel.M ->
+                QrErrorCorrectionLevel.Medium
+            else -> this
+        } else this
 }

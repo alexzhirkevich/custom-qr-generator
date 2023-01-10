@@ -10,6 +10,7 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.QrRenderResult
 import com.github.alexzhirkevich.customqrgenerator.style.*
 import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogo
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogoPadding
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.coroutines.*
 import java.nio.charset.Charset
@@ -255,18 +256,10 @@ internal class QrCodeGeneratorImpl(
 }
 
 private fun QrErrorCorrectionLevel.fit(
-   logo: QrLogo,
+    logo: QrLogo,
 ) : QrErrorCorrectionLevel  {
     val size = logo.size * (1 + logo.padding.value)
     val hasLogo = size > Float.MIN_VALUE && logo.drawable != DrawableSource.Empty ||
             logo.padding != QrLogoPadding.Empty
-    return if (this == QrErrorCorrectionLevel.Auto)
-        when {
-            size > .3 -> QrErrorCorrectionLevel.High
-            size in .2 .. .3 && lvl < ErrorCorrectionLevel.Q ->
-                QrErrorCorrectionLevel.MediumHigh
-            hasLogo && size > .05f && lvl < ErrorCorrectionLevel.M ->
-                QrErrorCorrectionLevel.Medium
-            else -> this
-        } else this
+    return fit(hasLogo, size)
 }
