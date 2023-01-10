@@ -12,6 +12,7 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
 import com.github.alexzhirkevich.customqrgenerator.fit
 import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
+import com.github.alexzhirkevich.customqrgenerator.style.QrShape
 import com.github.alexzhirkevich.customqrgenerator.vector.style.*
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
@@ -42,7 +43,7 @@ private class QrCodeDrawableImpl(
         /* content = */ data.encode(),
         /* ecLevel = */ with(options.errorCorrectionLevel) {
             if (this == QrErrorCorrectionLevel.Auto)
-                fit(options.logo).lvl
+                fit(options.logo, options.codeShape).lvl
             else lvl
         },
         /* hints = */ charset?.let {
@@ -498,9 +499,9 @@ private class QrCodeDrawableImpl(
 }
 
 private fun QrErrorCorrectionLevel.fit(
-    logo: QrVectorLogo,
+    logo: QrVectorLogo, shape : QrShape
 ) : QrErrorCorrectionLevel  {
-    val size = logo.size * (1 + logo.padding.value)
+    val size = logo.size * (1 + logo.padding.value) * (1 + shape.shapeSizeIncrease)
     val hasLogo = size > Float.MIN_VALUE && logo.drawable != DrawableSource.Empty ||
             logo.padding != QrVectorLogoPadding.Empty
     return fit(hasLogo, size)
