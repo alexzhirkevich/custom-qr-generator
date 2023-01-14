@@ -93,8 +93,9 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
     ) : QrVectorFrameShape {
         override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
             val width = (size/7f) * width
+            val radius = radius.coerceAtLeast(0f)
             addCircle(size/2f, size/2f, size/2f * radius, Path.Direction.CW)
-            addCircle(size/2f,size/2f,(size/2f - width/2f) * radius, Path.Direction.CCW )
+            addCircle(size/2f,size/2f,(size/2f - width) * radius, Path.Direction.CCW )
         }
     }
 
