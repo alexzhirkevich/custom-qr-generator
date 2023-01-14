@@ -50,7 +50,7 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.51'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.6'
 }
 ```
 <b>Step 3.</b> Press ⭐ if you liked this lib
