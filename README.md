@@ -68,7 +68,7 @@ There are 2 types of QR code image - raster (deprecated) image and vector image.
 
 You should use deprecated Raster QR codes only if you need extra customizability or special features like in [this example](/examples/tiktok).
 
-### Jetpack Compose
+### Jetpack Compose \ Drawable-to-Bitmap conversion
 
 #### Before 1.5.5 
 
@@ -76,7 +76,7 @@ You should use deprecated Raster QR codes only if you need extra customizability
 
 #### After 1.5.5 
 
-`Drawable` QR codes can be safely coverted to `Bitmap` and used as Compose `ImageBitmap`. Previous solutions work too.
+`Drawable` QR codes can be safely coverted to `Bitmap` and used as Compose `ImageBitmap` or saved to file. Previous solutions work too.
 
 ---
 
