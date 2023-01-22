@@ -48,7 +48,7 @@ interface QrVectorColor {
     @Serializable
     @SerialName("LinearGradient")
     data class LinearGradient(
-        val colors: Array<Pair<Float, Int>>,
+        val colors: List<Pair<Float, Int>>,
         val orientation: Orientation
     ) : QrVectorColor {
 
@@ -74,30 +74,12 @@ interface QrVectorColor {
                 )
             }
         }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as LinearGradient
-
-            if (!colors.contentEquals(other.colors)) return false
-            if (orientation != other.orientation) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = colors.contentHashCode()
-            result = 31 * result + orientation.hashCode()
-            return result
-        }
     }
 
     @Serializable
     @SerialName("RadialGradient")
     data class RadialGradient(
-        val colors: Array<Pair<Float, Int>>,
+        val colors: List<Pair<Float, Int>>,
         @FloatRange(from = 0.0)
         val radius: Float = sqrt(2f),
     ) : QrVectorColor {
@@ -110,30 +92,12 @@ interface QrVectorColor {
                 Shader.TileMode.CLAMP
             )
         }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as RadialGradient
-
-            if (!colors.contentEquals(other.colors)) return false
-            if (radius != other.radius) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = colors.contentHashCode()
-            result = 31 * result + radius.hashCode()
-            return result
-        }
     }
 
     @Serializable
     @SerialName("SweepGradient")
     data class SweepGradient(
-        val colors: Array<Pair<Float, Int>>
+        val colors: List<Pair<Float, Int>>
     ) : QrVectorColor {
 
         override fun createPaint(width: Float, height: Float): Paint = Paint().apply {
@@ -142,21 +106,6 @@ interface QrVectorColor {
                 colors.map { it.second }.toIntArray(),
                 colors.map { it.first }.toFloatArray()
             )
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as SweepGradient
-
-            if (!colors.contentEquals(other.colors)) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return colors.contentHashCode()
         }
     }
 
