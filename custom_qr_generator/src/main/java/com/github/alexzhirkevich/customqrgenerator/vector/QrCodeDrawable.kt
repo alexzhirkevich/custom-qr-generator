@@ -340,8 +340,8 @@ private class QrCodeDrawableImpl(
                     (size - logoBgSize) / 2f,
                 )
             )
-            darkPixelPath -= bgPath
-            lightPixelPath -= bgPath
+            darkPixelPath.op(bgPath, Path.Op.DIFFERENCE)
+            lightPixelPath.op(bgPath, Path.Op.DIFFERENCE)
             null
         }
     }
@@ -369,7 +369,7 @@ private class QrCodeDrawableImpl(
         if (options.logo.drawable != DrawableSource.Empty) {
             options.logo.scale.scale(
                 logoDrawable, logoSize.roundToInt(), logoSize.roundToInt()
-            ).applyCanvas {
+            ).let { if (it.isMutable) it else it.copy(it.config, true) }.applyCanvas {
                 val clip = Path().apply {
                     addRect(0f, 0f, logoSize, logoSize, Path.Direction.CW)
                 } - (options.logo.shape.createPath(logoSize, Neighbors.Empty))
