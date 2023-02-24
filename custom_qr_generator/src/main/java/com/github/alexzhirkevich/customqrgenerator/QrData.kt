@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import java.net.URLEncoder
 
 fun interface QrData {
 
@@ -19,9 +20,35 @@ fun interface QrData {
         override fun encode(): String = url
     }
 
-    @Serializable
-    data class Email(val email: String) : QrData {
-        override fun encode(): String = "MAILTO: $email"
+    data class Email(
+        val email: String,
+        val copyTo: String? = null,
+        val subject: String? = null,
+        val body: String? = null
+    ) : QrData {
+        override fun encode(): String = buildString {
+            append("mailto:$email")
+
+            if (listOf(copyTo, subject, body).any { it.isNullOrEmpty().not() }) {
+                append("?")
+            }
+            val querries = buildList<String> {
+                if (copyTo.isNullOrEmpty().not()) {
+                    add("cc=$copyTo")
+                }
+                if (subject.isNullOrEmpty().not()) {
+                    add("subject=${escape(subject!!)}")
+                }
+                if (body.isNullOrEmpty().not()) {
+                    add("body=${escape(body!!)}")
+                }
+            }
+            append(querries.joinToString(separator = "&"))
+        }
+
+        private fun escape(text: String) = URLEncoder.encode(text, Charsets.UTF_8.name())
+            .replace("+", " ")
+
     }
 
     @Serializable
