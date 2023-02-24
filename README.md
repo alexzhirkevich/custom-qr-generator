@@ -15,6 +15,8 @@ Try library features on live app example
 
 <a href="https://play.google.com/store/apps/details?id=com.github.alexzhirkevich.qrdesigner"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" height="80px"/></a>
 
+I will be grateful, if you left a positive review for it in Google Play 😊
+
 Some useful links:
 - [Examples](/examples) with source code
 - [Wiki](https://github.com/alexzhirkevich/custom-qr-generator/wiki)
