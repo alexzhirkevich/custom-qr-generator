@@ -30,6 +30,7 @@ Some useful links:
 
 
 ## Installation
+[![Android CI](https://github.com/alexzhirkevich/custom-qr-generator/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/alexzhirkevich/custom-qr-generator/actions/workflows/android.yml)
 [![](https://jitpack.io/v/alexzhirkevich/custom-qr-generator.svg)](https://jitpack.io/#alexzhirkevich/custom-qr-generator)
 [![](https://jitpack.io/v/alexzhirkevich/custom-qr-generator/month.svg)](https://jitpack.io/#alexzhirkevich/custom-qr-generator)
 [![](https://jitpack.io/v/alexzhirkevich/custom-qr-generator/week.svg)](https://jitpack.io/#alexzhirkevich/custom-qr-generator)
