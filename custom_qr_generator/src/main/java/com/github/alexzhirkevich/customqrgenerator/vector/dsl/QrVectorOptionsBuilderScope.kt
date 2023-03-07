@@ -12,6 +12,8 @@ sealed interface QrVectorOptionsBuilderScope  {
     var errorCorrectionLevel: QrErrorCorrectionLevel
     var codeShape : QrShape
 
+    var fourthEyeEnabled : Boolean
+
     fun offset(block: QrOffsetBuilderScope.() -> Unit)
     fun shapes(centralSymmetry : Boolean = true, block: QrVectorShapesBuilderScope.() -> Unit)
     fun colors(block: QrVectorColorsBuilderScope.() -> Unit)
@@ -36,6 +38,8 @@ internal class InternalQrVectorOptionsBuilderScope(
         }
 
     override var codeShape: QrShape by builder::shape
+
+    override var fourthEyeEnabled: Boolean by builder::fourthEyeEnabled
 
     override fun offset(block: QrOffsetBuilderScope.() -> Unit) {
         InternalQrOffsetBuilderScope(builder).apply(block)

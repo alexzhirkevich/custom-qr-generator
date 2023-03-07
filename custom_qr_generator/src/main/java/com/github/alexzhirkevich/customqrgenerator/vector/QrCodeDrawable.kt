@@ -57,6 +57,25 @@ private class QrCodeDrawableImpl(
         ((initialMatrix.size * options.codeShape.shapeSizeIncrease).roundToInt()
                 - initialMatrix.size) / 2
 
+    private val balls = mutableListOf(
+        2 + shapeIncrease to 2 + shapeIncrease,
+        2 + shapeIncrease to codeMatrix.size - 5 - shapeIncrease,
+        codeMatrix.size - 5 - shapeIncrease to 2 + shapeIncrease
+    ).apply {
+        if (options.fourthEyeEnabled)
+            this += codeMatrix.size - 5 - shapeIncrease to codeMatrix.size - 5 - shapeIncrease
+    }.toList()
+
+    private val frames = mutableListOf(
+        shapeIncrease to shapeIncrease,
+        shapeIncrease to codeMatrix.size - 7 - shapeIncrease,
+        codeMatrix.size - 7 - shapeIncrease to shapeIncrease
+    ).apply {
+        if (options.fourthEyeEnabled) {
+            this += codeMatrix.size - 7 - shapeIncrease to codeMatrix.size - 7 - shapeIncrease
+        }
+    }.toList()
+
     private var mColorFilter: ColorFilter? = null
     private var mAlpha = 255
 
@@ -147,11 +166,8 @@ private class QrCodeDrawableImpl(
     private fun Canvas.drawBalls(){
 
         var ballNumber = -1
-        listOf(
-            2 + shapeIncrease to 2 + shapeIncrease,
-            2 + shapeIncrease to codeMatrix.size - 5 - shapeIncrease,
-            codeMatrix.size - 5 - shapeIncrease to 2 + shapeIncrease
-        ).forEach {
+
+        balls.forEach {
 
             val ballPath = if (options.shapes.centralSymmetry){
                 ballNumber = (ballNumber+1%3)
@@ -159,7 +175,8 @@ private class QrCodeDrawableImpl(
                     val angle = when(ballNumber){
                         0 -> 0f
                         1 -> -90f
-                        else -> 90f
+                        2-> 90f
+                        else -> 180f
                     }
                     transform(rotationMatrix(angle, pixelSize*3/2,pixelSize*3/2))
                 }
@@ -177,11 +194,8 @@ private class QrCodeDrawableImpl(
 
     private fun Canvas.drawFrames(){
         var frameNumber = -1
-        listOf(
-            shapeIncrease to shapeIncrease,
-            shapeIncrease to codeMatrix.size - 7 - shapeIncrease,
-            codeMatrix.size - 7 - shapeIncrease to shapeIncrease
-        ).forEach {
+
+        frames.forEach {
             withTranslation(
                 it.first * pixelSize,
                 it.second * pixelSize
@@ -192,7 +206,8 @@ private class QrCodeDrawableImpl(
                         val angle = when(frameNumber){
                             0 -> 0f
                             1 -> -90f
-                            else -> 90f
+                            2 -> 90f
+                            else -> 180f
                         }
                         transform(rotationMatrix(angle, pixelSize*7/2,pixelSize*7/2))
                     }
@@ -349,20 +364,20 @@ private class QrCodeDrawableImpl(
     private fun isFrameStart(x: Int, y: Int) =
             x - shapeIncrease == 0 && y - shapeIncrease == 0 ||
             x - shapeIncrease == 0 && y + shapeIncrease == codeMatrix.size - 7 ||
-            x + shapeIncrease == codeMatrix.size - 7 && y - shapeIncrease == 0
+            x + shapeIncrease == codeMatrix.size - 7 && y - shapeIncrease == 0 ||
+            options.fourthEyeEnabled && x + shapeIncrease == codeMatrix.size - 7 && y + shapeIncrease == codeMatrix.size - 7
 
     private fun isBallStart(x: Int, y: Int) =
             x - shapeIncrease == 2 && y + shapeIncrease == codeMatrix.size - 5 ||
             x + shapeIncrease == codeMatrix.size - 5 && y - shapeIncrease == 2 ||
-            x - shapeIncrease == 2 && y - shapeIncrease == 2
+            x - shapeIncrease == 2 && y - shapeIncrease == 2 ||
+            options.fourthEyeEnabled && x + shapeIncrease == codeMatrix.size - 5 && y + shapeIncrease == codeMatrix.size - 5
 
     private fun isInsideFrameOrBall(x: Int, y: Int): Boolean {
-        return x - shapeIncrease in -1..7 &&
-                y - shapeIncrease in -1..7 ||
-                x - shapeIncrease in -1..7 &&
-                y + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 ||
-                x + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 &&
-                y - shapeIncrease in -1..7
+        return x - shapeIncrease in -1..7 && y - shapeIncrease in -1..7 ||
+                x - shapeIncrease in -1..7 && y + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 ||
+                x + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 && y - shapeIncrease in -1..7 ||
+                options.fourthEyeEnabled && x + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1 && y + shapeIncrease in codeMatrix.size - 8 until codeMatrix.size + 1
     }
 
     private fun createLogo(logoSize: Float): Bitmap? =
@@ -413,7 +428,8 @@ private class QrCodeDrawableImpl(
                                 val angle = when(frameNumber){
                                     0 -> 0f
                                     1 -> -90f
-                                    else -> 90f
+                                    2 -> 90f
+                                    else -> 180f
                                 }
                                 transform(rotationMatrix(angle, pixelSize*7/2,pixelSize*7/2))
                             }
@@ -431,7 +447,8 @@ private class QrCodeDrawableImpl(
                                 val angle = when(ballNumber){
                                     0 -> 0f
                                     1 -> -90f
-                                    else -> 90f
+                                    2 -> 90f
+                                    else -> 180f
                                 }
                                 transform(rotationMatrix(angle, pixelSize*3/2,pixelSize*3/2))
                             }
