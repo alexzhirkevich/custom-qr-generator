@@ -70,7 +70,7 @@ There are 2 types of QR code image - raster (deprecated) image and vector image.
 
 |  | Raster (deprecated)| Vector |
 | --- | --- | --- |
-| Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` |
+| Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` <br> (and Jetpack Compose `Painter`)|
 | Size | ❌ Fixed | ✅ Dynamic. Based on `View` size |
 | Speed | ❌ Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | ✅ Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
 
