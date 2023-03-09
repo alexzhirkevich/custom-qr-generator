@@ -595,5 +595,12 @@ See [Issue #6](https://github.com/alexzhirkevich/custom-qr-generator/issues/6)
 
 See [Issue #13](https://github.com/alexzhirkevich/custom-qr-generator/issues/13)
 
+---
+
+### I want a QR code with 4 eyes
+
+See [Issue #19](https://github.com/alexzhirkevich/custom-qr-generator/issues/10)
+
+
 --- 
 
