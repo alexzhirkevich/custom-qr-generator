@@ -589,7 +589,7 @@ See [Issue #13](https://github.com/alexzhirkevich/custom-qr-generator/issues/13)
 
 ### I want a QR code with 4 eyes
 
-See [Issue #19](https://github.com/alexzhirkevich/custom-qr-generator/issues/10)
+See [Issue #19](https://github.com/alexzhirkevich/custom-qr-generator/issues/19)
 
 
 --- 
