@@ -15,7 +15,7 @@ Try library features on live app example
 
 <a href="https://play.google.com/store/apps/details?id=com.github.alexzhirkevich.qrdesigner"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" height="80px"/></a>
 
-I will be grateful, if you left a positive review for it in Google Play 😊
+I will be glad, if you left a positive review for it in Google Play 😊
 
 Some useful links:
 - [Examples](/examples) with source code
@@ -58,7 +58,7 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.7'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.8'
 
 ```
 <b>Step 3.</b> Press ⭐ if you liked this lib
@@ -183,8 +183,28 @@ val options = QrVectorOptions.Builder()
 <b>Step 3.</b> Create QR code drawable:
 
 ```kotlin
-val drawable = QrCodeDrawable(context, data, options)
+val drawable : Drawable = QrCodeDrawable(context, data, options)
 ```
+
+Or for Jetpack Compose:
+
+```kotlin
+val painter : Painter = rememberQrCodePainter(
+    data = data,
+    options = options
+)
+```
+
+Also you can build options inline:
+
+```kotlin
+val painter : Painter = rememberQrCodePainter(data){
+    shapes {
+      //...
+    }
+}
+```
+
 
 ---
 
