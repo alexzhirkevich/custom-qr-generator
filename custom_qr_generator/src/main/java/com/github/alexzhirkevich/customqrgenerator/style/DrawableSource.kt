@@ -22,12 +22,12 @@ import kotlinx.serialization.modules.subclass
 
 fun interface DrawableSource {
 
-    suspend fun get(context: Context) : Drawable
+    fun get(context: Context) : Drawable
 
     @Serializable
     @SerialName("Empty")
     object Empty : DrawableSource {
-        override suspend fun get(context: Context): Drawable = EmptyDrawable
+        override fun get(context: Context): Drawable = EmptyDrawable
     }
 
     /**
@@ -36,7 +36,7 @@ fun interface DrawableSource {
     @Serializable
     @SerialName("Resource")
     data class Resource(@DrawableRes val id : Int) : DrawableSource {
-        override suspend fun get(context: Context): Drawable =
+        override fun get(context: Context): Drawable =
             requireNotNull(ContextCompat.getDrawable(context, id))
     }
 
@@ -48,20 +48,21 @@ fun interface DrawableSource {
     @Suppress("BlockingMethodInNonBlockingContext")
     data class File(val uri : String) : DrawableSource {
 
-        override suspend fun get(context: Context): Drawable =
-            withContext(Dispatchers.IO) {
-                if (Build.VERSION.SDK_INT < 28)
-                    MediaStore.Images.Media
-                        .getBitmap(context.contentResolver, uri.toUri())
-                        .copy(Bitmap.Config.ARGB_8888,false)
-                        .toDrawable(context.resources)
-                else ImageDecoder
-                    .decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri.toUri()))
-                    .copy(Bitmap.Config.ARGB_8888,false)
+        override fun get(context: Context): Drawable =
+            if (Build.VERSION.SDK_INT < 28)
+                MediaStore.Images.Media
+                    .getBitmap(context.contentResolver, uri.toUri())
+                    .copy(Bitmap.Config.ARGB_8888, false)
                     .toDrawable(context.resources)
-            }
+            else ImageDecoder
+                .decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri.toUri()))
+                .copy(Bitmap.Config.ARGB_8888, false)
+                .toDrawable(context.resources)
     }
 
+    class Custom(val drawable: Drawable) : DrawableSource {
+        override fun get(context: Context): Drawable = drawable
+    }
 
     companion object : SerializationProvider {
 

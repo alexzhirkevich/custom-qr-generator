@@ -4,7 +4,6 @@ plugins {
     id 'maven-publish'
     id 'kotlin-kapt'
     id 'kotlinx-serialization'
-
 }
 
 android {
@@ -25,6 +24,14 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.3"
+    }
+
+    buildFeatures {
+        compose = true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -49,7 +56,11 @@ dependencies {
 
     implementation 'com.google.zxing:core:3.5.1'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"
+    implementation "com.google.accompanist:accompanist-drawablepainter:0.28.0"
+    implementation "androidx.compose.runtime:runtime:1.3.3"
+    implementation "androidx.compose.foundation:foundation:1.3.1"
+
 }
 
 afterEvaluate {

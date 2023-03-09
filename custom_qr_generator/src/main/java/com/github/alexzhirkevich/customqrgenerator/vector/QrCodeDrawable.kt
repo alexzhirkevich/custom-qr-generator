@@ -3,6 +3,8 @@ package com.github.alexzhirkevich.customqrgenerator.vector
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.*
 import com.github.alexzhirkevich.customqrgenerator.QrData
 import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
@@ -13,11 +15,11 @@ import com.github.alexzhirkevich.customqrgenerator.fit
 import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
+import com.github.alexzhirkevich.customqrgenerator.vector.dsl.QrVectorOptionsBuilderScope
 import com.github.alexzhirkevich.customqrgenerator.vector.style.*
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.zxing.EncodeHintType
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.Encoder
-import kotlinx.coroutines.runBlocking
 import java.nio.charset.Charset
 import kotlin.math.roundToInt
 
@@ -31,6 +33,28 @@ fun QrCodeDrawable(
     charset: Charset?=null
 ) : Drawable = QrCodeDrawableImpl(context, data, options, charset)
 
+@androidx.compose.runtime.Composable
+fun rememberQrCodePainter(
+    data: QrData,
+    charset: Charset? = null,
+    options : QrVectorOptions
+) : Painter = rememberDrawablePainter(QrCodeDrawable(
+        context = LocalContext.current,
+        data = data,
+        options = options,
+        charset = charset
+    ))
+
+@androidx.compose.runtime.Composable
+fun rememberQrCodePainter(
+    data: QrData,
+    charset: Charset? = null,
+    options : QrVectorOptionsBuilderScope.() -> Unit
+) : Painter = rememberQrCodePainter(
+        data = data,
+        options = createQrVectorOptions(options),
+        charset = charset
+    )
 
 private class QrCodeDrawableImpl(
     context: Context,
@@ -79,13 +103,9 @@ private class QrCodeDrawableImpl(
     private var mColorFilter: ColorFilter? = null
     private var mAlpha = 255
 
-    private val logoDrawable = runBlocking {
-        options.logo.drawable.get(context)
-    }
+    private val logoDrawable = options.logo.drawable.get(context)
 
-    private val backgroundDrawable = runBlocking {
-        options.background.drawable.get(context)
-    }
+    private val backgroundDrawable = options.background.drawable.get(context)
 
     private val ballShape = options.shapes.ball.takeIf {
         it !is QrVectorBallShape.AsDarkPixels
@@ -170,7 +190,7 @@ private class QrCodeDrawableImpl(
         balls.forEach {
 
             val ballPath = if (options.shapes.centralSymmetry){
-                ballNumber = (ballNumber+1%3)
+                ballNumber += 1
                 Path(ballPath).apply {
                     val angle = when(ballNumber){
                         0 -> 0f
@@ -201,7 +221,7 @@ private class QrCodeDrawableImpl(
                 it.second * pixelSize
             ) {
                 val framePath = if (options.shapes.centralSymmetry){
-                    frameNumber = (frameNumber+1%3)
+                    frameNumber += 1
                     Path(framePath).apply {
                         val angle = when(frameNumber){
                             0 -> 0f
@@ -229,7 +249,7 @@ private class QrCodeDrawableImpl(
         val density = canvas.density
         canvas.density = Bitmap.DENSITY_NONE
 
-        canvas.drawBg()
+          canvas.drawBg()
 
         canvas.withTranslation(
             (w - size) / 2f * offsetX,
@@ -423,7 +443,7 @@ private class QrCodeDrawableImpl(
                 when {
                     options.colors.frame is QrVectorColor.Unspecified && isFrameStart(x, y) -> {
                         val framePath = if (options.shapes.centralSymmetry){
-                            frameNumber = (frameNumber+1%3)
+                            frameNumber = (frameNumber+1)
                             Path(framePath).apply {
                                 val angle = when(frameNumber){
                                     0 -> 0f
@@ -442,7 +462,7 @@ private class QrCodeDrawableImpl(
 
                     options.colors.ball is QrVectorColor.Unspecified && isBallStart(x, y) -> {
                         val ballPath = if (options.shapes.centralSymmetry){
-                            ballNumber = (ballNumber+1%3)
+                            ballNumber += 1
                             Path(ballPath).apply {
                                 val angle = when(ballNumber){
                                     0 -> 0f
@@ -522,4 +542,41 @@ private fun QrErrorCorrectionLevel.fit(
     val hasLogo = size > Float.MIN_VALUE && logo.drawable != DrawableSource.Empty ||
             logo.padding != QrVectorLogoPadding.Empty
     return fit(hasLogo, size)
+}
+
+private class QrColorDrawable(
+    private val color: QrVectorColor
+    ) : Drawable(){
+
+    private var alph : Int = 255
+    private var filter : ColorFilter? = null
+    private var paint : Paint? = null
+
+    override fun draw(canvas: Canvas) {
+        paint?.let(canvas::drawPaint)
+    }
+
+    override fun setBounds(left: Int, top: Int, right: Int, bottom: Int) {
+        if (right - left == 0 || bottom - top == 0)
+            return
+        paint = color.createPaint(right - left.toFloat(), bottom-top.toFloat())
+    }
+
+    override fun setBounds(bounds: Rect) {
+        setBounds(bounds.left, bounds.top, bounds.right, bounds.bottom)
+    }
+
+    override fun setAlpha(alpha: Int) {
+        this.alph = alpha
+    }
+
+    override fun setColorFilter(filter: ColorFilter?) {
+        this.filter = filter
+    }
+
+    @Deprecated("Deprecated in Java",
+        ReplaceWith("PixelFormat.TRANSLUCENT", "android.graphics.PixelFormat")
+    )
+    override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
+
 }

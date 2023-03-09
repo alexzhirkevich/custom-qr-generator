@@ -4,12 +4,15 @@ import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
 import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
 import com.github.alexzhirkevich.customqrgenerator.style.BitmapScale
 import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
-import com.github.alexzhirkevich.customqrgenerator.style.QrShape
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 
-interface IQRVectorBackground  {
+interface IQrVectorBackground  {
+
+    /**
+     * Background image of QR code. Applied aon top of [color]
+     * */
     val drawable: DrawableSource
     val scale: BitmapScale
     val color : QrVectorColor
@@ -20,7 +23,7 @@ data class QrVectorBackground(
     override val drawable: DrawableSource = DrawableSource.Empty,
     override val scale: BitmapScale = BitmapScale.FitXY,
     override val color : QrVectorColor = QrVectorColor.Transparent
-) : IQRVectorBackground{
+) : IQrVectorBackground{
 
     companion object : SerializationProvider {
         @ExperimentalSerializationApi
