@@ -15,7 +15,7 @@ Try library features on live app example
 
 <a href="https://play.google.com/store/apps/details?id=com.github.alexzhirkevich.qrdesigner"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" height="80px"/></a>
 
-I will be glad, if you left a positive review for it in Google Play 😊
+I'll be glad, if you leave a positive review for it in Google Play 😊
 
 Some useful links:
 - [Examples](/examples) with source code
@@ -70,7 +70,7 @@ There are 2 types of QR code image - raster (deprecated) image and vector image.
 
 |  | Raster (deprecated)| Vector |
 | --- | --- | --- |
-| Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` |
+| Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` <br> (and Jetpack Compose `Painter`)|
 | Size | ❌ Fixed | ✅ Dynamic. Based on `View` size |
 | Speed | ❌ Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | ✅ Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
 
@@ -589,7 +589,7 @@ See [Issue #13](https://github.com/alexzhirkevich/custom-qr-generator/issues/13)
 
 ### I want a QR code with 4 eyes
 
-See [Issue #19](https://github.com/alexzhirkevich/custom-qr-generator/issues/10)
+See [Issue #19](https://github.com/alexzhirkevich/custom-qr-generator/issues/19)
 
 
 --- 
