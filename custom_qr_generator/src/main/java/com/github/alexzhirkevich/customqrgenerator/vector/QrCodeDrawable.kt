@@ -68,7 +68,7 @@ fun rememberQrCodePainter(
     options : QrVectorOptionsBuilderScope.() -> Unit
 ) : Painter = rememberQrCodePainter(
         data = data,
-        options = remember(keys){ createQrVectorOptions(options) },
+        options = remember(keys = keys){ createQrVectorOptions(options) },
         charset = charset
     )
 
