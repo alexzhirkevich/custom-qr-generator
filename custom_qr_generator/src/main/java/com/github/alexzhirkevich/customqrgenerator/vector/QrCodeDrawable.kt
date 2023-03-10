@@ -3,6 +3,7 @@ package com.github.alexzhirkevich.customqrgenerator.vector
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.*
@@ -33,6 +34,13 @@ fun QrCodeDrawable(
     charset: Charset?=null
 ) : Drawable = QrCodeDrawableImpl(context, data, options, charset)
 
+/**
+ * @param data qr code payload.
+ * Should be [remember]ed if payload is static to avoid image recomposition
+ * @param charset [data] encoding. Leave null for default byte encoding
+ * @param options qr code styling options.
+ * Should be [remember]ed if options are static to avoid image recomposition
+ * */
 @androidx.compose.runtime.Composable
 fun rememberQrCodePainter(
     data: QrData,
@@ -45,14 +53,22 @@ fun rememberQrCodePainter(
         charset = charset
     ))
 
+
+/**
+ * @param data qr code payload. Should be [remember]ed if payload is const to avoid painter recomposition
+ * @param charset [data] encoding. Leave null for default byte encoding
+ * @param keys dependencies of [options] builder.
+ * @param options builder of options same as [createQrVectorOptions]
+ * */
 @androidx.compose.runtime.Composable
 fun rememberQrCodePainter(
     data: QrData,
     charset: Charset? = null,
+    vararg keys : Any?,
     options : QrVectorOptionsBuilderScope.() -> Unit
 ) : Painter = rememberQrCodePainter(
         data = data,
-        options = createQrVectorOptions(options),
+        options = remember(keys){ createQrVectorOptions(options) },
         charset = charset
     )
 
@@ -249,7 +265,7 @@ private class QrCodeDrawableImpl(
         val density = canvas.density
         canvas.density = Bitmap.DENSITY_NONE
 
-          canvas.drawBg()
+        canvas.drawBg()
 
         canvas.withTranslation(
             (w - size) / 2f * offsetX,
