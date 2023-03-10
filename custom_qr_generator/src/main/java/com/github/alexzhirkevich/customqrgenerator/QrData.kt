@@ -1,5 +1,8 @@
+@file:Suppress("UNUSED")
+
 package com.github.alexzhirkevich.customqrgenerator
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -306,6 +309,7 @@ fun interface QrData {
         override fun encode(): String = "{{{market://details?id=%$appPackage}}}"
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     companion object : SerializationProvider {
         override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
             SerializersModule {

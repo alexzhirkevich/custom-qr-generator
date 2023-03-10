@@ -1,8 +1,7 @@
 package com.github.alexzhirkevich.customqrgenerator.vector.dsl
 
 import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
-import com.github.alexzhirkevich.customqrgenerator.dsl.InternalQrOffsetBuilderScope
-import com.github.alexzhirkevich.customqrgenerator.dsl.QrOffsetBuilderScope
+import com.github.alexzhirkevich.customqrgenerator.style.QrOffset
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
 import com.github.alexzhirkevich.customqrgenerator.vector.QrVectorOptions
 
@@ -14,21 +13,29 @@ internal class InternalQrVectorOptionsBuilderScope(
     override var padding: Float
         get() = builder.padding
         set(value) {
-            builder.padding(value)
+            builder.setPaddding(value)
         }
 
     override var errorCorrectionLevel: QrErrorCorrectionLevel
         get() = builder.errorCorrectionLevel
         set(value) {
-            builder.errorCorrectionLevel(value)
+            builder.setErrorCorrectionLevel(value)
         }
 
-    override var codeShape: QrShape by builder::shape
+    override var codeShape: QrShape
+    get() = builder.shape
+    set(value){
+        builder.setCodeShape(value)
+    }
 
-    override var fourthEyeEnabled: Boolean by builder::fourthEyeEnabled
+    override var fourthEyeEnabled: Boolean
+    get() = builder.fourthEyeEnabled
+    set(value) {
+        builder.setFourthEyeEnabled(value)
+    }
 
-    override fun offset(block: QrOffsetBuilderScope.() -> Unit) {
-        InternalQrOffsetBuilderScope(builder).apply(block)
+    override fun offset(x : Float, y : Float) {
+        builder.setOffset(QrOffset(x,y))
     }
 
     override fun shapes(

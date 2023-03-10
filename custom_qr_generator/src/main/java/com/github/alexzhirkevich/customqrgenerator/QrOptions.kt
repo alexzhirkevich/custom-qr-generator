@@ -29,16 +29,16 @@ data class QrOptions(
     class Builder(
         @IntRange(from = 0) val width: Int,
         @IntRange(from = 0) val height: Int = width
-    ) : QrLogoBuilder, QrOffsetBuilder {
+    )  {
 
-        var padding = .125f
-        override var offset = QrOffset.Zero
-        var colors = QrColors()
-        override var logo = QrLogo()
-        var background = QrBackground()
-        var elementsShapes = QrElementsShapes()
-        var codeShape: QrShape = QrShape.Default
-        var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
+        internal var padding = .125f
+        internal var offset = QrOffset.Zero
+        internal var colors = QrColors()
+        internal var logo = QrLogo()
+        internal var background = QrBackground()
+        internal var elementsShapes = QrElementsShapes()
+        internal var codeShape: QrShape = QrShape.Default
+        internal var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
 
         fun build(): QrOptions = QrOptions(
             width,height, padding, offset, colors, logo, background,

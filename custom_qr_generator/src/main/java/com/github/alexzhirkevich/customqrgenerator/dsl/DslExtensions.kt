@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.github.alexzhirkevich.customqrgenerator.dsl
 
 import android.graphics.Canvas
@@ -73,7 +75,7 @@ inline fun <reified T : QrShapeModifier> QrElementsShapesBuilderScope.pathShape(
 /**
  * @see [pathShape]
  * */
-@Suppress("unchecked_cast", "deprecation")
+@Suppress("unchecked_cast")
 fun <T : QrShapeModifier> QrElementsShapesBuilderScope.pathShape(
     clazz: KClass<T>,
     efficiency: Efficiency = Efficiency.Time,
@@ -100,7 +102,6 @@ inline fun <reified T : QrShapeModifier> QrLogoBuilderScope.pathShape(
     noinline builder: Path.(size: Int) -> Unit
 ): T = pathShape(T::class, efficiency, builder)
 
-@Suppress("deprecation")
 fun <T : QrShapeModifier> QrLogoBuilderScope.pathShape(
     clazz: KClass<T>,
     efficiency: Efficiency = Efficiency.Time,
@@ -124,7 +125,6 @@ fun <T : QrShapeModifier> QrLogoBuilderScope.pathShape(
     ReplaceWith("pathShape"),
     level = DeprecationLevel.WARNING
 )
-@Suppress("deprecation")
 inline fun <reified T : QrShapeModifier> QrElementsShapesBuilderScope.drawShape(
     noinline draw : Canvas.(drawPaint : Paint, erasePaint : Paint) -> Unit
 ): T = drawShape(T::class, draw)

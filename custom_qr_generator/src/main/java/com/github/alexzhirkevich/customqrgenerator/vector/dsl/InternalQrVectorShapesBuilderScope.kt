@@ -12,7 +12,7 @@ internal class InternalQrVectorShapesBuilderScope(
 ) : QrVectorShapesBuilderScope {
 
     init {
-        builder.shapes(builder.shapes.copy(
+        builder.setShapes(builder.shapes.copy(
             centralSymmetry = centralSymmetry
         ))
     }
@@ -20,7 +20,7 @@ internal class InternalQrVectorShapesBuilderScope(
     override var darkPixel: QrVectorPixelShape
         get() = builder.shapes.darkPixel
         set(value) = with(builder){
-            shapes(shapes.copy(
+            setShapes(shapes.copy(
                 darkPixel = value
             ))
         }
@@ -28,7 +28,7 @@ internal class InternalQrVectorShapesBuilderScope(
     override var lightPixel: QrVectorPixelShape
         get() = builder.shapes.lightPixel
         set(value) = with(builder){
-            shapes(shapes.copy(
+            setShapes(shapes.copy(
                 lightPixel = value
             ))
         }
@@ -36,7 +36,7 @@ internal class InternalQrVectorShapesBuilderScope(
     override var ball: QrVectorBallShape
         get() = builder.shapes.ball
         set(value) = with(builder){
-            shapes(shapes.copy(
+            setShapes(shapes.copy(
                 ball = value
             ))
         }
@@ -44,7 +44,7 @@ internal class InternalQrVectorShapesBuilderScope(
     override var frame: QrVectorFrameShape
         get() = builder.shapes.frame
         set(value) = with(builder){
-            shapes(shapes.copy(
+            setShapes(shapes.copy(
                 frame = value
             ))
         }

@@ -36,7 +36,7 @@ sealed interface QrVectorOptionsBuilderScope  {
      * Offset of the QR code pattern relative to padding size.
      * X and Y should be from -1 to 1. Both are 0 by default
      * */
-    fun offset(block: QrOffsetBuilderScope.() -> Unit)
+    fun offset(x : Float, y : Float)
 
     /**
      * Shapes of QR code elements.

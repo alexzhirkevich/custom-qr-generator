@@ -1,8 +1,10 @@
+@file:Suppress("DEPRECATION")
+
 package com.github.alexzhirkevich.customqrgenerator.dsl
 
+import com.github.alexzhirkevich.customqrgenerator.QrOptions
 import com.github.alexzhirkevich.customqrgenerator.style.IQrOffset
 import com.github.alexzhirkevich.customqrgenerator.style.QrOffset
-import com.github.alexzhirkevich.customqrgenerator.style.QrOffsetBuilder
 
 /**
  * @see QrOffset
@@ -13,7 +15,7 @@ sealed interface QrOffsetBuilderScope : IQrOffset {
 }
 
 internal class InternalQrOffsetBuilderScope(
-    private val builder: QrOffsetBuilder
+    private val builder: QrOptions.Builder
 ) : QrOffsetBuilderScope {
 
     override var x: Float

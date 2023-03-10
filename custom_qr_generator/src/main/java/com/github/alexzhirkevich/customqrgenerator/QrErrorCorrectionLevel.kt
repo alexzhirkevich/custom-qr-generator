@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED")
+
 package com.github.alexzhirkevich.customqrgenerator
 
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel

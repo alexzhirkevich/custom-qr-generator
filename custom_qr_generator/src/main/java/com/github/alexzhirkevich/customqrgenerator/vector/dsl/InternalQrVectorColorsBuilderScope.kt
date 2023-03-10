@@ -9,7 +9,7 @@ internal class InternalQrVectorColorsBuilderScope(
     override var dark: QrVectorColor
         get() = builder.colors.dark
         set(value) = with(builder){
-            colors(colors.copy(
+            setColors(colors.copy(
                 dark = value
             ))
         }
@@ -17,7 +17,7 @@ internal class InternalQrVectorColorsBuilderScope(
     override var light: QrVectorColor
         get() = builder.colors.light
         set(value) = with(builder){
-            colors(colors.copy(
+            setColors(colors.copy(
                 light = value
             ))
         }
@@ -25,14 +25,14 @@ internal class InternalQrVectorColorsBuilderScope(
     override var ball: QrVectorColor
         get() = builder.colors.ball
         set(value) = with(builder){
-            colors(colors.copy(
+            setColors(colors.copy(
                 ball = value
             ))
         }
     override var frame: QrVectorColor
         get() = builder.colors.frame
         set(value) = with(builder){
-            colors(colors.copy(
+            setColors(colors.copy(
                 frame = value
             ))
         }

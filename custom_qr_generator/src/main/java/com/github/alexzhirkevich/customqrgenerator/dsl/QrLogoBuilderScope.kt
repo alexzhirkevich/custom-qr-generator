@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.github.alexzhirkevich.customqrgenerator.dsl
 
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
@@ -18,7 +20,7 @@ sealed interface QrLogoBuilderScope : IQRLogo {
 }
 
 internal class InternalQrLogoBuilderScope(
-     val builder: QrLogoBuilder,
+     val builder: QrOptions.Builder,
      val width : Int,
      val height : Int,
      val codePadding : Float = -1f

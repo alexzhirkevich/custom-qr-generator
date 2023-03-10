@@ -84,7 +84,3 @@ data class QrVectorLogo(
     }
 }
 
-
-interface QrVectorLogoBuilder {
-    var logo : QrVectorLogo
-}

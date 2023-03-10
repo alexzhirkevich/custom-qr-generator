@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.github.alexzhirkevich.customqrgenerator.dsl
 
 import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel

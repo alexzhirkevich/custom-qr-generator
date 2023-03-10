@@ -12,16 +12,16 @@ internal class InternalQrVectorBackgroundBuilderScope(
     override var drawable: DrawableSource
         get() = builder.background.drawable
         set(value) = with(builder){
-            background(background.copy(drawable = value))
+            setBackground(background.copy(drawable = value))
         }
     override var scale: BitmapScale
         get() = builder.background.scale
         set(value) = with(builder){
-            background(background.copy(scale = value))
+            setBackground(background.copy(scale = value))
         }
     override var color: QrVectorColor
         get() = builder.background.color
         set(value) = with(builder) {
-            background(background.copy(color = value))
+            setBackground(background.copy(color = value))
         }
 }

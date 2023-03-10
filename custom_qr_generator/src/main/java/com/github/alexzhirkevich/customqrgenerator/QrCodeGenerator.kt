@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION", "UNUSED")
+
 package com.github.alexzhirkevich.customqrgenerator
 
 import android.content.Context

@@ -24,7 +24,3 @@ data class QrOffset(
         val Zero = QrOffset(0f,0f)
     }
 }
-
-interface QrOffsetBuilder {
-    var offset : QrOffset
-}

@@ -5,7 +5,6 @@ import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
 import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
 import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
 import com.github.alexzhirkevich.customqrgenerator.style.QrOffset
-import com.github.alexzhirkevich.customqrgenerator.style.QrOffsetBuilder
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
 import com.github.alexzhirkevich.customqrgenerator.vector.dsl.InternalQrVectorOptionsBuilderScope
 import com.github.alexzhirkevich.customqrgenerator.vector.dsl.QrVectorOptionsBuilderScope
@@ -27,48 +26,56 @@ data class QrVectorOptions(
     val errorCorrectionLevel: QrErrorCorrectionLevel,
     val fourthEyeEnabled : Boolean,
 )  {
-    class Builder : QrOffsetBuilder, QrVectorLogoBuilder {
+    class Builder {
 
         @FloatRange(from = .0, to = .5)
         var padding : Float = 0f
-        override var offset: QrOffset = QrOffset(0f,0f)
+        private set
+        var offset: QrOffset = QrOffset(0f,0f)
+        private set
         var shapes: QrVectorShapes = QrVectorShapes()
+        private set
         var shape : QrShape = QrShape.Default
+        private set
         var colors : QrVectorColors = QrVectorColors()
-        override var logo : QrVectorLogo = QrVectorLogo()
+        private set
+        var logo : QrVectorLogo = QrVectorLogo()
+        private set
         var background: QrVectorBackground = QrVectorBackground()
+        private set
         var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
+        private set
         var fourthEyeEnabled : Boolean = false
-
-        fun padding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
+        private set
+        fun setPaddding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
             this.padding = padding
         }
 
-        fun offset(offset: QrOffset) = apply {
+        fun setOffset(offset: QrOffset) = apply {
             this.offset = offset
         }
 
-        fun shapes(shapes: QrVectorShapes) = apply {
+        fun setShapes(shapes: QrVectorShapes) = apply {
             this.shapes = shapes
         }
 
-        fun colors(colors: QrVectorColors) = apply {
+        fun setColors(colors: QrVectorColors) = apply {
             this.colors = colors
         }
 
-        fun codeShape(shape: QrShape) = apply{
+        fun setCodeShape(shape: QrShape) = apply{
             this.shape = shape
         }
 
-        fun logo(logo: QrVectorLogo) = apply {
+        fun setLogo(logo: QrVectorLogo) = apply {
             this.logo = logo
         }
 
-        fun background(background: QrVectorBackground) = apply {
+        fun setBackground(background: QrVectorBackground) = apply {
             this.background = background
         }
 
-        fun errorCorrectionLevel(errorCorrectionLevel: QrErrorCorrectionLevel) = apply {
+        fun setErrorCorrectionLevel(errorCorrectionLevel: QrErrorCorrectionLevel) = apply {
             this.errorCorrectionLevel = errorCorrectionLevel
         }
 
