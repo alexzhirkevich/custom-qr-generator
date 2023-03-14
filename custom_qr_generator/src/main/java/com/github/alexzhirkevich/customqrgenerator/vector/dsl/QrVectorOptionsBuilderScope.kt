@@ -2,8 +2,6 @@ package com.github.alexzhirkevich.customqrgenerator.vector.dsl
 
 import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
 import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel.Auto
-import com.github.alexzhirkevich.customqrgenerator.dsl.QrOffsetBuilderScope
-import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor
 

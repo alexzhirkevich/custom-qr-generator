@@ -1,12 +1,6 @@
-package com.github.alexzhirkevich.customqrgenerator.style
+@file: Suppress("deprecation", "unused")
 
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
+package com.github.alexzhirkevich.customqrgenerator.style
 
 /**
  * Color for QR code pixels. Allows to paint every pixel independently.
@@ -28,7 +22,7 @@ fun interface QrColorSeparatePixels : QrColor {
      *
      * @property colors map of QR pixel colors to their probabilities
      * */
-    @Serializable
+    
     data class Random(
         val colors : Map<Int, Float>
     ) : QrColorSeparatePixels {
@@ -48,17 +42,6 @@ fun interface QrColorSeparatePixels : QrColor {
                     return k
             }
             return sorted.last().first
-        }
-    }
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModule {
-                polymorphic(QrColor::class) {
-                    subclass(Random::class)
-                }
-            }
         }
     }
 }

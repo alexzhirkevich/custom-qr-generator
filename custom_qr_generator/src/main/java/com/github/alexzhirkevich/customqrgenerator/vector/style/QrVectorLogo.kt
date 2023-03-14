@@ -1,16 +1,12 @@
 package com.github.alexzhirkevich.customqrgenerator.vector.style
 
+import android.graphics.drawable.Drawable
 import androidx.annotation.FloatRange
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
-import com.github.alexzhirkevich.customqrgenerator.style.*
-import com.github.alexzhirkevich.customqrgenerator.style.IQRLogo
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
+import com.github.alexzhirkevich.customqrgenerator.style.BitmapScale
+import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
 
 interface IQRVectorLogo {
-    val drawable: DrawableSource
+    val drawable: Drawable?
     val size: Float
     val padding : QrVectorLogoPadding
     val shape: QrVectorLogoShape
@@ -21,9 +17,9 @@ interface IQRVectorLogo {
 /**
  * Logo of the QR code
  * */
-@Serializable
+
 data class QrVectorLogo(
-    override val drawable: DrawableSource = DrawableSource.Empty,
+    override val drawable: Drawable? = null,
     @FloatRange(from = 0.0, to = 1/3.0)
     override val size: Float = 0.2f,
     override val padding: QrVectorLogoPadding = QrVectorLogoPadding.Empty,
@@ -34,7 +30,7 @@ data class QrVectorLogo(
 
     class Builder : IQRVectorLogo {
 
-        override var drawable: DrawableSource = DrawableSource.Empty
+        override var drawable: Drawable = EmptyDrawable
         @FloatRange(from = 0.0, to = 1/3.0)
         override var size: Float = 0.2f
         override var padding: QrVectorLogoPadding = QrVectorLogoPadding.Empty
@@ -42,7 +38,7 @@ data class QrVectorLogo(
         override var scale: BitmapScale = BitmapScale.FitXY
         override var backgroundColor: QrVectorColor = QrVectorColor.Unspecified
 
-        fun drawable(drawable: DrawableSource) = apply {
+        fun drawable(drawable: Drawable) = apply {
             this.drawable = drawable
         }
 
@@ -76,11 +72,5 @@ data class QrVectorLogo(
         )
     }
 
-    companion object : SerializationProvider {
-        @ExperimentalSerializationApi
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModuleFromProviders(BitmapScale, QrVectorLogoPadding, QrVectorLogoShape, QrVectorColor)
-        }
-    }
 }
 

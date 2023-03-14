@@ -2,18 +2,10 @@ package com.github.alexzhirkevich.customqrgenerator.vector.style
 
 import android.graphics.Path
 import androidx.annotation.FloatRange
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
 import com.github.alexzhirkevich.customqrgenerator.encoder.neighbors
 import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.google.zxing.qrcode.encoder.ByteMatrix
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 /**
  * Style of the qr-code eye internal ball.
@@ -21,8 +13,7 @@ import kotlinx.serialization.modules.subclass
 interface QrVectorBallShape : QrVectorShapeModifier {
 
 
-    @Serializable
-    @SerialName("Default")
+    
     object Default : QrVectorBallShape, QrVectorShapeModifier by DefaultVectorShape
 
     /**
@@ -30,16 +21,14 @@ interface QrVectorBallShape : QrVectorShapeModifier {
      *
      * [AsPixelShape] with the shape of dark pixels will be used.
      * */
-    @Serializable
-    @SerialName("AsDarkPixels")
+    
     object AsDarkPixels : QrVectorBallShape {
         override fun createPath(size: Float, neighbors: Neighbors): Path {
             return Path()
         }
     }
 
-    @Serializable
-    @SerialName("AsPixelShape")
+    
     data class AsPixelShape(
         val pixelShape: QrVectorPixelShape
     ) : QrVectorBallShape {
@@ -62,14 +51,12 @@ interface QrVectorBallShape : QrVectorShapeModifier {
         }
     }
 
-    @Serializable
-    @SerialName("Circle")
+    
     data class Circle(
         @FloatRange(from = 0.0, to = 1.0) val size: Float
     ) : QrVectorBallShape, QrVectorShapeModifier by CircleVectorShape(size)
 
-    @Serializable
-    @SerialName("RoundCorners")
+    
     data class RoundCorners(
         @FloatRange(from = 0.0, to = .5) val radius: Float,
         val topLeft: Boolean = true,
@@ -85,34 +72,8 @@ interface QrVectorBallShape : QrVectorShapeModifier {
         bottomRight = bottomRight
     )
 
-    @Serializable
-    @SerialName("Rhombus")
+    
     data class Rhombus(
         @FloatRange(from = 0.0, to = 1.0) private val scale : Float = 1f
     ) : QrVectorBallShape, QrVectorShapeModifier by RhombusVectorShape(scale)
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        @Suppress("unchecked_cast")
-        override val defaultSerializersModule: SerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModule {
-                include(QrVectorPixelShape.defaultSerializersModule)
-                polymorphicDefaultSerializer(QrVectorBallShape::class){
-                    Default.serializer() as SerializationStrategy<QrVectorBallShape>
-                }
-                polymorphicDefaultDeserializer(QrVectorBallShape::class) {
-                    Default.serializer()
-                }
-                polymorphic(QrVectorBallShape::class){
-                    subclass(Default::class)
-                    subclass(AsDarkPixels::class)
-                    subclass(AsPixelShape::class)
-                    subclass(Circle::class)
-                    subclass(RoundCorners::class)
-                    subclass(Rhombus::class)
-                }
-            }
-        }
-    }
 }

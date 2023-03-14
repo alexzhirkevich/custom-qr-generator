@@ -1,11 +1,7 @@
 package com.github.alexzhirkevich.customqrgenerator.vector
 
-import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.*
 import com.github.alexzhirkevich.customqrgenerator.QrData
 import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
@@ -13,12 +9,10 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.neighbors
 import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
 import com.github.alexzhirkevich.customqrgenerator.fit
-import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
+import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
-import com.github.alexzhirkevich.customqrgenerator.vector.dsl.QrVectorOptionsBuilderScope
 import com.github.alexzhirkevich.customqrgenerator.vector.style.*
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.encoder.Encoder
 import java.nio.charset.Charset
@@ -28,52 +22,50 @@ import kotlin.math.roundToInt
  * Vector QR code image
  * */
 fun QrCodeDrawable(
-    context: Context,
     data: QrData,
     options: QrVectorOptions = QrVectorOptions.Builder().build(),
     charset: Charset?=null
-) : Drawable = QrCodeDrawableImpl(context, data, options, charset)
+) : Drawable = QrCodeDrawableImpl(data, options, charset)
 
-/**
- * @param data qr code payload.
- * Should be [remember]ed if payload is static to avoid image recomposition
- * @param charset [data] encoding. Leave null for default byte encoding
- * @param options qr code styling options.
- * Should be [remember]ed if options are static to avoid image recomposition
- * */
-@androidx.compose.runtime.Composable
-fun rememberQrCodePainter(
-    data: QrData,
-    charset: Charset? = null,
-    options : QrVectorOptions
-) : Painter = rememberDrawablePainter(QrCodeDrawable(
-        context = LocalContext.current,
-        data = data,
-        options = options,
-        charset = charset
-    ))
-
-
-/**
- * @param data qr code payload. Should be [remember]ed if payload is const to avoid painter recomposition
- * @param charset [data] encoding. Leave null for default byte encoding
- * @param keys dependencies of [options] builder.
- * @param options builder of options same as [createQrVectorOptions]
- * */
-@androidx.compose.runtime.Composable
-fun rememberQrCodePainter(
-    data: QrData,
-    charset: Charset? = null,
-    vararg keys : Any?,
-    options : QrVectorOptionsBuilderScope.() -> Unit
-) : Painter = rememberQrCodePainter(
-        data = data,
-        options = remember(keys = keys){ createQrVectorOptions(options) },
-        charset = charset
-    )
+///**
+// * @param data qr code payload.
+// * Should be [remember]ed if payload is static to avoid image recomposition
+// * @param charset [data] encoding. Leave null for default byte encoding
+// * @param options qr code styling options.
+// * Should be [remember]ed if options are static to avoid image recomposition
+// * */
+//@androidx.compose.runtime.Composable
+//fun rememberQrCodePainter(
+//    data: QrData,
+//    charset: Charset? = null,
+//    options : QrVectorOptions
+//) : Painter = rememberDrawablePainter(QrCodeDrawable(
+//        context = LocalContext.current,
+//        data = data,
+//        options = options,
+//        charset = charset
+//    ))
+//
+//
+///**
+// * @param data qr code payload. Should be [remember]ed if payload is const to avoid painter recomposition
+// * @param charset [data] encoding. Leave null for default byte encoding
+// * @param keys dependencies of [options] builder.
+// * @param options builder of options same as [createQrVectorOptions]
+// * */
+//@androidx.compose.runtime.Composable
+//fun rememberQrCodePainter(
+//    data: QrData,
+//    charset: Charset? = null,
+//    vararg keys : Any?,
+//    options : QrVectorOptionsBuilderScope.() -> Unit
+//) : Painter = rememberQrCodePainter(
+//        data = data,
+//        options = remember(keys = keys){ createQrVectorOptions(options) },
+//        charset = charset
+//    )
 
 private class QrCodeDrawableImpl(
-    context: Context,
     data: QrData,
     private val options: QrVectorOptions,
     charset: Charset?=null
@@ -119,9 +111,9 @@ private class QrCodeDrawableImpl(
     private var mColorFilter: ColorFilter? = null
     private var mAlpha = 255
 
-    private val logoDrawable = options.logo.drawable.get(context)
+//    private val logoDrawable = options.logo.drawable
 
-    private val backgroundDrawable = options.background.drawable.get(context)
+//    private val backgroundDrawable = options.background.drawable
 
     private val ballShape = options.shapes.ball.takeIf {
         it !is QrVectorBallShape.AsDarkPixels
@@ -417,9 +409,9 @@ private class QrCodeDrawableImpl(
     }
 
     private fun createLogo(logoSize: Float): Bitmap? =
-        if (options.logo.drawable != DrawableSource.Empty) {
+        if (options.logo.drawable != null) {
             options.logo.scale.scale(
-                logoDrawable, logoSize.roundToInt(), logoSize.roundToInt()
+                options.logo.drawable, logoSize.roundToInt(), logoSize.roundToInt()
             ).let { if (it.isMutable) it else it.copy(it.config, true) }.applyCanvas {
                 val clip = Path().apply {
                     addRect(0f, 0f, logoSize, logoSize, Path.Direction.CW)
@@ -436,9 +428,9 @@ private class QrCodeDrawableImpl(
         } else null
 
     private fun createBackground(): Bitmap? =
-        if (options.background.drawable != DrawableSource.Empty) {
+        if (options.background.drawable != null) {
             options.background.scale.scale(
-                backgroundDrawable, bounds.width(), bounds.height()
+                options.background.drawable, bounds.width(), bounds.height()
             )
         } else null
 
@@ -555,7 +547,7 @@ private fun QrErrorCorrectionLevel.fit(
     logo: QrVectorLogo, shape : QrShape
 ) : QrErrorCorrectionLevel  {
     val size = logo.size * (1 + logo.padding.value) * (1 + shape.shapeSizeIncrease)
-    val hasLogo = size > Float.MIN_VALUE && logo.drawable != DrawableSource.Empty ||
+    val hasLogo = size > Float.MIN_VALUE && logo.drawable != EmptyDrawable ||
             logo.padding != QrVectorLogoPadding.Empty
     return fit(hasLogo, size)
 }

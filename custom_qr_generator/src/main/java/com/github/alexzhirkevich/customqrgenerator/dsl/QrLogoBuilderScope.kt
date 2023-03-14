@@ -2,6 +2,7 @@
 
 package com.github.alexzhirkevich.customqrgenerator.dsl
 
+import android.graphics.drawable.Drawable
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
 import com.github.alexzhirkevich.customqrgenerator.style.*
 
@@ -11,7 +12,7 @@ import com.github.alexzhirkevich.customqrgenerator.style.*
  * */
 sealed interface QrLogoBuilderScope : IQRLogo {
 
-    override var drawable: DrawableSource
+    override var drawable: Drawable?
     override var size : Float
     override var padding : QrLogoPadding
     override var shape: QrLogoShape
@@ -26,7 +27,7 @@ internal class InternalQrLogoBuilderScope(
      val codePadding : Float = -1f
 ) : QrLogoBuilderScope {
 
-    override var drawable: DrawableSource
+    override var drawable: Drawable?
         get() = builder.logo.drawable
         set(value) = with(builder) {
             logo = logo.copy(drawable = value)

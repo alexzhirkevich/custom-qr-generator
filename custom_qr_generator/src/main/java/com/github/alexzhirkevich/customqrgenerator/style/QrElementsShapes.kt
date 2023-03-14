@@ -1,9 +1,6 @@
-package com.github.alexzhirkevich.customqrgenerator.style
+@file:Suppress("deprecation")
 
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
+package com.github.alexzhirkevich.customqrgenerator.style
 
 /**
  * @property darkPixel shape of dark pixels
@@ -24,7 +21,7 @@ interface IQRElementsShapes {
 /**
  * Shapes of QR code elements
  * */
-@Serializable
+
 @Deprecated("Use QrCodeDrawable with QrVectorShapes instead")
 data class QrElementsShapes(
     override val darkPixel : QrPixelShape = QrPixelShape.Default,
@@ -32,18 +29,4 @@ data class QrElementsShapes(
     override val frame : QrFrameShape = QrFrameShape.Default,
     override val ball : QrBallShape = QrBallShape.Default,
     override val highlighting : QrHighlightingShape = QrHighlightingShape.Default,
-) : IQRElementsShapes {
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModuleFromProviders(
-                QrPixelShape,
-                QrFrameShape,
-                QrBallShape,
-                QrHighlightingShape
-            )
-        }
-    }
-}
+) : IQRElementsShapes

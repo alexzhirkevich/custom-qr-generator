@@ -1,10 +1,9 @@
+@file:Suppress("deprecation")
+
 package com.github.alexzhirkevich.customqrgenerator.style
 
+import android.graphics.drawable.Drawable
 import androidx.annotation.FloatRange
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 
 /**
  *
@@ -15,7 +14,7 @@ import kotlinx.serialization.Serializable
  * @property color color of the QR code background. Applied behind image
  * */
 interface IQRBackground {
-    val drawable: DrawableSource
+    val drawable: Drawable?
     val alpha : Float
     val scale: BitmapScale
     val color: QrColor
@@ -24,24 +23,12 @@ interface IQRBackground {
 /**
  * Background image of the QR code bitmap.
  */
-@Serializable
+
 @Deprecated("Use QrCodeDrawable with QrVectorBackground instead")
 data class QrBackground(
-    override val drawable: DrawableSource = DrawableSource.Empty,
+    override val drawable: Drawable? = null,
     @FloatRange(from = 0.0, to = 1.0)
     override val alpha : Float = 1f,
     override val scale: BitmapScale = BitmapScale.FitXY,
     override val color: QrColor = QrColor.Solid(Color(0xffffffff))
-) : IQRBackground {
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModuleFromProviders(
-                DrawableSource,
-                BitmapScale,
-                QrColor
-            )
-        }
-    }
-}
+) : IQRBackground

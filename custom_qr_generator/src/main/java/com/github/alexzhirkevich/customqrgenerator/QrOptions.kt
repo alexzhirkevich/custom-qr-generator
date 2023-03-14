@@ -1,16 +1,16 @@
+@file:Suppress("deprecation")
+
 package com.github.alexzhirkevich.customqrgenerator
 
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import com.github.alexzhirkevich.customqrgenerator.dsl.QrOptionsBuilderScope
 import com.github.alexzhirkevich.customqrgenerator.style.*
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 
 /**
  * @param padding padding of the QR code relative to [width] and [height].
  * */
-@Serializable
+
 @Deprecated("Use QrCodeDrawable with QrVectorOptions instead")
 data class QrOptions(
     @IntRange(from = 0) val width : Int,
@@ -29,7 +29,7 @@ data class QrOptions(
     class Builder(
         @IntRange(from = 0) val width: Int,
         @IntRange(from = 0) val height: Int = width
-    )  {
+    ) {
 
         internal var padding = .125f
         internal var offset = QrOffset.Zero
@@ -41,7 +41,7 @@ data class QrOptions(
         internal var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
 
         fun build(): QrOptions = QrOptions(
-            width,height, padding, offset, colors, logo, background,
+            width, height, padding, offset, colors, logo, background,
             elementsShapes, codeShape, errorCorrectionLevel
         )
 
@@ -80,22 +80,8 @@ data class QrOptions(
             errorCorrectionLevel = level
         }
     }
-
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModuleFromProviders(
-                QrColors,
-                QrLogo,
-                QrBackground,
-                QrElementsShapes,
-                QrShape
-            )
-        }
-    }
 }
+
 /**
  * Build [QrOptions] with DSL
  * */

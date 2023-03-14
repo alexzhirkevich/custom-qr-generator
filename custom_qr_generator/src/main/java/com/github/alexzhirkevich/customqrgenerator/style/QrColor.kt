@@ -1,21 +1,13 @@
+@file:Suppress("deprecation")
+
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import com.github.alexzhirkevich.customqrgenerator.QrUtil
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import kotlin.math.pow
 import kotlin.math.sqrt
-
-
 
 /**
  * Color of the different QR code elements.
@@ -38,14 +30,12 @@ fun interface QrColor  {
      * - logo background - it will be painted as QR code background
      * - otherwise - becomes transparent
      * */
-    @Serializable
-    @SerialName("Unspecified")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     object Unspecified : QrColor by Solid(0)
 
 
-    @Serializable
-    @SerialName("Solid")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class Solid(@ColorInt val color : Int) : QrColor {
 
@@ -54,8 +44,7 @@ fun interface QrColor  {
     }
 
 
-    @Serializable
-    @SerialName("LinearGradient")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class LinearGradient(
         @ColorInt val startColor : Int,
@@ -80,8 +69,7 @@ fun interface QrColor  {
     }
 
 
-    @Serializable
-    @SerialName("SquareGradient")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class SquareGradient(
         val startColor : Int,
@@ -99,8 +87,6 @@ fun interface QrColor  {
     }
 
 
-    @Serializable
-    @SerialName("RhombusGradient")
     @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class RhombusGradient(
         val startColor : Int,
@@ -118,8 +104,7 @@ fun interface QrColor  {
     }
 
 
-    @Serializable
-    @SerialName("RadialGradient")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class RadialGradient(
         @ColorInt val startColor : Int,
@@ -142,8 +127,7 @@ fun interface QrColor  {
     }
 
 
-    @Serializable
-    @SerialName("CrossingGradient")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorColor instead")
     data class CrossingGradient(
         @ColorInt val colorLeftDiagonal : Int,
@@ -186,32 +170,6 @@ fun interface QrColor  {
                             .invoke(imin, jmin,width/4, height / 4)
                     )
                 }
-            }
-        }
-    }
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        @Suppress("unchecked_cast")
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModule {
-                polymorphicDefaultSerializer(QrColor::class){
-                    Unspecified.serializer() as SerializationStrategy<QrColor>
-                }
-                polymorphicDefaultDeserializer(QrColor::class) {
-                    Unspecified.serializer()
-                }
-                polymorphic(QrColor::class) {
-                    subclass(Unspecified::class)
-                    subclass(Solid::class)
-                    subclass(LinearGradient::class)
-                    subclass(SquareGradient::class)
-                    subclass(RhombusGradient::class)
-                    subclass(RadialGradient::class)
-                    subclass(CrossingGradient::class)
-                }
-                include(QrColorSeparatePixels.defaultSerializersModule)
             }
         }
     }

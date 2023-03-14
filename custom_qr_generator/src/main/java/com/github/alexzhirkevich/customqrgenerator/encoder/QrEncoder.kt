@@ -1,3 +1,6 @@
+@file:Suppress("deprecation")
+
+
 package com.github.alexzhirkevich.customqrgenerator.encoder
 
 import com.github.alexzhirkevich.customqrgenerator.QrData

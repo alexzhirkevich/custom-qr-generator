@@ -1,3 +1,5 @@
+@file:Suppress("deprecation")
+
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange

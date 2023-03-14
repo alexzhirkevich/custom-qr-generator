@@ -1,12 +1,8 @@
+@file:Suppress("deprecation")
 
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import kotlinx.serialization.*
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import kotlin.math.*
 
 
@@ -16,14 +12,12 @@ import kotlin.math.*
 @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
 fun interface QrPixelShape : QrShapeModifier {
 
-    @Serializable
-    @SerialName("Default")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     object Default : QrPixelShape by DefaultShapeModifier
         .asPixelShape()
 
-    @Serializable
-    @SerialName("Circle")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     data class Circle(
         @FloatRange(from = .5, to = 1.0)
@@ -32,8 +26,7 @@ fun interface QrPixelShape : QrShapeModifier {
         .asPixelShape()
 
 
-    @Serializable
-    @SerialName("Rhombus")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     object Rhombus : QrPixelShape by RhombusShapeModifier
         .asPixelShape()
@@ -43,8 +36,7 @@ fun interface QrPixelShape : QrShapeModifier {
      * If corner is true - it can be round depending on [Neighbors].
      * If corner is false - it will never be round.
      * */
-    @Serializable
-    @SerialName("RoundCorners")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     data class RoundCorners(
         val corner : Float = .5f,
@@ -66,8 +58,7 @@ fun interface QrPixelShape : QrShapeModifier {
     /**
      * Doesn't work well with QrOptions.size < 512 and [sidePadding] > 0
      * */
-    @Serializable
-    @SerialName("RoundCornersHorizontal")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     class RoundCornersHorizontal(
         @FloatRange(from = .0, to = .5)
@@ -102,8 +93,7 @@ fun interface QrPixelShape : QrShapeModifier {
     /**
      * Doesn't work well with QrOptions.size < 512 and [sidePadding] > 0
      * */
-    @Serializable
-    @SerialName("RoundCornersVertical")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     data class RoundCornersVertical(
         @FloatRange(from = .0, to = .5)
@@ -134,35 +124,10 @@ fun interface QrPixelShape : QrShapeModifier {
         }
     }
 
-    @Serializable
-    @SerialName("Star")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorPixelShape instead")
     object Star : QrPixelShape by StarShapeModifier
 
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        @Suppress("unchecked_cast")
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModule {
-                polymorphicDefaultSerializer(QrPixelShape::class){
-                    Default.serializer() as SerializationStrategy<QrPixelShape>
-                }
-                polymorphicDefaultDeserializer(QrPixelShape::class) {
-                    Default.serializer()
-                }
-                polymorphic(QrPixelShape::class) {
-                    subclass(Default::class)
-                    subclass(Circle::class)
-                    subclass(Rhombus::class)
-                    subclass(RoundCorners::class)
-                    subclass(RoundCornersVertical::class)
-                    subclass(RoundCornersHorizontal::class)
-                    subclass(Star::class)
-                }
-            }
-        }
-    }
 }
 
 

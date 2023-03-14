@@ -2,7 +2,6 @@
 
 package com.github.alexzhirkevich.customqrgenerator
 
-import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.graphics.alpha
 import androidx.core.graphics.drawable.toBitmap
@@ -10,17 +9,11 @@ import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrEncoder
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrRenderResult
 import com.github.alexzhirkevich.customqrgenerator.style.*
-import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogo
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogoPadding
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.coroutines.*
 import java.nio.charset.Charset
-import kotlin.math.log
 import kotlin.math.roundToInt
 
 internal class QrCodeGeneratorImpl(
-    private val context: Context,
     private val threadPolicy: ThreadPolicy
 ) : QrCodeGenerator {
 
@@ -84,9 +77,9 @@ internal class QrCodeGeneratorImpl(
         colors.clear()
         with(result) {
 
-            val bgBitmap = options.background.drawable.get(context)
-                    .takeIf { it !is EmptyDrawable && drawBg }
-                    ?.toBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val bgBitmap = options.background.drawable
+                .takeIf { it !is EmptyDrawable && drawBg }
+                ?.toBitmap(width, height, Bitmap.Config.ARGB_8888)
 
             val bgBitmapPixels = if (bgBitmap != null)
                 IntArray(width * height) else null
@@ -208,15 +201,14 @@ internal class QrCodeGeneratorImpl(
                 }
             }
 
-            val logoDrawable = options.logo.drawable.get(context)
-            if (drawLogo && logoDrawable !is EmptyDrawable) kotlin.run {
+            if (drawLogo && options.logo.drawable != null) kotlin.run {
                 val logoSize = ((width - minOf(paddingX,paddingY)*2) /
                         options.codeShape.shapeSizeIncrease *
                         options.logo.size)
                     .roundToInt()
 
                 val bitmapLogo = options.logo.scale
-                    .scale(logoDrawable, logoSize, logoSize)
+                    .scale(options.logo.drawable, logoSize, logoSize)
                 val logoPixels = IntArray(logoSize*logoSize)
                 bitmapLogo.getPixels(logoPixels,0, logoSize, 0,0, logoSize, logoSize)
 
@@ -261,7 +253,7 @@ private fun QrErrorCorrectionLevel.fit(
     logo: QrLogo,
 ) : QrErrorCorrectionLevel  {
     val size = logo.size * (1 + logo.padding.value)
-    val hasLogo = size > Float.MIN_VALUE && logo.drawable != DrawableSource.Empty ||
+    val hasLogo = size > Float.MIN_VALUE && logo.drawable != EmptyDrawable ||
             logo.padding != QrLogoPadding.Empty
     return fit(hasLogo, size)
 }

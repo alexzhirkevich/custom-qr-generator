@@ -1,9 +1,6 @@
-package com.github.alexzhirkevich.customqrgenerator.style
+@file:Suppress("deprecation")
 
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
+package com.github.alexzhirkevich.customqrgenerator.style
 
 
 /**
@@ -29,7 +26,7 @@ interface IQRColors {
 /**
  * Colors of QR code elements
  */
-@Serializable
+
 @Deprecated("Use QrCodeDrawable with QrVectorColors instead")
 data class QrColors(
     override val light : QrColor = QrColor.Unspecified,
@@ -38,13 +35,4 @@ data class QrColors(
     override val ball : QrColor = QrColor.Unspecified,
     override val highlighting : QrColor = QrColor.Unspecified,
     override val symmetry : Boolean = true,
-) : IQRColors {
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModuleFromProviders(QrColor)
-        }
-    }
-}
+) : IQRColors

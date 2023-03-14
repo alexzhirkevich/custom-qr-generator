@@ -1,14 +1,8 @@
+@file:Suppress("deprecation")
+
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 /**
  * Style of the qr-code eye internal ball.
@@ -16,8 +10,7 @@ import kotlinx.serialization.modules.subclass
 @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
 fun interface QrBallShape : QrShapeModifier {
 
-    @Serializable
-    @SerialName("Default")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     object Default : QrBallShape by DefaultShapeModifier.asBallShape()
 
@@ -28,8 +21,7 @@ fun interface QrBallShape : QrShapeModifier {
      *
      *
      * */
-    @Serializable
-    @SerialName("AsDarkPixels")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     object AsDarkPixels : QrBallShape {
         override fun invoke(i: Int, j: Int, elementSize: Int, neighbors: Neighbors): Boolean = false
@@ -41,8 +33,7 @@ fun interface QrBallShape : QrShapeModifier {
      *
      * Used pixel shape will not depend on [Neighbors]
      * */
-    @Serializable
-    @SerialName("AsPixelShape")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     data class AsPixelShape(val shape: QrPixelShape) : QrBallShape by
         (Default.and(shape % { size, _ -> size/3 })).asBallShape()
@@ -52,8 +43,7 @@ fun interface QrBallShape : QrShapeModifier {
      * @property size size of circle. Should be from .75 to 1.
      * Otherwise, QR code can be unreadable
      * */
-    @Serializable
-    @SerialName("Circle")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     data class Circle(
         @FloatRange(from = .75, to = 1.0)
@@ -62,15 +52,13 @@ fun interface QrBallShape : QrShapeModifier {
         .asBallShape()
 
 
-    @Serializable
-    @SerialName("Rhombus")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     object Rhombus : QrBallShape by RhombusShapeModifier
         .asBallShape()
 
 
-    @Serializable
-    @SerialName("RoundCorners")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
@@ -82,32 +70,6 @@ fun interface QrBallShape : QrShapeModifier {
         corner,false, outer,horizontalOuter,verticalOuter,inner
     ).asBallShape()
 
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        @Suppress("unchecked_cast")
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModule {
-                include(QrPixelShape.defaultSerializersModule)
-
-                polymorphicDefaultSerializer(QrBallShape::class){
-                    Default.serializer() as SerializationStrategy<QrBallShape>
-                }
-                polymorphicDefaultDeserializer(QrBallShape::class) {
-                    Default.serializer()
-                }
-                polymorphic(QrBallShape::class) {
-                    subclass(Default::class)
-                    subclass(AsDarkPixels::class)
-                    subclass(AsPixelShape::class)
-                    subclass(Circle::class)
-                    subclass(Rhombus::class)
-                    subclass(RoundCorners::class)
-                }
-            }
-        }
-    }
 }
 
 @Deprecated("Use QrCodeDrawable with QrVectorBallShape instead")

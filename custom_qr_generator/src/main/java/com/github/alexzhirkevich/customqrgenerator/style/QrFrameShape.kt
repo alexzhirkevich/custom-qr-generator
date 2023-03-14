@@ -1,19 +1,8 @@
+@file:Suppress("deprecation")
+
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
-import com.github.alexzhirkevich.customqrgenerator.encoder.neighbors
-import com.github.alexzhirkevich.customqrgenerator.encoder.toQrMatrix
-import com.google.zxing.qrcode.encoder.ByteMatrix
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -25,8 +14,7 @@ import kotlin.math.sqrt
 @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
 fun interface QrFrameShape : QrShapeModifier {
 
-    @Serializable
-    @SerialName("Default")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     object Default : QrFrameShape {
         override fun invoke(
@@ -45,8 +33,7 @@ fun interface QrFrameShape : QrShapeModifier {
      *
      * [AsPixelShape] with the shape of dark pixels will be used.
      * */
-    @Serializable
-    @SerialName("AsDarkPixels")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     object AsDarkPixels : QrFrameShape {
         override fun invoke(i: Int, j: Int, elementSize: Int, neighbors: Neighbors): Boolean = false
@@ -59,15 +46,13 @@ fun interface QrFrameShape : QrShapeModifier {
      *
      * Used pixel shape will not depend on [Neighbors]
      * */
-    @Serializable
-    @SerialName("AsPixelShape")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     data class AsPixelShape(val shape: QrPixelShape) : QrFrameShape by
         (Default.and(shape % { size, _, -> size /7})).asFrameShape()
 
 
-    @Serializable
-    @SerialName("Circle")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     class Circle(
         @FloatRange(from = 0.0) val width : Float = 1f,
@@ -87,8 +72,7 @@ fun interface QrFrameShape : QrShapeModifier {
     }
 
 
-    @Serializable
-    @SerialName("RoundCorners")
+    
     @Deprecated("Use QrCodeDrawable with QrVectorFrameShape instead")
     data class RoundCorners(
         @FloatRange(from = 0.0, to = 0.5) val corner: Float,
@@ -116,29 +100,6 @@ fun interface QrFrameShape : QrShapeModifier {
                 else -> return Default.invoke(i, j, elementSize, neighbors)
             }
             return sqrt((x-i)*(x-i) + (y-j)*(y-j)) in sub-qrPixelSize .. sub
-        }
-    }
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        @Suppress("unchecked_cast")
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModule {
-                polymorphicDefaultSerializer(QrFrameShape::class){
-                    Default.serializer() as SerializationStrategy<QrFrameShape>
-                }
-                polymorphicDefaultDeserializer(QrFrameShape::class) {
-                    Default.serializer()
-                }
-                polymorphic(QrFrameShape::class) {
-                    subclass(Default::class)
-                    subclass(AsDarkPixels::class)
-                    subclass(AsPixelShape::class)
-                    subclass(Circle::class)
-                    subclass(RoundCorners::class)
-                }
-            }
         }
     }
 }

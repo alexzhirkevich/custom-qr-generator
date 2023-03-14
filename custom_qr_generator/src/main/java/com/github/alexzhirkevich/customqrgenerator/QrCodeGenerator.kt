@@ -48,9 +48,8 @@ interface QrCodeGenerator {
  * */
 @Deprecated("Use QrCodeDrawable instead")
 fun QrCodeGenerator(
-    context: Context,
     threadPolicy: ThreadPolicy = ThreadPolicy.SingleThread
-) : QrCodeGenerator = QrCodeGeneratorImpl(context,threadPolicy)
+) : QrCodeGenerator = QrCodeGeneratorImpl(threadPolicy)
 
 /**
  * Thread policy of the [QrCodeGenerator]

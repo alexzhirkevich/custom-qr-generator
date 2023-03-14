@@ -3,14 +3,6 @@ package com.github.alexzhirkevich.customqrgenerator.style
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import androidx.core.graphics.drawable.toBitmap
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 /**
  * Way of getting [Bitmap] from [Drawable]
@@ -26,8 +18,7 @@ fun interface BitmapScale {
     /**
      * Resize given image. Image's aspect ratio can be broken
      * */
-    @Serializable
-    @SerialName("FitXY")
+    
     object FitXY : BitmapScale {
         override fun scale(drawable: Drawable, width: Int, height: Int): Bitmap {
             return drawable.toBitmap(
@@ -40,8 +31,7 @@ fun interface BitmapScale {
     /**
      * Crop given image and cut necessary bitmap from center. Image's aspect ratio will be kept.
      * */
-    @Serializable
-    @SerialName("CenterCrop")
+    
     object CenterCrop : BitmapScale {
         override fun scale(drawable: Drawable, width: Int, height: Int): Bitmap {
             var iWidth = drawable.intrinsicWidth
@@ -77,27 +67,6 @@ fun interface BitmapScale {
                 bitmap.recycle()
 
             return newBmp
-        }
-    }
-
-    @ExperimentalSerializationApi
-    @Suppress("unchecked_cast")
-    companion object : SerializationProvider {
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-
-            SerializersModule {
-                polymorphicDefaultSerializer(BitmapScale::class) {
-                    FitXY.serializer() as SerializationStrategy<BitmapScale>
-                }
-                polymorphicDefaultDeserializer(BitmapScale::class) {
-                    FitXY.serializer()
-                }
-
-                polymorphic(BitmapScale::class) {
-                    subclass(FitXY::class)
-                    subclass(CenterCrop::class)
-                }
-            }
         }
     }
 }

@@ -1,63 +1,55 @@
 package com.github.alexzhirkevich.customqrgenerator
 
-import android.graphics.*
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.minus
 import androidx.core.widget.addTextChangedListener
-import androidx.lifecycle.lifecycleScope
 import com.github.alexzhirkevich.customqrgenerator.example.R
 import com.github.alexzhirkevich.customqrgenerator.example.databinding.ActivityMainBinding
-import com.github.alexzhirkevich.customqrgenerator.style.*
+import com.github.alexzhirkevich.customqrgenerator.style.Color
 import com.github.alexzhirkevich.customqrgenerator.vector.QrCodeDrawable
-import com.github.alexzhirkevich.customqrgenerator.vector.QrVectorOptions
 import com.github.alexzhirkevich.customqrgenerator.vector.createQrVectorOptions
 import com.github.alexzhirkevich.customqrgenerator.vector.style.*
-import kotlinx.coroutines.delay
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlin.random.Random
 
-@ExperimentalSerializationApi
 class MainActivity : AppCompatActivity() {
 
     private val binding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    val options = createQrVectorOptions {
+    private val options by lazy {
+        createQrVectorOptions {
 
-        padding = .325f
+            padding = .325f
 
-        background {
-            drawable = DrawableSource
-                .Resource(R.drawable.frame)
-        }
+            fourthEyeEnabled = true
 
-        logo {
-            drawable = DrawableSource
-                .Resource(R.drawable.tg)
-            size = .25f
-            padding = QrVectorLogoPadding.Natural(.2f)
-            shape = QrVectorLogoShape
-                .Circle
-        }
-        colors {
-            dark = QrVectorColor
-                .Solid(Color(0xff345288))
-        }
-        shapes {
-            darkPixel = QrVectorPixelShape
-                .RoundCorners(.5f)
-            ball = QrVectorBallShape
-                .RoundCorners(.25f)
-            frame = QrVectorFrameShape
-                .RoundCorners(.25f)
+            background {
+                drawable = ContextCompat
+                    .getDrawable(this@MainActivity, R.drawable.frame)
+            }
+
+            logo {
+                drawable = ContextCompat
+                    .getDrawable(this@MainActivity, R.drawable.tg)
+                size = .25f
+                padding = QrVectorLogoPadding.Natural(.2f)
+                shape = QrVectorLogoShape
+                    .Circle
+            }
+            colors {
+                dark = QrVectorColor
+                    .Solid(Color(0xff345288))
+            }
+            shapes {
+                darkPixel = QrVectorPixelShape
+                    .RoundCorners(.5f)
+                ball = QrVectorBallShape
+                    .RoundCorners(.25f)
+                frame = QrVectorFrameShape
+                    .RoundCorners(.25f)
+            }
         }
     }
 
@@ -70,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
             ivQrcode
                 .setImageBitmap(
-                    QrCodeDrawable(this@MainActivity, { editInput.text.toString() }, options)
+                    QrCodeDrawable( { editInput.text.toString() }, options)
                         .toBitmap(1024, 1024),
                 )
 
@@ -78,13 +70,12 @@ class MainActivity : AppCompatActivity() {
                 val text = editInput.text.toString()
 
                 ivQrcode.setImageDrawable(
-                    QrCodeDrawable(this@MainActivity, { text }, options),
+                    QrCodeDrawable( { text }, options),
                 )
             }
             btnCreate.setOnClickListener {
                 ivQrcode.setImageDrawable(
                     QrCodeDrawable(
-                        this@MainActivity,
                         {
                             editInput.text.toString()
                         },

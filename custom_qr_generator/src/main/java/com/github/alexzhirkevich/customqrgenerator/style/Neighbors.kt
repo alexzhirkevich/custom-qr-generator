@@ -1,11 +1,9 @@
 package com.github.alexzhirkevich.customqrgenerator.style
 
-import kotlinx.serialization.Serializable
-
 /**
  * Status of the neighbor qr-code pixels
  * */
-@Serializable
+
 data class Neighbors(
     val topLeft : Boolean=false,
     val topRight : Boolean=false,

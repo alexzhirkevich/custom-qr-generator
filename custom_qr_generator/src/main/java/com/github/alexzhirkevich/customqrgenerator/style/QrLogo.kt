@@ -1,10 +1,9 @@
+@file:Suppress("deprecation")
+
 package com.github.alexzhirkevich.customqrgenerator.style
 
+import android.graphics.drawable.Drawable
 import androidx.annotation.FloatRange
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 
 /**
  * @property drawable logo image
@@ -21,7 +20,7 @@ import kotlinx.serialization.Serializable
  * */
 
 interface IQRLogo {
-    val drawable: DrawableSource
+    val drawable: Drawable?
     val size: Float
     val padding : QrLogoPadding
     val shape: QrLogoShape
@@ -32,32 +31,17 @@ interface IQRLogo {
 /**
  * Logo of the QR code
  * */
-@Serializable
+
 @Deprecated("Use QrCodeDrawable with QrVectorLogo instead")
 data class QrLogo(
-    override val drawable: DrawableSource = DrawableSource.Empty,
+    override val drawable: Drawable? = null,
     @FloatRange(from = 0.0, to = 1/3.0)
     override val size : Float = 0.2f,
     override val padding : QrLogoPadding = QrLogoPadding.Empty,
     override val shape: QrLogoShape = QrLogoShape.Default,
     override val scale: BitmapScale = BitmapScale.FitXY,
     override val backgroundColor : QrColor = QrColor.Unspecified
-) : IQRLogo {
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModuleFromProviders(
-                DrawableSource,
-                QrLogoPadding,
-                QrLogoShape,
-                BitmapScale,
-                QrColor
-            )
-        }
-    }
-}
+) : IQRLogo
 
 interface QrLogoBuilder {
     var logo : QrLogo

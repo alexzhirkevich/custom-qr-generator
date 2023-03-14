@@ -2,6 +2,7 @@
 
 package com.github.alexzhirkevich.customqrgenerator.dsl
 
+import android.graphics.drawable.Drawable
 import com.github.alexzhirkevich.customqrgenerator.QrOptions
 import com.github.alexzhirkevich.customqrgenerator.style.*
 
@@ -10,7 +11,7 @@ import com.github.alexzhirkevich.customqrgenerator.style.*
  * */
 sealed interface QrBackgroundBuilderScope : IQRBackground {
 
-    override var drawable: DrawableSource
+    override var drawable: Drawable?
 
     override var alpha : Float
 
@@ -23,7 +24,7 @@ class InternalQrBackgroundBuilderScope internal constructor(
     val builder: QrOptions.Builder
 ) : QrBackgroundBuilderScope{
 
-    override var drawable: DrawableSource
+    override var drawable: Drawable?
         get() = builder.background.drawable
         set(value) = with(builder) {
             background(background.copy(drawable = value))

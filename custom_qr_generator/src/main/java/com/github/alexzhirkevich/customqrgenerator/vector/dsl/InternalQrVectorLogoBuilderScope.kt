@@ -1,5 +1,6 @@
 package com.github.alexzhirkevich.customqrgenerator.vector.dsl
 
+import android.graphics.drawable.Drawable
 import com.github.alexzhirkevich.customqrgenerator.style.*
 import com.github.alexzhirkevich.customqrgenerator.vector.QrVectorOptions
 import com.github.alexzhirkevich.customqrgenerator.vector.style.*
@@ -8,7 +9,7 @@ internal class InternalQrVectorLogoBuilderScope(
     val builder: QrVectorOptions.Builder,
 ) : QrVectorLogoBuilderScope {
 
-    override var drawable: DrawableSource
+    override var drawable: Drawable?
         get() = builder.logo.drawable
         set(value) = with(builder) {
             setLogo(logo.copy(drawable = value))

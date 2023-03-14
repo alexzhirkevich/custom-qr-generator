@@ -2,23 +2,18 @@
 
 package com.github.alexzhirkevich.customqrgenerator
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import java.net.URLEncoder
 
 fun interface QrData {
 
     fun encode() : String
 
-    @Serializable
+    
     data class Text(val value : String) : QrData {
         override fun encode(): String = value
     }
 
-    @Serializable
+    
     data class Url(val url : String) : QrData {
         override fun encode(): String = url
     }
@@ -54,7 +49,7 @@ fun interface QrData {
 
     }
 
-    @Serializable
+    
     data class GeoPos(
         val lat : Float,
         val lon : Float
@@ -62,7 +57,7 @@ fun interface QrData {
         override fun encode(): String = "GEO:$lat,$lon"
     }
 
-    @Serializable
+    
     data class Bookmark(
         val url : String,
         val title : String
@@ -75,7 +70,7 @@ fun interface QrData {
         }
     }
 
-    @Serializable
+    
     data class Wifi(
         val authentication: Authentication?=null,
         val ssid: String? = null,
@@ -118,7 +113,7 @@ fun interface QrData {
         }
     }
 
-    @Serializable
+    
     data class EnterpriseWifi(
         val ssid: String? = null,
         val psk: String? = null,
@@ -148,12 +143,12 @@ fun interface QrData {
         }
     }
 
-    @Serializable
+    
     data class Phone(val phoneNumber: String) : QrData {
         override fun encode(): String = "TEL:$phoneNumber"
     }
 
-    @Serializable
+    
     data class SMS(
         val phoneNumber: String,
         val subject : String,
@@ -163,7 +158,7 @@ fun interface QrData {
                 "$phoneNumber${if (subject.isNotEmpty()) ":$subject" else ""}"
     }
 
-    @Serializable
+    
     data class BizCard(
         val firstName : String? = null,
         val secondName : String? = null,
@@ -200,7 +195,7 @@ fun interface QrData {
         }
     }
 
-    @Serializable
+    
     data class VCard(
         val name: String? = null,
         val company: String? = null,
@@ -244,7 +239,7 @@ fun interface QrData {
         }
     }
 
-    @Serializable
+    
     data class MeCard(
         val name: String? = null,
         val address: String? = null,
@@ -269,12 +264,12 @@ fun interface QrData {
         }
     }
 
-    @Serializable
+    
     data class YouTube(val videoId : String) : QrData {
         override fun encode(): String = "YOUTUBE:$videoId"
     }
 
-    @Serializable
+    
     data class Event(
         val uid: String? = null,
         val stamp: String? = null,
@@ -304,33 +299,8 @@ fun interface QrData {
         }
     }
 
-    @Serializable
+    
     data class GooglePlay(val appPackage : String) : QrData {
         override fun encode(): String = "{{{market://details?id=%$appPackage}}}"
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    companion object : SerializationProvider {
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModule {
-                polymorphic(QrData::class) {
-                    subclass(Text::class)
-                    subclass(Url::class)
-                    subclass(Email::class)
-                    subclass(GeoPos::class)
-                    subclass(Bookmark::class)
-                    subclass(Wifi::class)
-                    subclass(EnterpriseWifi::class)
-                    subclass(Phone::class)
-                    subclass(SMS::class)
-                    subclass(BizCard::class)
-                    subclass(VCard::class)
-                    subclass(MeCard::class)
-                    subclass(YouTube::class)
-                    subclass(Event::class)
-                    subclass(GooglePlay::class)
-                }
-            }
-        }
     }
 }

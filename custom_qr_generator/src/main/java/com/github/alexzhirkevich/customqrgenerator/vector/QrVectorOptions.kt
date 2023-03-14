@@ -2,18 +2,16 @@ package com.github.alexzhirkevich.customqrgenerator.vector
 
 import androidx.annotation.FloatRange
 import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
-import com.github.alexzhirkevich.customqrgenerator.SerializersModuleFromProviders
 import com.github.alexzhirkevich.customqrgenerator.style.QrOffset
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
 import com.github.alexzhirkevich.customqrgenerator.vector.dsl.InternalQrVectorOptionsBuilderScope
 import com.github.alexzhirkevich.customqrgenerator.vector.dsl.QrVectorOptionsBuilderScope
-import com.github.alexzhirkevich.customqrgenerator.vector.style.*
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorBackground
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColors
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogo
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorShapes
 
-@Serializable
+
 data class QrVectorOptions(
     @FloatRange(from = .0, to = .5)
     val padding : Float = .125f,
@@ -25,28 +23,29 @@ data class QrVectorOptions(
     val background: QrVectorBackground,
     val errorCorrectionLevel: QrErrorCorrectionLevel,
     val fourthEyeEnabled : Boolean,
-)  {
+) {
     class Builder {
 
         @FloatRange(from = .0, to = .5)
-        var padding : Float = 0f
-        private set
-        var offset: QrOffset = QrOffset(0f,0f)
-        private set
+        var padding: Float = 0f
+            private set
+        var offset: QrOffset = QrOffset(0f, 0f)
+            private set
         var shapes: QrVectorShapes = QrVectorShapes()
-        private set
-        var shape : QrShape = QrShape.Default
-        private set
-        var colors : QrVectorColors = QrVectorColors()
-        private set
-        var logo : QrVectorLogo = QrVectorLogo()
-        private set
+            private set
+        var shape: QrShape = QrShape.Default
+            private set
+        var colors: QrVectorColors = QrVectorColors()
+            private set
+        var logo: QrVectorLogo = QrVectorLogo()
+            private set
         var background: QrVectorBackground = QrVectorBackground()
-        private set
+            private set
         var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
-        private set
-        var fourthEyeEnabled : Boolean = false
-        private set
+            private set
+        var fourthEyeEnabled: Boolean = false
+            private set
+
         fun setPaddding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
             this.padding = padding
         }
@@ -63,7 +62,7 @@ data class QrVectorOptions(
             this.colors = colors
         }
 
-        fun setCodeShape(shape: QrShape) = apply{
+        fun setCodeShape(shape: QrShape) = apply {
             this.shape = shape
         }
 
@@ -79,25 +78,23 @@ data class QrVectorOptions(
             this.errorCorrectionLevel = errorCorrectionLevel
         }
 
-        fun setFourthEyeEnabled(enabled : Boolean) = apply{
+        fun setFourthEyeEnabled(enabled: Boolean) = apply {
             this.fourthEyeEnabled = enabled
         }
 
-        fun build() : QrVectorOptions = QrVectorOptions(
-            padding, offset, shapes, shape, colors, logo, background, errorCorrectionLevel, fourthEyeEnabled
+        fun build(): QrVectorOptions = QrVectorOptions(
+            padding,
+            offset,
+            shapes,
+            shape,
+            colors,
+            logo,
+            background,
+            errorCorrectionLevel,
+            fourthEyeEnabled
         )
     }
-
-    companion object : SerializationProvider {
-        @ExperimentalSerializationApi
-        override val defaultSerializersModule: SerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModuleFromProviders(
-                QrVectorShapes, QrVectorColors, QrVectorLogo, QrShape, QrVectorBackground
-            )
-        }
-    }
 }
-
 fun createQrVectorOptions(block : QrVectorOptionsBuilderScope.() -> Unit) : QrVectorOptions {
     val builder = QrVectorOptions.Builder()
     InternalQrVectorOptionsBuilderScope(builder).apply(block)

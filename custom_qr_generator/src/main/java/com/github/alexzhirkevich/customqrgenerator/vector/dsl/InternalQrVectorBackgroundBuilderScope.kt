@@ -1,7 +1,7 @@
 package com.github.alexzhirkevich.customqrgenerator.vector.dsl
 
+import android.graphics.drawable.Drawable
 import com.github.alexzhirkevich.customqrgenerator.style.BitmapScale
-import com.github.alexzhirkevich.customqrgenerator.style.DrawableSource
 import com.github.alexzhirkevich.customqrgenerator.vector.QrVectorOptions
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor
 
@@ -9,7 +9,7 @@ internal class InternalQrVectorBackgroundBuilderScope(
     val builder: QrVectorOptions.Builder
 ) : QrVectorBackgroundBuilderScope {
 
-    override var drawable: DrawableSource
+    override var drawable: Drawable?
         get() = builder.background.drawable
         set(value) = with(builder){
             setBackground(background.copy(drawable = value))

@@ -1,15 +1,7 @@
 package com.github.alexzhirkevich.customqrgenerator.style
 
 import androidx.annotation.FloatRange
-import com.github.alexzhirkevich.customqrgenerator.SerializationProvider
 import com.github.alexzhirkevich.customqrgenerator.encoder.QrCodeMatrix
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -40,8 +32,7 @@ interface QrShape {
     fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: QrCodeMatrix) : Boolean
 
 
-    @Serializable
-    @SerialName("Default")
+    
     object Default : QrShape {
         override val shapeSizeIncrease: Float = 1f
 
@@ -51,8 +42,7 @@ interface QrShape {
     }
 
 
-    @Serializable
-    @SerialName("Circle")
+    
     data class Circle(
         @FloatRange(from = 1.0, to = 2.0)
         val padding : Float = 1.1f,
@@ -100,26 +90,6 @@ interface QrShape {
                 }
             }
             return newMatrix
-        }
-    }
-
-    companion object : SerializationProvider {
-
-        @ExperimentalSerializationApi
-        @Suppress("unchecked_cast")
-        override val defaultSerializersModule by lazy(LazyThreadSafetyMode.NONE) {
-            SerializersModule {
-                polymorphicDefaultSerializer(QrShape::class){
-                    Default.serializer() as SerializationStrategy<QrShape>
-                }
-                polymorphicDefaultDeserializer(QrShape::class) {
-                    Default.serializer()
-                }
-                polymorphic(QrShape::class) {
-                    subclass(Default::class)
-                    subclass(Circle::class)
-                }
-            }
         }
     }
 }

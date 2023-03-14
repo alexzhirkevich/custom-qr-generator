@@ -70,7 +70,7 @@ There are 2 types of QR code image - raster (deprecated) image and vector image.
 
 |  | Raster (deprecated)| Vector |
 | --- | --- | --- |
-| Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable` <br> (and Jetpack Compose `Painter`)|
+| Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable`|
 | Size | ❌ Fixed | ✅ Dynamic. Based on `View` size |
 | Speed | ❌ Slow (> 500 ms in average), so must be created in advance and only in background thread. Coroutines support included | ✅ Instant. All calculations performed during `Drawable.setBounds`, almost instantly |
 
@@ -97,13 +97,13 @@ val options = createQrVectorOptions {
     padding = .125f
 
     background {
-        drawable = DrawableSource
-            .Resource(R.drawable.frame)
+        drawable = ContextCompat
+            .getDrawable(context, R.drawable.frame)
     }
     
     logo {
-        drawable = DrawableSource
-            .Resource(R.drawable.tg)
+        drawable = ContextCompat
+            .getDrawable(context, R.drawable.logo)
         size = .25f
         padding = QrVectorLogoPadding.Natural(.2f)
         shape = QrVectorLogoShape
@@ -134,8 +134,8 @@ val options = QrVectorOptions.Builder()
     .padding(.3f)
     .logo(
         QrVectorLogo(
-            drawable = DrawableSource
-                .Resource(R.drawable.tg),
+            drawable = ContextCompat
+                .getDrawable(context, R.drawable.logo),
             size = .25f,
             padding = QrVectorLogoPadding.Natural(.2f),
             shape = QrVectorLogoShape
@@ -144,8 +144,8 @@ val options = QrVectorOptions.Builder()
     )
     .background(
         QrVectorBackground(
-            drawable = DrawableSource
-                .Resource(R.drawable.frame),
+            drawable = ContextCompat
+                .getDrawable(context, R.drawable.frame),
         )
     )
     .colors(
@@ -173,28 +173,10 @@ val options = QrVectorOptions.Builder()
 <b>Step 3.</b> Create QR code drawable:
 
 ```kotlin
-val drawable : Drawable = QrCodeDrawable(context, data, options)
+val drawable : Drawable = QrCodeDrawable(data, options)
 ```
 
-Or for Jetpack Compose:
-
-```kotlin
-val painter : Painter = rememberQrCodePainter(
-    data = data,
-    options = options
-)
-```
-
-Also you can build options inline:
-
-```kotlin
-val painter : Painter = rememberQrCodePainter(data){
-    shapes {
-      //...
-    }
-}
-```
-
+To interop with Jetpack Compose, you can use [this](https://google.github.io/accompanist/drawablepainter/) library (recommended) or convert `Drawable` to `Bitmap` (not recommended).
 
 ---
 
@@ -221,14 +203,14 @@ val options = QrOptions.Builder(1024)
     .padding(.3f)
     .background(
         QrBackground(
-            drawable = DrawableSource
-                  .Resource(R.drawable.frame),
+            drawable = ContextCompat
+                .getDrawable(context, R.drawable.frame),
         )
     )
     .logo(
         QrLogo(
-            drawable = DrawableSource
-                  .Resource(R.drawable.tg),
+            drawable = ContextCompat
+                .getDrawable(context, R.drawable.logo),
             size = .25f,
             padding = QrLogoPadding.Accurate(.2f),
             shape = QrLogoShape
@@ -263,12 +245,12 @@ Or using DSL:
 ```kotlin
 val options = createQrOptions(1024, 1024, .3f) {
     background {
-        drawable = DrawableSource
-            .Resource(R.drawable.frame)
+        drawable = ContextCompat
+            .getDrawable(context, R.drawable.frame)
     }
     logo {
-        drawable = DrawableSource
-            .Resource(R.drawable.tg)
+        drawable = ContextCompat
+            .getDrawable(context, R.drawable.logo)
         size = .25f
         padding = QrLogoPadding.Accurate(.2f)
         shape = QrLogoShape
@@ -296,7 +278,7 @@ val options = createQrOptions(1024, 1024, .3f) {
 <b>Step 3.</b> Create a QR code generator and pass your data and options into it:
 
 ```kotlin  
-val generator = QrCodeGenerator(context)
+val generator = QrCodeGenerator()
   
 val bitmap = generator.generateQrCode(data, options)
 ```
@@ -325,7 +307,7 @@ val threadPolicy = when(Runtime.getRuntime().availableProcessors()){
     else -> ThreadPolicy.QuadThread
 }
 
-val generator = QrCodeGenerator(context, threadPolicy)
+val generator = QrCodeGenerator(threadPolicy)
 
 ```
 

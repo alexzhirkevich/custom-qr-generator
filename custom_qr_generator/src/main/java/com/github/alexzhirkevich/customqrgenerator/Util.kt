@@ -9,8 +9,6 @@ import androidx.core.graphics.green
 import androidx.core.graphics.red
 import kotlin.math.roundToInt
 
-
-
 internal object QrUtil {
 
     @ColorInt
