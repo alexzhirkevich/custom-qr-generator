@@ -58,7 +58,8 @@ dependencyResolutionManagement {
 <b>Step 2.</b> Add the dependency.
 ```gradle
 dependencies {
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.5.8'
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.6.0'
+}
 
 ```
 <b>Step 3.</b> Press ⭐ if you liked this lib
@@ -176,7 +177,7 @@ val options = QrVectorOptions.Builder()
 val drawable : Drawable = QrCodeDrawable(data, options)
 ```
 
-To interop with Jetpack Compose, you can use [this](https://google.github.io/accompanist/drawablepainter/) library (recommended) or convert `Drawable` to `Bitmap` (not recommended).
+To interop with <b><i>Jetpack Compose</i><b>, you can use [this](https://google.github.io/accompanist/drawablepainter/) library (recommended) or convert `Drawable` to `Bitmap` (not recommended).
 
 ---
 
