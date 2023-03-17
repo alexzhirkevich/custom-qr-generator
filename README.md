@@ -62,8 +62,6 @@ dependencies {
 }
 
 ```
-<b>Step 3.</b> Press ⭐ if you liked this lib
-
 
 ## Usage
 
@@ -132,8 +130,8 @@ val options = createQrVectorOptions {
 
 ```kotlin
 val options = QrVectorOptions.Builder()
-    .padding(.3f)
-    .logo(
+    .setPadding(.3f)
+    .setLogo(
         QrVectorLogo(
             drawable = ContextCompat
                 .getDrawable(context, R.drawable.logo),
@@ -143,13 +141,13 @@ val options = QrVectorOptions.Builder()
                 .Circle
         )
     )
-    .background(
+    .setBackground(
         QrVectorBackground(
             drawable = ContextCompat
                 .getDrawable(context, R.drawable.frame),
         )
     )
-    .colors(
+    .setColors(
         QrVectorColors(
             dark = QrVectorColor
                 .Solid(Color(0xff345288)),
@@ -158,7 +156,7 @@ val options = QrVectorOptions.Builder()
             )
         )
     )
-    .shapes(
+    .setShapes(
         QrVectorShapes(
             darkPixel = QrVectorPixelShape
                 .RoundCorners(.5f),
@@ -178,6 +176,8 @@ val drawable : Drawable = QrCodeDrawable(data, options)
 ```
 
 To interop with <b><i>Jetpack Compose</i><b>, you can use [this](https://google.github.io/accompanist/drawablepainter/) library (recommended) or convert `Drawable` to `Bitmap` (not recommended).
+
+<b>Step 4.</b> Press ⭐ if you liked this lib
 
 ---
 
