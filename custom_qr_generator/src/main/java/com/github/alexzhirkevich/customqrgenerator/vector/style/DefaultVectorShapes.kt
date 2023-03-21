@@ -58,39 +58,45 @@ internal class RoundCornersVectorShape(
 }
 
 internal class RoundCornersVerticalVectorShape(
-    @FloatRange(from = 0.0, to = 1.0) val width : Float
+    @FloatRange(from = 0.0, to = 1.0) val radius : Float
 ) : QrVectorShapeModifier {
 
     override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
+
+        val padding = (size * (1 - radius.coerceIn(0f,1f)))
+
         if (neighbors.top){
-            addRect(0f,0f, size, size/2f, Path.Direction.CW)
+            addRect(padding,0f, size-padding, size/2f, Path.Direction.CW)
         } else {
-            addCircle(size/2, size/2, size/2f, Path.Direction.CW)
+            addCircle(size/2, size/2, size/2f-padding, Path.Direction.CW)
         }
         if (neighbors.bottom){
-            addRect(0f,size/2f, size, size, Path.Direction.CW)
+            addRect(padding,size/2f, size-padding, size, Path.Direction.CW)
         } else {
-            addCircle(size/2, size/2, size/2f, Path.Direction.CW)
+            addCircle(size/2, size/2, size/2f-padding, Path.Direction.CW)
         }
     }
 }
 
 internal class RoundCornersHorizontalVectorShape(
-    @FloatRange(from = 0.0, to = 1.0) val width : Float
+    @FloatRange(from = 0.0, to = 1.0) val radius : Float
 ) : QrVectorShapeModifier {
+
 
 
     override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
 
+        val padding = (size * (1 - radius.coerceIn(0f,1f)))
+
         if (neighbors.left){
-            addRect(0f,0f, size/2, size, Path.Direction.CW)
+            addRect(0f,padding, size/2, size-padding, Path.Direction.CW)
         } else {
-            addCircle(size/2, size/2, size/2f, Path.Direction.CW)
+            addCircle(size/2, size/2, size/2f-padding, Path.Direction.CW)
         }
         if (neighbors.right){
-            addRect(size/2,0f, size, size, Path.Direction.CW)
+            addRect(size/2,padding, size, size-padding, Path.Direction.CW)
         } else {
-            addCircle(size/2, size/2, size/2f, Path.Direction.CW)
+            addCircle(size/2, size/2, size/2f-padding, Path.Direction.CW)
         }
     }
 }

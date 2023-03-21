@@ -30,12 +30,12 @@ interface QrVectorPixelShape : QrVectorShapeModifier {
 
 
     data class RoundCornersVertical(
-        @FloatRange(from = 0.0, to = 1.0) private val width : Float = 1f
-    ): QrVectorPixelShape, QrVectorShapeModifier by RoundCornersVerticalVectorShape(width)
+        @FloatRange(from = 0.0, to = 1.0) private val radius : Float = 1f
+    ): QrVectorPixelShape, QrVectorShapeModifier by RoundCornersVerticalVectorShape(radius)
 
     
     data class RoundCornersHorizontal(
-        @FloatRange(from = 0.0, to = 1.0) private val width : Float = 1f
-    ): QrVectorPixelShape, QrVectorShapeModifier by RoundCornersHorizontalVectorShape(width)
+        @FloatRange(from = 0.0, to = 1.0) private val radius : Float = 1f
+    ): QrVectorPixelShape, QrVectorShapeModifier by RoundCornersHorizontalVectorShape(radius)
 
 }

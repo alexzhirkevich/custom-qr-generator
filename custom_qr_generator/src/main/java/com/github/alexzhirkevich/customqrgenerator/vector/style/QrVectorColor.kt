@@ -23,6 +23,18 @@ interface QrVectorColor {
         }
     }
 
+    /**
+     * This color can cut out qr code part from resulting drawable.
+     * Makes it transparent, ignoring background color and image.
+     * */
+    object Eraser : QrVectorColor {
+        override fun createPaint(width: Float, height: Float): Paint {
+            return Paint().apply {
+                alpha = 0
+                xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
+            }
+        }
+    }
     
     object Unspecified : QrVectorColor by Transparent
 
