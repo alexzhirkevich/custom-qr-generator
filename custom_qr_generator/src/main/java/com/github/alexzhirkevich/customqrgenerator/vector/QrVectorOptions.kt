@@ -22,7 +22,7 @@ data class QrVectorOptions(
     val logo : QrVectorLogo,
     val background: QrVectorBackground,
     val errorCorrectionLevel: QrErrorCorrectionLevel,
-    val fourthEyeEnabled : Boolean,
+    val fourthEyeEnabled : Boolean
 ) {
     class Builder {
 
@@ -46,7 +46,7 @@ data class QrVectorOptions(
         var fourthEyeEnabled: Boolean = false
             private set
 
-        fun setPaddding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
+        fun setPadding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
             this.padding = padding
         }
 
@@ -83,15 +83,15 @@ data class QrVectorOptions(
         }
 
         fun build(): QrVectorOptions = QrVectorOptions(
-            padding,
-            offset,
-            shapes,
-            shape,
-            colors,
-            logo,
-            background,
-            errorCorrectionLevel,
-            fourthEyeEnabled
+            padding = padding,
+            offset = offset,
+            shapes = shapes,
+            codeShape = shape,
+            colors = colors,
+            logo = logo,
+            background = background,
+            errorCorrectionLevel = errorCorrectionLevel,
+            fourthEyeEnabled = fourthEyeEnabled
         )
     }
 }

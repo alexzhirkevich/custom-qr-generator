@@ -43,7 +43,8 @@ sealed interface QrVectorOptionsBuilderScope  {
 
     /**
      * Colors of QR code elements.
-     * Background color is available in [background] section
+     * Background color is available in [background] builder.
+     * Logo background color is available in [logo] builder
      * */
     fun colors(block: QrVectorColorsBuilderScope.() -> Unit)
 

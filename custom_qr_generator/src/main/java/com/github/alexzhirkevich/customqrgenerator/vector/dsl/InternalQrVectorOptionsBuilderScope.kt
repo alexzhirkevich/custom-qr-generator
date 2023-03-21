@@ -13,7 +13,7 @@ internal class InternalQrVectorOptionsBuilderScope(
     override var padding: Float
         get() = builder.padding
         set(value) {
-            builder.setPaddding(value)
+            builder.setPadding(value)
         }
 
     override var errorCorrectionLevel: QrErrorCorrectionLevel
