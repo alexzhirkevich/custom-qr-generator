@@ -175,7 +175,7 @@ val options = QrVectorOptions.Builder()
 val drawable : Drawable = QrCodeDrawable(data, options)
 ```
 
-To interop with <b><i>Jetpack Compose</i><b>, you can use [this](https://google.github.io/accompanist/drawablepainter/) library (recommended) or convert `Drawable` to `Bitmap` (not recommended).
+To interop with <b><i>Jetpack Compose</i></b>, you can use [this](https://google.github.io/accompanist/drawablepainter/) library (recommended) or convert `Drawable` to `Bitmap` (not recommended).
 
 <b>Step 4.</b> Press ⭐ if you liked this lib
 
