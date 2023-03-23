@@ -128,7 +128,6 @@ private class QrCodeDrawableImpl(
     } ?: QrVectorFrameShape.AsPixelShape(options.shapes.darkPixel)
 
 
-
     private var bitmap : Bitmap? = null
 
     override fun setAlpha(alpha: Int) {
@@ -232,7 +231,7 @@ private class QrCodeDrawableImpl(
         }
     }
 
-    fun drawToCanvas(
+    private fun drawToCanvas(
         canvas: Canvas,
         size : Float,
         pixelSize: Float,
@@ -243,7 +242,7 @@ private class QrCodeDrawableImpl(
         background: Bitmap?,
         logoBgSize : Float,
         logoBgPath : Path,
-        logoBgPaint : Paint,
+        logoBgPaint : Paint?,
         logo : Bitmap?
     ) {
         val darkPixelPaint = options.colors.dark.createPaint(
@@ -295,14 +294,14 @@ private class QrCodeDrawableImpl(
 
             val (x, y) = (size - logoBgSize) / 2f to (size - logoBgSize) / 2f
 
-            withTranslation(x, y) {
-                drawPath(logoBgPath, logoBgPaint)
-            }
-
-            val nLogo = logo
-            if (nLogo != null) {
-                val (x, y) = (size - nLogo.width) / 2f to (size - nLogo.height) / 2f
-                drawBitmap(nLogo, x, y, null)
+            if (logoBgPaint != null)
+                withTranslation(x, y) {
+                    drawPath(logoBgPath, logoBgPaint)
+                }
+//
+            if (logo != null) {
+                val (x, y) = (size - logo.width) / 2f to (size - logo.height) / 2f
+                drawBitmap(logo, x, y, null)
             }
         }
         canvas.density = density
@@ -419,7 +418,6 @@ private class QrCodeDrawableImpl(
         for (x in 0 until codeMatrix.size) {
             for (y in 0 until codeMatrix.size) {
 
-
                 val neighbors = codeMatrix.neighbors(x, y)
 
                 val darkPath = options.shapes.darkPixel
@@ -428,7 +426,7 @@ private class QrCodeDrawableImpl(
                     .createPath(pixelSize, neighbors)
                 when {
                     options.colors.frame is QrVectorColor.Unspecified && isFrameStart(x, y) -> {
-                        val framePath = if (options.shapes.centralSymmetry){
+                        val mFramePath = if (options.shapes.centralSymmetry){
                             frameNumber = (frameNumber+1)
                             Path(framePath).apply {
                                 val angle = when(frameNumber){
@@ -443,11 +441,11 @@ private class QrCodeDrawableImpl(
                             framePath
                         }
                         darkPixelPath
-                            .addPath(framePath, x * pixelSize, y * pixelSize)
+                            .addPath(mFramePath, x * pixelSize, y * pixelSize)
                     }
 
                     options.colors.ball is QrVectorColor.Unspecified && isBallStart(x, y) -> {
-                        val ballPath = if (options.shapes.centralSymmetry){
+                        val mBallPath = if (options.shapes.centralSymmetry){
                             ballNumber += 1
                             Path(ballPath).apply {
                                 val angle = when(ballNumber){
@@ -462,7 +460,7 @@ private class QrCodeDrawableImpl(
                             ballPath
                         }
                         darkPixelPath
-                            .addPath(ballPath, x * pixelSize, y * pixelSize)
+                            .addPath(mBallPath, x * pixelSize, y * pixelSize)
                     }
 
                     isInsideFrameOrBall(x, y) -> Unit
@@ -481,8 +479,8 @@ private class QrCodeDrawableImpl(
 
     private fun resize(width : Int, height : Int) {
 
-        val darkPixelPath: Path = Path()
-        val lightPixelPath: Path = Path()
+        val darkPixelPath = Path()
+        val lightPixelPath = Path()
 
         val size = minOf(width, height) * (1 - options.padding.coerceIn(0f, .5f))
 
@@ -507,11 +505,11 @@ private class QrCodeDrawableImpl(
 
         val logoBackgroundPath = options.logo.shape.createPath(logoBgSize.toFloat(), Neighbors.Empty)
 
-        val logoPaint = if (options.logo.backgroundColor is QrVectorColor.Unspecified) {
-            options.background.color
-        } else {
-            options.logo.backgroundColor
-        }.createPaint(logoBgSize.toFloat(), logoBgSize.toFloat())
+        val logoPaint = when{
+            options.logo.padding is QrVectorLogoPadding.Empty -> null
+            options.logo.backgroundColor is QrVectorColor.Unspecified->options.background.color
+            else ->options.logo.backgroundColor
+        }?.createPaint(logoBgSize.toFloat(), logoBgSize.toFloat())
 
         createMainElements(pixelSize, framePath, ballPath, darkPixelPath, lightPixelPath)
 
