@@ -58,10 +58,11 @@ internal fun QrErrorCorrectionLevel.fit(
 ) : QrErrorCorrectionLevel  {
     return if (this == QrErrorCorrectionLevel.Auto)
         when {
+            !hasLogo -> QrErrorCorrectionLevel.Low
             logoSize > .3 -> QrErrorCorrectionLevel.High
             logoSize in .2 .. .3 && lvl < ErrorCorrectionLevel.Q ->
                 QrErrorCorrectionLevel.MediumHigh
-            hasLogo && logoSize > .05f && lvl < ErrorCorrectionLevel.M ->
+            logoSize > .05f && lvl < ErrorCorrectionLevel.M ->
                 QrErrorCorrectionLevel.Medium
             else -> this
         } else this
