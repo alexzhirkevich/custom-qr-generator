@@ -543,7 +543,7 @@ private class QrCodeDrawableImpl(
 private fun QrErrorCorrectionLevel.fit(
     logo: QrVectorLogo, shape : QrShape
 ) : QrErrorCorrectionLevel  {
-    val size = logo.size * (1 + logo.padding.value) * (1 + shape.shapeSizeIncrease)
+    val size = logo.size * (1 + logo.padding.value) * shape.shapeSizeIncrease
     val hasLogo = size > Float.MIN_VALUE && logo.drawable != EmptyDrawable ||
             logo.padding != QrVectorLogoPadding.Empty
     return fit(hasLogo, size)
