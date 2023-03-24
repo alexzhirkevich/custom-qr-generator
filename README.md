@@ -18,9 +18,7 @@ Try library features on live app example
 I'll be glad, if you leave a positive review for it in Google Play 😊
 
 Some useful links:
-- [Examples](/examples) with source code
-- [Wiki](https://github.com/alexzhirkevich/custom-qr-generator/wiki)
-- [Version for Flutter](https://github.com/alexzhirkevich/custom-qr-generator-flutter) with some limitations
+- [Version for Flutter](https://github.com/alexzhirkevich/custom-qr-generator-flutter) with limited functionality
 
 ## Table of contents
 - [Installation](#installation)
