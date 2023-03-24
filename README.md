@@ -13,7 +13,7 @@ Android library for creating QR-codes with logo, custom pixel/eyes shapes, backg
 
 Try library features on live app example
 
-<a href="https://play.google.com/store/apps/details?id=com.github.alexzhirkevich.qrdesigner"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" height="80px"/></a>
+<a href="https://play.google.com/store/apps/details?id=com.github.alexzhirkevich.qrdesigner"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" height="60px"/></a>
 
 I'll be glad, if you leave a positive review for it in Google Play 😊
 
