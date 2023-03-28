@@ -233,9 +233,8 @@ fun interface QrData {
 
             if (note != null) {
                 append("NOTE:$note\n")
-
-                append("END:VCARD")
             }
+            append("END:VCARD")
         }
     }
 
