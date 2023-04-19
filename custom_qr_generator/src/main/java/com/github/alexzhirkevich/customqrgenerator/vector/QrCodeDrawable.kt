@@ -382,7 +382,7 @@ private class QrCodeDrawableImpl(
     private fun createLogo(logoSize: Float): Bitmap? =
         if (options.logo.drawable != null) {
             options.logo.scale.scale(
-                options.logo.drawable, logoSize.roundToInt(), logoSize.roundToInt()
+                options.logo.drawable, logoSize.toInt(), logoSize.toInt()
             ).let { if (it.isMutable) it else it.copy(it.config, true) }.applyCanvas {
                 val clip = Path().apply {
                     addRect(0f, 0f, logoSize, logoSize, Path.Direction.CW)
