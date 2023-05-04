@@ -26,7 +26,8 @@ sealed interface QrVectorOptionsBuilderScope  {
     var codeShape : QrShape
 
     /**
-     * Enable 4th qr code eye. False by default
+     * Enable 4th qr code eye. False by default.
+     * This eye can overwrite an alignment eye and make QR code harder to scan.
      * */
     var fourthEyeEnabled : Boolean
 
@@ -58,6 +59,12 @@ sealed interface QrVectorOptionsBuilderScope  {
      * Middle image.
      * */
     fun logo(block: QrVectorLogoBuilderScope.() -> Unit)
+
+    /**
+     * Highlight anchor QR code elements for better recognition.
+     * Has the most impact when using a background image or color
+     * */
+    fun highlighting(block : QrHighlightingBuilderScope.() -> Unit)
 }
 
 

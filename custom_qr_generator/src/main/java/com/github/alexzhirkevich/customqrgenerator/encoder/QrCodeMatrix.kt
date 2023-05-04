@@ -4,7 +4,13 @@ import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 
 class QrCodeMatrix(val size : Int){
 
-    enum class PixelType { DarkPixel, LightPixel, Background, Logo }
+    enum class PixelType {
+        DarkPixel,
+        LightPixel,
+        Background,
+        Logo,
+        VersionEye,
+    }
 
     private var types = MutableList(size * size) {
         PixelType.Background
