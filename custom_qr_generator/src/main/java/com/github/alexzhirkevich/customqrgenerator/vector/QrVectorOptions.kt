@@ -1,6 +1,7 @@
 package com.github.alexzhirkevich.customqrgenerator.vector
 
 import androidx.annotation.FloatRange
+import com.github.alexzhirkevich.customqrgenerator.QrHighlighting
 import com.github.alexzhirkevich.customqrgenerator.QrErrorCorrectionLevel
 import com.github.alexzhirkevich.customqrgenerator.style.QrOffset
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
@@ -14,7 +15,7 @@ import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorShapes
 
 data class QrVectorOptions(
     @FloatRange(from = .0, to = .5)
-    val padding : Float = .125f,
+    val padding : Float,
     val offset: QrOffset,
     val shapes: QrVectorShapes,
     val codeShape : QrShape,
@@ -22,7 +23,8 @@ data class QrVectorOptions(
     val logo : QrVectorLogo,
     val background: QrVectorBackground,
     val errorCorrectionLevel: QrErrorCorrectionLevel,
-    val fourthEyeEnabled : Boolean
+    val fourthEyeEnabled : Boolean,
+    val highlighting: QrHighlighting
 ) {
     class Builder {
 
@@ -44,6 +46,9 @@ data class QrVectorOptions(
         var errorCorrectionLevel: QrErrorCorrectionLevel = QrErrorCorrectionLevel.Auto
             private set
         var fourthEyeEnabled: Boolean = false
+            private set
+
+        var highlighting : QrHighlighting = QrHighlighting()
             private set
 
         fun setPadding(@FloatRange(from = .0, to = .5) padding: Float) = apply {
@@ -78,8 +83,20 @@ data class QrVectorOptions(
             this.errorCorrectionLevel = errorCorrectionLevel
         }
 
+        /**
+         * Enable bottom right eye.
+         * This eye can overwrite an alignment eye and make QR code harder to scan.
+         * */
         fun setFourthEyeEnabled(enabled: Boolean) = apply {
             this.fourthEyeEnabled = enabled
+        }
+
+        /**
+         * Highlight anchor QR code elements for better recognition.
+         * Has the most impact when using a background image or color
+         * */
+        fun setAnchorsHighlighting(highlighting: QrHighlighting) = apply {
+            this.highlighting = highlighting
         }
 
         fun build(): QrVectorOptions = QrVectorOptions(
@@ -91,7 +108,8 @@ data class QrVectorOptions(
             logo = logo,
             background = background,
             errorCorrectionLevel = errorCorrectionLevel,
-            fourthEyeEnabled = fourthEyeEnabled
+            fourthEyeEnabled = fourthEyeEnabled,
+            highlighting = highlighting
         )
     }
 }

@@ -21,33 +21,21 @@ enum class QrErrorCorrectionLevel(
 
     /**
      * ~7% of QR code can be damaged (or used as logo).
-     *
-     * QR code might be unreadable if logo is too big.
-     * If your code has logo, it's better to use [Auto].
      * */
     Low(ErrorCorrectionLevel.L),
 
     /**
      * ~15% of QR code can be damaged (or used as logo).
-     *
-     * QR code might be unreadable if logo is too big.
-     * If your code has logo, it's better to use [Auto].
      * */
     Medium(ErrorCorrectionLevel.M),
 
     /**
      * ~25% of QR code can be damaged (or used as logo).
-     *
-     * QR code might be unreadable if logo is too big.
-     * If your code has logo, it's better to use [Auto].
      * */
     MediumHigh(ErrorCorrectionLevel.Q),
 
     /**
      * ~30% of QR code can be damaged (or used as logo).
-     *
-     * QR code might be unreadable if logo is too big.
-     * If your code has logo, it's better to use [Auto].
      * */
     High(ErrorCorrectionLevel.H)
 }

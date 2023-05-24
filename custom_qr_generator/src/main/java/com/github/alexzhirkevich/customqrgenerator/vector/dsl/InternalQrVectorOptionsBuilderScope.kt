@@ -58,4 +58,8 @@ internal class InternalQrVectorOptionsBuilderScope(
         InternalQrVectorLogoBuilderScope(builder)
             .apply(block)
     }
+
+    override fun highlighting(block: QrHighlightingBuilderScope.() -> Unit) {
+        InternalQrHighlightingBuilderScope(builder).apply(block)
+    }
 }

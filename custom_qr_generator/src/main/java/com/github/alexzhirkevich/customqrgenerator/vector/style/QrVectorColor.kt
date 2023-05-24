@@ -6,6 +6,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
 import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
+import androidx.core.graphics.alpha
 import com.github.alexzhirkevich.customqrgenerator.style.Color
 import kotlin.math.sqrt
 
@@ -106,3 +107,7 @@ interface QrVectorColor {
         }
     }
 }
+
+internal val QrVectorColor.isTransparent : Boolean
+    get() = this is QrVectorColor.Transparent || this is QrVectorColor.Unspecified ||
+            this is QrVectorColor.Solid && this.color.alpha == 0
