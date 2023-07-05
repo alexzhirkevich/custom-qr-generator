@@ -18,6 +18,7 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.encoder.Encoder
 import java.nio.charset.Charset
 import kotlin.math.roundToInt
+import kotlin.system.measureTimeMillis
 
 /**
  * Vector QR code image

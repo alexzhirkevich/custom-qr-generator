@@ -94,7 +94,6 @@ interface QrVectorColor {
                 _probabilities.add(sum..(sum + i) to probabilities[index-1].second)
                 sum + i
             }
-            println("QEQfs")
             println(_probabilities)
         }
 
@@ -115,7 +114,6 @@ interface QrVectorColor {
                     else -> 0
                 }
             }
-            println("Random: $random")
 
             return Paint().apply {
                 color = probabilities[idx].second
