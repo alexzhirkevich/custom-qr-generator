@@ -65,7 +65,7 @@ dependencies {
 
 There are 2 types of QR code image - raster (deprecated) image and vector image. 
 
-|  | Raster (deprecated)| Vector |
+|  | Raster (deprecated). <br>Will be removed in v2.0 since all the available features were migrated to vector | Vector |
 | --- | --- | --- |
 | Output image type | `android.graphics.Bitmap` | `android.graphics.drawable.Drawable`|
 | Size | ❌ Fixed | ✅ Dynamic. Based on `View` size |
@@ -183,7 +183,7 @@ To interop with <b><i>Jetpack Compose</i></b>, you can use [this](https://google
 
 
 <details>
-<summary>Deprecated (click to show)</summary>
+<summary>Deprecated (click to show). Will be removed in v2.0</summary>
 
 <b>Step 1.</b> Create QR code data. There are multiple QR types: Plain Text, Url, Wi-Fi,
 Email, GeoPos, Profile Cards, Phone, etc.
@@ -359,7 +359,7 @@ For example, this is an implementation of sweep gradient:
 ### Raster code (Bitmap) 
 
 <details>
-<summary>Deprecated (click to show)</summary>
+<summary>Deprecated (click to show). Will be removed in v2.0</summary>
 
 You can easily implement your own shapes and coloring for QR Code in 2 ways:
 using math formulas or by drawing on canvas. Second way is usually slower
