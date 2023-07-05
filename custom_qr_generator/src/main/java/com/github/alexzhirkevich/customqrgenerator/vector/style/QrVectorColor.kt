@@ -80,16 +80,45 @@ interface QrVectorColor {
         }
     }
 
-    class SolidRandom @JvmOverloads constructor(
-        @ColorInt private val from : List<Int>,
+    class SolidRandom constructor(
+        private val probabilities : List<Pair<Float, Int>>,
         private val random: Random = Random
     ) : QrVectorColor {
+
+        private val _probabilities = mutableListOf<Pair<ClosedFloatingPointRange<Float>,Int>>()
+        init {
+            assert(probabilities.isNotEmpty()){
+                "SolidRandom color list can't be empty"
+            }
+            (listOf(0f) + probabilities.map { it.first }).reduceIndexed { index, sum, i ->
+                _probabilities.add(sum..(sum + i) to probabilities[index-1].second)
+                sum + i
+            }
+            println("QEQfs")
+            println(_probabilities)
+        }
+
+        constructor(
+            @ColorInt colors : List<Int>,
+        ) : this(colors.map { 1f to it }, Random)
 
         override val mode: QrPaintMode
             get() = QrPaintMode.Separate
         override fun createPaint(width: Float, height: Float): Paint {
+
+            val random = random.nextFloat() * _probabilities.last().first.endInclusive
+
+            val idx = _probabilities.binarySearch {
+                when {
+                    random < it.first.start -> 1
+                    random > it.first.endInclusive -> -1
+                    else -> 0
+                }
+            }
+            println("Random: $random")
+
             return Paint().apply {
-                color = from.random(random)
+                color = probabilities[idx].second
             }
         }
     }
