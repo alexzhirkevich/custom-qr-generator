@@ -164,9 +164,7 @@ private class QrCodeDrawableImpl(
 
     override fun setBounds(left: Int, top: Int, right: Int, bottom: Int) {
         super.setBounds(left, top, right, bottom)
-        measureTimeMillis {
-            resize(right - left, bottom - top)
-        }.also { println("Time elapsed: $it") }
+        resize(right - left, bottom - top)
     }
 
     private fun framePathFactory(pixelSize: Float): Lazy<Path> {
