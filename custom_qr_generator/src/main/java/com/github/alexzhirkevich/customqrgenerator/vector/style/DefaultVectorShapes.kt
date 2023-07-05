@@ -7,11 +7,16 @@ import androidx.core.graphics.*
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import kotlin.math.sqrt
 
-internal object DefaultVectorShape : QrVectorShapeModifier {
-
-
+internal object DefaultVectorShape : QrVectorShapeModifier by RectVectorShape()
+internal class RectVectorShape(
+    @FloatRange(from = 0.0, to=1.0)
+    val size : Float = 1f
+) : QrVectorShapeModifier{
     override fun Path.shape(size: Float, neighbors: Neighbors): Path = apply {
-        addRect(0f,0f, size,size, Path.Direction.CW)
+
+        val s = this@RectVectorShape.size.coerceIn(0f, 1f) * size
+
+        addRect((size - s)/2, (size - s)/2, (size + s)/2,(size + s)/2, Path.Direction.CW)
     }
 }
 
