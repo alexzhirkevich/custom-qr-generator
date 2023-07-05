@@ -12,10 +12,8 @@ interface QrVectorShapeModifier {
      * */
     fun Path.shape(size : Float, neighbors: Neighbors) : Path
 
-    @Deprecated("Replace with Path.shape(size,neighbors). Will be removed in 2.0",
-        ReplaceWith("Path().apply { shape(size, neighbors) }", "android.graphics.Path")
-    )
-    fun createPath(size : Float, neighbors: Neighbors) : Path = Path().apply {
-        shape(size, neighbors)
-    }
+}
+
+fun QrVectorShapeModifier.createPath(size : Float, neighbors: Neighbors) : Path = Path().apply {
+    shape(size, neighbors)
 }

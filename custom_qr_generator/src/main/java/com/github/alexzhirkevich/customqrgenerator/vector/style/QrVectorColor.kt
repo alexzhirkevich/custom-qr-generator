@@ -28,7 +28,7 @@ enum class QrPaintMode {
     Combine,
 
     /**
-     * Allows to paint each part individually. CAN AFFECT PERFORMANCE IF APPLIED TO DOTS(PIXELS)
+     * Allows to paint each part individually
      *
      * - For dots(pixels): All pixels will be drawn separately.
      * [QrVectorColor.createPaint] will be called for each dark/light dot.
@@ -45,13 +45,6 @@ interface QrVectorColor {
      * Painting mode of the QR code element.
      * */
     val mode : QrPaintMode get() = QrPaintMode.Combine
-
-    @Deprecated("Use Paint.paint(with,height) instead. Will be removed in 2.0",
-        ReplaceWith("Paint().apply { paint(width, height) }", "android.graphics.Paint")
-    )
-    fun createPaint(width: Float, height: Float): Paint = Paint().apply {
-        paint(width, height)
-    }
 
     fun Paint.paint(width: Float, height: Float)
 
@@ -189,3 +182,7 @@ internal val QrVectorColor.isTransparent : Boolean
 
 internal val QrVectorColor.isSpecified : Boolean
     get() = this !is QrVectorColor.Unspecified
+
+fun QrVectorColor.createPaint(width: Float, height: Float): Paint = Paint().apply {
+    paint(width, height)
+}

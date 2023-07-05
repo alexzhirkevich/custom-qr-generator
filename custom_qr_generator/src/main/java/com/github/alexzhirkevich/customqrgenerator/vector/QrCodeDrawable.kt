@@ -312,7 +312,13 @@ private class QrCodeDrawableImpl(
     }
 
     private fun lightPathFactory(pixelSize: Float, neighbors: Neighbors) : Lazy<Path> {
-        val pathFactory = { options.shapes.darkPixel.createPath(pixelSize, neighbors) }
+        val path = Path()
+        val pathFactory = {
+            path.rewind()
+            options.shapes.lightPixel.run {
+                path.shape(pixelSize, neighbors)
+            }
+        }
         return Recreating(pathFactory)
     }
 
@@ -922,10 +928,6 @@ private object DefaultVersionFrame : QrVectorFrameShape {
         addRect(size-width,0f,size,size,Path.Direction.CW)
         addRect(0f,size-width,size,size,Path.Direction.CW)
     }
-
-    override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-        shape(size, neighbors)
-    }
 }
 
 private class Recreating<T>(
@@ -935,5 +937,4 @@ private class Recreating<T>(
         get() = factory()
 
     override fun isInitialized(): Boolean = true
-
 }
