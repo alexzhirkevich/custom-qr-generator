@@ -14,6 +14,8 @@ import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import com.github.alexzhirkevich.customqrgenerator.style.QrShape
 import com.github.alexzhirkevich.customqrgenerator.vector.style.*
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor.Transparent.paint
+import com.github.alexzhirkevich.customqrgenerator.vector.style.StarVectorShape.shape
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.encoder.Encoder
 import java.nio.charset.Charset
@@ -162,11 +164,20 @@ private class QrCodeDrawableImpl(
 
     override fun setBounds(left: Int, top: Int, right: Int, bottom: Int) {
         super.setBounds(left, top, right, bottom)
-        resize(right - left, bottom - top)
+        measureTimeMillis {
+            resize(right - left, bottom - top)
+        }.also { println("Time elapsed: $it") }
     }
 
     private fun framePathFactory(pixelSize: Float): Lazy<Path> {
-        val pathFactory = { frameShape.createPath(pixelSize * 7f, Neighbors.Empty) }
+        val path = Path()
+
+        val pathFactory = {
+            frameShape.run {
+                path.rewind()
+                path.shape(pixelSize * 7f, Neighbors.Empty)
+            }
+        }
         return if (options.colors.frame.mode == QrPaintMode.Combine)
             lazy(pathFactory)
         else Recreating(pathFactory)
@@ -177,11 +188,13 @@ private class QrCodeDrawableImpl(
         val color = options.colors.frame.takeIf { it.isSpecified }
             ?: options.colors.dark
 
+        val paint = Paint()
         val paintFactory = {
-            color.createPaint(
-                pixelSize * 7f,
-                pixelSize * 7f,
-            ).apply { isAntiAlias = true }
+            paint.reset()
+            color.run {
+                paint.paint(pixelSize * 7f, pixelSize *73f)
+            }
+            paint
         }
 
         return if (options.colors.frame.mode == QrPaintMode.Combine)
@@ -189,7 +202,13 @@ private class QrCodeDrawableImpl(
     }
 
     private fun ballPathFactory(pixelSize: Float): Lazy<Path> {
-        val pathFactory = { ballShape.createPath(pixelSize * 3f, Neighbors.Empty) }
+        val path = Path()
+        val pathFactory = {
+            path.rewind()
+            ballShape.run {
+                path.shape(pixelSize * 3f, Neighbors.Empty)
+            }
+        }
         return if (options.colors.ball.mode == QrPaintMode.Combine)
             lazy(pathFactory)
         else Recreating(pathFactory)
@@ -200,12 +219,13 @@ private class QrCodeDrawableImpl(
         val color = options.colors.ball.takeIf { it.isSpecified }
             ?: options.colors.dark
 
-
+        val paint = Paint()
         val paintFactory = {
-            color.createPaint(
-                pixelSize * 3f,
-                pixelSize * 3f,
-            ).apply { isAntiAlias = true }
+            paint.reset()
+            color.run {
+                paint.paint(pixelSize * 3f, pixelSize * 3f,)
+            }
+            paint
         }
 
         return if (options.colors.ball.mode == QrPaintMode.Combine)
@@ -214,12 +234,17 @@ private class QrCodeDrawableImpl(
 
     private fun darkPaintFactory(pixelSize: Float): Lazy<Paint> {
 
+        val paint = Paint()
+
         val size = if (shouldSeparateDarkPixels)
             pixelSize else codeMatrix.size * pixelSize
 
         val paintFactory = {
-            options.colors.dark.createPaint(size, size)
-                .apply { isAntiAlias = true }
+            paint.reset()
+            options.colors.dark.run {
+                paint.paint(size, size)
+            }
+            paint
         }
 
         return if (shouldSeparateDarkPixels)
@@ -287,18 +312,30 @@ private class QrCodeDrawableImpl(
     }
 
     private fun lightPathFactory(pixelSize: Float, neighbors: Neighbors) : Lazy<Path> {
-        val pathFactory = { options.shapes.darkPixel.createPath(pixelSize, neighbors) }
+        val path = Path()
+        val pathFactory = {
+            path.rewind()
+            options.shapes.lightPixel.run {
+                path.shape(pixelSize, neighbors)
+            }
+        }
         return Recreating(pathFactory)
     }
 
     private fun lightPaintFactory(pixelSize: Float) : Lazy<Paint> {
 
+        val paint = Paint()
+
         val size = if (shouldSeparateDarkPixels)
             pixelSize else codeMatrix.size * pixelSize
 
         val paintFactory = {
-            options.colors.light.createPaint(size, size)
-                .apply { isAntiAlias = true }
+            paint.reset()
+
+            options.colors.light.run {
+                paint.paint(size, size)
+            }
+            paint
         }
 
         return if (shouldSeparateLightPixels)
@@ -306,7 +343,13 @@ private class QrCodeDrawableImpl(
     }
 
     private fun darkPathFactory(pixelSize: Float, neighbors: Neighbors) : Lazy<Path> {
-        val pathFactory = { options.shapes.darkPixel.createPath(pixelSize, neighbors) }
+        val path = Path()
+        val pathFactory = {
+            path.rewind()
+            options.shapes.darkPixel.run {
+                path.shape(pixelSize, neighbors)
+            }
+        }
         return Recreating(pathFactory)
     }
 
@@ -817,14 +860,17 @@ private class QrCodeDrawableImpl(
             applyNaturalLogo(logoBgSize, size, pixelSize)
         }
 
-        val logoBackgroundPath =
-            options.logo.shape.createPath(logoBgSize.toFloat(), Neighbors.Empty)
+        val logoBackgroundPath = options.logo.shape
+            .createPath(logoBgSize.toFloat(), Neighbors.Empty)
+
 
         val logoPaint = when {
-            options.logo.padding is QrVectorLogoPadding.Empty -> null
-            options.logo.backgroundColor is QrVectorColor.Unspecified -> options.background.color
-            else -> options.logo.backgroundColor
-        }?.createPaint(logoBgSize.toFloat(), logoBgSize.toFloat())
+                options.logo.padding is QrVectorLogoPadding.Empty -> null
+                options.logo.backgroundColor is QrVectorColor.Unspecified -> options.background.color
+                else -> options.logo.backgroundColor
+            }?.run {
+            Paint().apply { paint(logoBgSize.toFloat(), logoBgSize.toFloat()) }
+        }
 
         createMainElements(pixelSize, darkPixelPath, lightPixelPath, darkTimingPath, lightTimingPath)
 
@@ -875,8 +921,7 @@ private fun <T> List<T>.pairCombinations() : List<Pair<T,T>> {
 }
 
 private object DefaultVersionFrame : QrVectorFrameShape {
-
-    override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
+    override fun Path.shape(size: Float, neighbors: Neighbors) = apply {
         val width = size/5f
         addRect(0f,0f,size,width,Path.Direction.CW)
         addRect(0f,0f,width,size,Path.Direction.CW)
@@ -892,5 +937,4 @@ private class Recreating<T>(
         get() = factory()
 
     override fun isInitialized(): Boolean = true
-
 }

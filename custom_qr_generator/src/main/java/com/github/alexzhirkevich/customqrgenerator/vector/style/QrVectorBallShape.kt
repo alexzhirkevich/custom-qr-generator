@@ -23,9 +23,7 @@ interface QrVectorBallShape : QrVectorShapeModifier {
      * */
     
     object AsDarkPixels : QrVectorBallShape {
-        override fun createPath(size: Float, neighbors: Neighbors): Path {
-            return Path()
-        }
+        override fun Path.shape(size: Float, neighbors: Neighbors) = this
     }
 
     
@@ -33,8 +31,7 @@ interface QrVectorBallShape : QrVectorShapeModifier {
         val pixelShape: QrVectorPixelShape
     ) : QrVectorBallShape {
 
-        override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-
+        override fun Path.shape(size: Float, neighbors: Neighbors) = apply {
             val matrix =  ByteMatrix(3,3).apply { clear(1) }
                 .toQrMatrix()
             repeat(3){ i ->

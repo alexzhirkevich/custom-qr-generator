@@ -18,7 +18,7 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
     
     object Default : QrVectorFrameShape {
 
-        override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
+        override fun Path.shape(size: Float, neighbors: Neighbors) = apply{
             val width = size/7f
             addRect(0f,0f,size,width,Path.Direction.CW)
             addRect(0f,0f,width,size,Path.Direction.CW)
@@ -34,10 +34,7 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
      * */
     
     object AsDarkPixels : QrVectorFrameShape {
-
-        override fun createPath(size: Float, neighbors: Neighbors): Path {
-            return Path()
-        }
+        override fun Path.shape(size: Float, neighbors: Neighbors): Path = this
     }
 
     
@@ -45,8 +42,7 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
         val pixelShape: QrVectorPixelShape
     ) : QrVectorFrameShape {
 
-        override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-
+        override fun Path.shape(size: Float, neighbors: Neighbors) = apply{
             val matrix =  ByteMatrix(7,7)
                 .toQrMatrix()
 
@@ -78,7 +74,7 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
         @FloatRange(from = 0.0) val width : Float = 1f,
         @FloatRange(from = 0.0) val radius : Float = 1f
     ) : QrVectorFrameShape {
-        override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
+        override fun Path.shape(size: Float, neighbors: Neighbors) = apply {
             val width = (size/7f) * width
             val radius = radius.coerceAtLeast(0f)
             addCircle(size/2f, size/2f, size/2f * radius, Path.Direction.CW)
@@ -95,7 +91,7 @@ interface QrVectorFrameShape : QrVectorShapeModifier {
         val topRight: Boolean = true,
         val bottomRight: Boolean = true,
     ) : QrVectorFrameShape {
-        override fun createPath(size: Float, neighbors: Neighbors): Path {
+        override fun Path.shape(size: Float, neighbors: Neighbors): Path {
 
             val width = size / 7f * width.coerceAtLeast(0f)
 
