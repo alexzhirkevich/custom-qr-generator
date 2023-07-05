@@ -9,12 +9,44 @@ import androidx.annotation.FloatRange
 import androidx.core.graphics.alpha
 import com.github.alexzhirkevich.customqrgenerator.style.Color
 import kotlin.math.sqrt
+import kotlin.random.Random
+
+enum class QrPaintMode {
+
+    /**
+     * Default behavior.
+     *
+     * - For dots(pixels): All pixels will be combined to a single path.
+     * [QrVectorColor.createPaint] will be called 1 time with the size of the whole QR code payload.
+     *
+     * - For frames/balls: If color is not specified and pixels painting mode is [Combine] then
+     * frame/ball paths will be combined with dots path.
+     * Otherwise, [QrVectorColor.createPaint] will be called 3(4) times - for each corner
+     * */
+    Combine,
+
+    /**
+     * Allows to paint each part individually. CAN AFFECT PERFORMANCE IF APPLIED TO DOTS(PIXELS)
+     *
+     * - For dots(pixels): All pixels will be drawn separately.
+     * [QrVectorColor.createPaint] will be called for each dark/light dot.
+     *
+     * - For frames/balls: Each frame/ball will be shaped and painted separately.
+     * [QrVectorColor.createPaint] and [QrVectorShapeModifier.createPath] will be called 3(4) times - for each corner
+     * */
+    Separate
+}
 
 interface QrVectorColor {
 
+    /**
+     * Painting mode of the QR code element.
+     * */
+    val mode : QrPaintMode get() = QrPaintMode.Combine
+
     fun createPaint(width: Float, height: Float): Paint
 
-    
+
     object Transparent : QrVectorColor {
         override fun createPaint(width: Float, height: Float): Paint {
             return Paint().apply {
@@ -39,15 +71,31 @@ interface QrVectorColor {
     
     object Unspecified : QrVectorColor by Transparent
 
-    
-    data class Solid(@ColorInt val color: Int) : QrVectorColor {
+
+    data class Solid constructor(
+        @ColorInt val color: Int,
+    ) : QrVectorColor {
         override fun createPaint(width: Float, height: Float) = Paint().apply {
             color = this@Solid.color
         }
     }
 
-    
-    data class LinearGradient(
+    class SolidRandom @JvmOverloads constructor(
+        @ColorInt private val from : List<Int>,
+        private val random: Random = Random
+    ) : QrVectorColor {
+
+        override val mode: QrPaintMode
+            get() = QrPaintMode.Separate
+        override fun createPaint(width: Float, height: Float): Paint {
+            return Paint().apply {
+                color = from.random(random)
+            }
+        }
+    }
+
+
+    data class LinearGradient constructor(
         val colors: List<Pair<Float, Int>>,
         val orientation: Orientation
     ) : QrVectorColor {
@@ -77,10 +125,10 @@ interface QrVectorColor {
     }
 
     
-    data class RadialGradient(
+    data class RadialGradient constructor(
         val colors: List<Pair<Float, Int>>,
         @FloatRange(from = 0.0)
-        val radius: Float = sqrt(2f),
+        val radius: Float = sqrt(2f)
     ) : QrVectorColor {
         override fun createPaint(width: Float, height: Float): Paint = Paint().apply {
             shader = android.graphics.RadialGradient(
@@ -94,8 +142,8 @@ interface QrVectorColor {
     }
 
     
-    data class SweepGradient(
-        val colors: List<Pair<Float, Int>>
+    data class SweepGradient constructor(
+        val colors: List<Pair<Float, Int>>,
     ) : QrVectorColor {
 
         override fun createPaint(width: Float, height: Float): Paint = Paint().apply {
@@ -111,3 +159,6 @@ interface QrVectorColor {
 internal val QrVectorColor.isTransparent : Boolean
     get() = this is QrVectorColor.Transparent || this is QrVectorColor.Unspecified ||
             this is QrVectorColor.Solid && this.color.alpha == 0
+
+internal val QrVectorColor.isSpecified : Boolean
+    get() = this !is QrVectorColor.Unspecified

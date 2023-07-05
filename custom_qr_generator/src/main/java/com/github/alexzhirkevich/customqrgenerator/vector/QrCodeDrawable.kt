@@ -38,7 +38,8 @@ private class QrCodeDrawableImpl(
 
     private val initialMatrix: QrCodeMatrix
 
-    private val shapeIncrease : Int
+    private val shapeIncrease: Int
+
 
     init {
         val code = Encoder.encode(
@@ -66,7 +67,9 @@ private class QrCodeDrawableImpl(
         shapeIncrease = ((initialMatrix.size * options.codeShape.shapeSizeIncrease)
             .roundToInt() - initialMatrix.size) / 2
 
-        val (max, min) = code.version.alignmentPatternCenters.let { (it.maxOrNull() ?:0) to (it.minOrNull() ?: 0) }
+        val (max, min) = code.version.alignmentPatternCenters.let {
+            (it.maxOrNull() ?: 0) to (it.minOrNull() ?: 0)
+        }
 
         anchorCenters = code.version.alignmentPatternCenters
             .toList().pairCombinations().filterNot {
@@ -76,30 +79,32 @@ private class QrCodeDrawableImpl(
                         options.fourthEyeEnabled && it.first == max && it.second == max
             }
 
-        if (options.highlighting.versionEyes is HighlightingType.Styled){
+        if (options.highlighting.versionEyes is HighlightingType.Styled) {
             initialMatrix.apply {
                 anchorCenters.forEach {
-                    for(x in it.first - 2 until it.first+3){
-                        for (y in it.second -2 until  it.second + 3){
+                    for (x in it.first - 2 until it.first + 3) {
+                        for (y in it.second - 2 until it.second + 3) {
                             this[x, y] = QrCodeMatrix.PixelType.VersionEye
                         }
                     }
                 }
             }
         }
-//        if (options.anchorHighlighting.timingLines !is HighlightingType.None){
-//            initialMatrix.apply {
-//                anchorCenters.forEach {
-//                    for(x in it.first - 2 until it.first+3){
-//                        for (y in it.second -2 until  it.second + 3){
-//                            this[x, y] = if (this[x,y] == QrCodeMatrix.PixelType.DarkPixel)
-//                                QrCodeMatrix.PixelType.TimingLineDark else QrCodeMatrix.PixelType.TimingLineLight
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
+
+    val shouldSeparateFrames
+        get() = options.colors.frame.mode == QrPaintMode.Separate ||
+                options.colors.dark.mode == QrPaintMode.Separate
+
+    val shouldSeparateBalls
+        get() = options.colors.ball.mode == QrPaintMode.Separate ||
+                options.colors.dark.mode == QrPaintMode.Separate
+
+    val shouldSeparateDarkPixels
+        get() = options.colors.dark.mode == QrPaintMode.Separate
+
+    val shouldSeparateLightPixels
+        get() = options.colors.light.mode == QrPaintMode.Separate
 
     val codeMatrix = options.codeShape.apply(initialMatrix)
 
@@ -159,6 +164,152 @@ private class QrCodeDrawableImpl(
         resize(right - left, bottom - top)
     }
 
+    private fun framePathFactory(pixelSize: Float): Lazy<Path> {
+        val pathFactory = { frameShape.createPath(pixelSize * 7f, Neighbors.Empty) }
+        return if (options.colors.frame.mode == QrPaintMode.Combine)
+            lazy(pathFactory)
+        else Recreating(pathFactory)
+    }
+
+    private fun framePaintFactory(pixelSize: Float): Lazy<Paint> {
+
+        val color = options.colors.frame.takeIf { it.isSpecified }
+            ?: options.colors.dark
+
+        val paintFactory = {
+            color.createPaint(
+                pixelSize * 7f,
+                pixelSize * 7f,
+            ).apply { isAntiAlias = true }
+        }
+
+        return if (options.colors.frame.mode == QrPaintMode.Combine)
+            lazy(paintFactory) else Recreating(paintFactory)
+    }
+
+    private fun ballPathFactory(pixelSize: Float): Lazy<Path> {
+        val pathFactory = { ballShape.createPath(pixelSize * 3f, Neighbors.Empty) }
+        return if (options.colors.ball.mode == QrPaintMode.Combine)
+            lazy(pathFactory)
+        else Recreating(pathFactory)
+    }
+
+    private fun ballPaintFactory(pixelSize: Float): Lazy<Paint> {
+
+        val color = options.colors.ball.takeIf { it.isSpecified }
+            ?: options.colors.dark
+
+
+        val paintFactory = {
+            color.createPaint(
+                pixelSize * 3f,
+                pixelSize * 3f,
+            ).apply { isAntiAlias = true }
+        }
+
+        return if (options.colors.ball.mode == QrPaintMode.Combine)
+            lazy(paintFactory) else Recreating(paintFactory)
+    }
+
+    private fun darkPaintFactory(pixelSize: Float): Lazy<Paint> {
+
+        val size = if (shouldSeparateDarkPixels)
+            pixelSize else codeMatrix.size * pixelSize
+
+        val paintFactory = {
+            options.colors.dark.createPaint(size, size)
+                .apply { isAntiAlias = true }
+        }
+
+        return if (shouldSeparateDarkPixels)
+            Recreating(paintFactory) else lazy(paintFactory)
+    }
+
+    private fun rotatedBallPath(pixelSize: Float): Lazy<Path> {
+
+        var number = -1
+
+        val path = ballPathFactory(pixelSize)
+
+        return if (options.shapes.centralSymmetry) {
+            Recreating {
+                number++
+                Path(path.value).apply {
+                    val angle = when (number) {
+                        0 -> 0f
+                        1 -> -90f
+                        2 -> 90f
+                        else -> 180f
+                    }
+                    transform(
+                        rotationMatrix(
+                            angle,
+                            pixelSize * 3 / 2,
+                            pixelSize * 3 / 2
+                        )
+                    )
+                }
+            }
+        } else {
+            path
+        }
+    }
+
+    private fun rotatedFramePath(pixelSize: Float): Lazy<Path> {
+
+        var number = -1
+
+        val path = framePathFactory(pixelSize)
+
+        return if (options.shapes.centralSymmetry) {
+            Recreating {
+                number++
+                Path(path.value).apply {
+                    val angle = when (number) {
+                        0 -> 0f
+                        1 -> -90f
+                        2 -> 90f
+                        else -> 180f
+                    }
+                    transform(
+                        rotationMatrix(
+                            angle,
+                            pixelSize * 7 / 2,
+                            pixelSize * 7 / 2
+                        )
+                    )
+                }
+            }
+        } else {
+            path
+        }
+    }
+
+    private fun lightPathFactory(pixelSize: Float, neighbors: Neighbors) : Lazy<Path> {
+        val pathFactory = { options.shapes.darkPixel.createPath(pixelSize, neighbors) }
+        return Recreating(pathFactory)
+    }
+
+    private fun lightPaintFactory(pixelSize: Float) : Lazy<Paint> {
+
+        val size = if (shouldSeparateDarkPixels)
+            pixelSize else codeMatrix.size * pixelSize
+
+        val paintFactory = {
+            options.colors.light.createPaint(size, size)
+                .apply { isAntiAlias = true }
+        }
+
+        return if (shouldSeparateLightPixels)
+            Recreating(paintFactory) else lazy(paintFactory)
+    }
+
+    private fun darkPathFactory(pixelSize: Float, neighbors: Neighbors) : Lazy<Path> {
+        val pathFactory = { options.shapes.darkPixel.createPath(pixelSize, neighbors) }
+        return Recreating(pathFactory)
+    }
+
+
     private fun Canvas.drawBg(background: Bitmap?) {
         if (options.background.color !is QrVectorColor.Unspecified &&
             options.background.color !is QrVectorColor.Transparent
@@ -175,26 +326,28 @@ private class QrCodeDrawableImpl(
         }
     }
 
-    private fun Canvas.drawBalls(pixelSize: Float, ballPath: Path, ballPaint: Paint) {
+    private fun Canvas.drawFrames(
+        pixelSize: Float
+    ) {
+        val framePaint by framePaintFactory(pixelSize)
+        val framePath by rotatedFramePath(pixelSize)
 
-        var ballNumber = -1
+        frames.forEach {
+            withTranslation(
+                it.first * pixelSize,
+                it.second * pixelSize
+            ) {
+                drawPath(framePath, framePaint)
+            }
+        }
+    }
+
+    private fun Canvas.drawBalls(pixelSize: Float) {
+
+        val ballPaint by ballPaintFactory(pixelSize)
+        val ballPath by rotatedBallPath(pixelSize)
 
         balls.forEach {
-
-            val ballPath = if (options.shapes.centralSymmetry) {
-                ballNumber += 1
-                Path(ballPath).apply {
-                    val angle = when (ballNumber) {
-                        0 -> 0f
-                        1 -> -90f
-                        2 -> 90f
-                        else -> 180f
-                    }
-                    transform(rotationMatrix(angle, pixelSize * 3 / 2, pixelSize * 3 / 2))
-                }
-            } else {
-                ballPath
-            }
 
             withTranslation(
                 it.first * pixelSize,
@@ -244,6 +397,9 @@ private class QrCodeDrawableImpl(
             ?: (frameShape + QrVectorBallShape.Default.createPath(pixelSize * 3, Neighbors.Empty)
                 .apply { this.transform(translationMatrix(pixelSize ,pixelSize)) })
 
+
+        val ballPaint = options.colors.ball.createPaint(pixelSize, pixelSize)
+        val framePaint = options.colors.frame.createPaint(pixelSize * 5, pixelSize * 5)
         anchorCenters.forEach {
             withTranslation(
                 (shapeIncrease + it.first - 2) * pixelSize,
@@ -253,18 +409,12 @@ private class QrCodeDrawableImpl(
                 drawPath(highlightShape, highlightPaint)
 
                 if (options.colors.frame !is QrVectorColor.Unspecified) {
-                    drawPath(
-                        frameShape,
-                        options.colors.frame.createPaint(pixelSize * 5, pixelSize * 5)
-                    )
+                    drawPath(frameShape, framePaint)
                 }
 
-                withTranslation(pixelSize * 2, pixelSize * 2) {
-                    if (options.colors.frame !is QrVectorColor.Unspecified) {
-                        drawPath(
-                            ballShape,
-                            options.colors.ball.createPaint(pixelSize, pixelSize)
-                        )
+                if (options.colors.frame !is QrVectorColor.Unspecified) {
+                    withTranslation(pixelSize * 2, pixelSize * 2) {
+                        drawPath(ballShape, ballPaint)
                     }
                 }
             }
@@ -299,33 +449,6 @@ private class QrCodeDrawableImpl(
         }
     }
 
-    private fun Canvas.drawFrames(pixelSize: Float, framePath: Path, framePaint: Paint) {
-        var frameNumber = -1
-
-        frames.forEach {
-            withTranslation(
-                it.first * pixelSize,
-                it.second * pixelSize
-            ) {
-                val framePath = if (options.shapes.centralSymmetry) {
-                    frameNumber += 1
-                    Path(framePath).apply {
-                        val angle = when (frameNumber) {
-                            0 -> 0f
-                            1 -> -90f
-                            2 -> 90f
-                            else -> 180f
-                        }
-                        transform(rotationMatrix(angle, pixelSize * 7 / 2, pixelSize * 7 / 2))
-                    }
-                } else {
-                    framePath
-                }
-                drawPath(framePath, framePaint)
-            }
-        }
-    }
-
     override fun draw(canvas: Canvas) {
         bitmap?.let {
             canvas.drawBitmap(it, 0f, 0f, null)
@@ -340,34 +463,12 @@ private class QrCodeDrawableImpl(
         lightPixelPath: Path,
         darkTimingPath: Path,
         lightTimingPath: Path,
-        framePath: Path,
-        ballPath: Path,
         background: Bitmap?,
         logoBgSize: Float,
         logoBgPath: Path,
         logoBgPaint: Paint?,
         logo: Bitmap?
     ) {
-        val darkPixelPaint = options.colors.dark.createPaint(
-            codeMatrix.size * pixelSize,
-            codeMatrix.size * pixelSize,
-        ).apply { isAntiAlias = true }
-
-        val lightPixelPaint = options.colors.light.createPaint(
-            codeMatrix.size * pixelSize,
-            codeMatrix.size * pixelSize
-        ).apply { isAntiAlias = true }
-
-        val ballPaint = options.colors.ball.createPaint(
-            pixelSize * 3f,
-            pixelSize * 3f,
-        ).apply { isAntiAlias = true }
-
-        val framePaint = options.colors.frame.createPaint(
-            pixelSize * 7f,
-            pixelSize * 7f,
-        ).apply { isAntiAlias = true }
-
 
         val (w, h) = bounds.width() to bounds.height()
 
@@ -376,6 +477,9 @@ private class QrCodeDrawableImpl(
 
         val density = canvas.density
         canvas.density = Bitmap.DENSITY_NONE
+
+        val darkPixelPaint by darkPaintFactory(pixelSize)
+        val lightPixelPaint by lightPaintFactory(pixelSize)
 
         canvas.drawBg(background)
 
@@ -387,8 +491,41 @@ private class QrCodeDrawableImpl(
             canvas.highlightCornerEyes(pixelSize)
             canvas.highlightVersionEyes(pixelSize)
 
-            drawPath(darkPixelPath, darkPixelPaint)
-            drawPath(lightPixelPath, lightPixelPaint)
+            if (shouldSeparateDarkPixels || shouldSeparateLightPixels) {
+                repeat(codeMatrix.size) { i ->
+                    repeat(codeMatrix.size) { j ->
+                        if (!isInsideFrameOrBall(i, j)) {
+                            withTranslation(i * pixelSize, j * pixelSize) {
+                                if (shouldSeparateDarkPixels && codeMatrix[i, j] == QrCodeMatrix.PixelType.DarkPixel) {
+                                    drawPath(
+                                        darkPathFactory(
+                                            pixelSize,
+                                            codeMatrix.neighbors(i, j)
+                                        ).value,
+                                        darkPixelPaint
+                                    )
+                                }
+                                if (shouldSeparateLightPixels && codeMatrix[i, j] == QrCodeMatrix.PixelType.LightPixel) {
+                                    drawPath(
+                                        darkPathFactory(
+                                            pixelSize,
+                                            codeMatrix.neighbors(i, j)
+                                        ).value,
+                                        darkPixelPaint
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!shouldSeparateDarkPixels) {
+                drawPath(darkPixelPath, darkPixelPaint)
+            }
+            if (!shouldSeparateLightPixels) {
+                drawPath(lightPixelPath, lightPixelPaint)
+            }
 
             drawPath(darkTimingPath, when (options.highlighting.timingLines){
                 HighlightingType.Default -> QrVectorColor.Solid(Color.BLACK)
@@ -414,12 +551,12 @@ private class QrCodeDrawableImpl(
             })
 
 
-            if (options.colors.frame !is QrVectorColor.Unspecified) {
-                drawFrames(pixelSize, framePath, framePaint)
+            if (shouldSeparateFrames) {
+                drawFrames(pixelSize)
             }
 
-            if (options.colors.ball !is QrVectorColor.Unspecified) {
-                drawBalls(pixelSize, ballPath, ballPaint)
+            if (shouldSeparateBalls) {
+                drawBalls(pixelSize)
             }
 
             val (x, y) = (size - logoBgSize) / 2f to (size - logoBgSize) / 2f
@@ -545,25 +682,29 @@ private class QrCodeDrawableImpl(
 
     private fun createMainElements(
         pixelSize: Float,
-        framePath: Path,
-        ballPath: Path,
         darkPixelPath: Path,
         lightPixelPath: Path,
         darkTimingPath : Path,
         lightTimingPath : Path
     ) {
 
+        val framePath by framePathFactory(pixelSize)
+        val ballPath by ballPathFactory(pixelSize)
+
         var frameNumber = -1
         var ballNumber = -1
+
+        val rotatedFramePath by rotatedFramePath(pixelSize)
+        val rotatedBallPath by rotatedBallPath(pixelSize)
+
         for (x in 0 until codeMatrix.size) {
             for (y in 0 until codeMatrix.size) {
 
                 val neighbors = codeMatrix.neighbors(x, y)
 
-                val darkPath = options.shapes.darkPixel
-                    .createPath(pixelSize, neighbors)
-                val lightPath = options.shapes.lightPixel
-                    .createPath(pixelSize, neighbors)
+                val darkPath by darkPathFactory(pixelSize, neighbors)
+
+                val lightPath by lightPathFactory(pixelSize, neighbors)
 
                 val timingLinePath = when (options.highlighting.timingLines) {
                     HighlightingType.None -> Path()
@@ -574,67 +715,25 @@ private class QrCodeDrawableImpl(
                     is HighlightingType.Styled -> options.highlighting.timingLines.shape
                         ?.createPath(pixelSize, neighbors)
                         ?: if (codeMatrix[x, y] == QrCodeMatrix.PixelType.DarkPixel)
-                            options.shapes.darkPixel
-                                .createPath(
-                                    pixelSize,
-                                    if (options.colors.dark.isTransparent) Neighbors.Empty else neighbors
-                                )
-                        else options.shapes.lightPixel
-                            .createPath(
+                            darkPathFactory(
                                 pixelSize,
-                                if (options.colors.light.isTransparent) Neighbors.Empty else neighbors
-                            )
+                                if (options.colors.dark.isTransparent) Neighbors.Empty else neighbors
+                            ).value
+                        else lightPathFactory(
+                            pixelSize,
+                            if (options.colors.light.isTransparent) Neighbors.Empty else neighbors
+                        ).value
                 }
 
                 when {
-                    options.colors.frame is QrVectorColor.Unspecified && isFrameStart(x, y) -> {
-                        val mFramePath = if (options.shapes.centralSymmetry) {
-                            frameNumber = (frameNumber + 1)
-                            Path(framePath).apply {
-                                val angle = when (frameNumber) {
-                                    0 -> 0f
-                                    1 -> -90f
-                                    2 -> 90f
-                                    else -> 180f
-                                }
-                                transform(
-                                    rotationMatrix(
-                                        angle,
-                                        pixelSize * 7 / 2,
-                                        pixelSize * 7 / 2
-                                    )
-                                )
-                            }
-                        } else {
-                            framePath
-                        }
+                    !shouldSeparateFrames && isFrameStart(x, y) -> {
                         darkPixelPath
-                            .addPath(mFramePath, x * pixelSize, y * pixelSize)
+                            .addPath(rotatedFramePath, x * pixelSize, y * pixelSize)
                     }
 
-                    options.colors.ball is QrVectorColor.Unspecified && isBallStart(x, y) -> {
-                        val mBallPath = if (options.shapes.centralSymmetry) {
-                            ballNumber += 1
-                            Path(ballPath).apply {
-                                val angle = when (ballNumber) {
-                                    0 -> 0f
-                                    1 -> -90f
-                                    2 -> 90f
-                                    else -> 180f
-                                }
-                                transform(
-                                    rotationMatrix(
-                                        angle,
-                                        pixelSize * 3 / 2,
-                                        pixelSize * 3 / 2
-                                    )
-                                )
-                            }
-                        } else {
-                            ballPath
-                        }
+                    !shouldSeparateBalls && isBallStart(x, y) -> {
                         darkPixelPath
-                            .addPath(mBallPath, x * pixelSize, y * pixelSize)
+                            .addPath(rotatedBallPath, x * pixelSize, y * pixelSize)
                     }
 
                     options.highlighting.versionEyes !is HighlightingType.None &&
@@ -678,12 +777,12 @@ private class QrCodeDrawableImpl(
                         else -> {}
                     }
 
-                    else -> when (codeMatrix[x, y]) {
-                        QrCodeMatrix.PixelType.DarkPixel -> darkPixelPath
-                            .addPath(darkPath, x * pixelSize, y * pixelSize)
+                    else -> when {
+                        codeMatrix[x, y] == QrCodeMatrix.PixelType.DarkPixel && !shouldSeparateDarkPixels ->
+                            darkPixelPath.addPath(darkPath, x * pixelSize, y * pixelSize)
 
-                        QrCodeMatrix.PixelType.LightPixel -> lightPixelPath
-                            .addPath(lightPath, x * pixelSize, y * pixelSize)
+                        codeMatrix[x, y] == QrCodeMatrix.PixelType.LightPixel && !shouldSeparateLightPixels ->
+                            lightPixelPath.addPath(lightPath, x * pixelSize, y * pixelSize)
 
                         else -> {}
                     }
@@ -710,9 +809,6 @@ private class QrCodeDrawableImpl(
         colorFilter = mColorFilter
         alpha = mAlpha
 
-        val ballPath = ballShape.createPath(pixelSize * 3f, Neighbors.Empty)
-        val framePath = frameShape.createPath(pixelSize * 7f, Neighbors.Empty)
-
         val logoSize = size * options.logo.size
 
         val logoBgSize = (logoSize * (1 + options.logo.padding.value)).roundToInt()
@@ -729,7 +825,7 @@ private class QrCodeDrawableImpl(
             else -> options.logo.backgroundColor
         }?.createPaint(logoBgSize.toFloat(), logoBgSize.toFloat())
 
-        createMainElements(pixelSize, framePath, ballPath, darkPixelPath, lightPixelPath, darkTimingPath, lightTimingPath)
+        createMainElements(pixelSize, darkPixelPath, lightPixelPath, darkTimingPath, lightTimingPath)
 
         val logo = createLogo(logoSize)
 
@@ -747,8 +843,6 @@ private class QrCodeDrawableImpl(
                     lightPixelPath = lightPixelPath,
                     darkTimingPath = darkTimingPath,
                     lightTimingPath = lightTimingPath,
-                    framePath = framePath,
-                    ballPath = ballPath,
                     background = background,
                     logoBgSize = logoBgSize.toFloat(),
                     logoBgPath = logoBackgroundPath,
@@ -788,4 +882,14 @@ private object DefaultVersionFrame : QrVectorFrameShape {
         addRect(size-width,0f,size,size,Path.Direction.CW)
         addRect(0f,size-width,size,size,Path.Direction.CW)
     }
+}
+
+private class Recreating<T>(
+    private val factory : () -> T
+) : Lazy<T> {
+    override val value: T
+        get() = factory()
+
+    override fun isInitialized(): Boolean = true
+
 }
