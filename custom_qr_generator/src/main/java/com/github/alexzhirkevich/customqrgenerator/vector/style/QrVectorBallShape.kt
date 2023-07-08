@@ -21,7 +21,6 @@ interface QrVectorBallShape : QrVectorShapeModifier {
      *
      * [AsPixelShape] with the shape of dark pixels will be used.
      * */
-    
     object AsDarkPixels : QrVectorBallShape {
         override fun Path.shape(size: Float, neighbors: Neighbors) = this
     }
@@ -53,7 +52,7 @@ interface QrVectorBallShape : QrVectorShapeModifier {
     ) : QrVectorPixelShape, QrVectorShapeModifier by RectVectorShape(size)
 
     data class Circle(
-        @FloatRange(from = 0.0, to = 1.0) val size: Float
+        @FloatRange(from = 0.0, to = 1.0) val size: Float = 1f
     ) : QrVectorBallShape, QrVectorShapeModifier by CircleVectorShape(size)
 
     

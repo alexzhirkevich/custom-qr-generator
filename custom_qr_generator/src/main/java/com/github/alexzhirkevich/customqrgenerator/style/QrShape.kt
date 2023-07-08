@@ -8,10 +8,6 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 
-interface RandomBased {
-    val seed : Long
-}
-
 /**
  * Shape of the QR-code pattern.
  * */
@@ -29,26 +25,27 @@ interface QrShape {
      * Decide if pixel fits inside a QR code shape.
      * [modifiedByteMatrix] is already changed by [apply].
      * */
-    fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: QrCodeMatrix) : Boolean
-
-
+    @Deprecated("Used only in deprecated Raster QR codes. Will be removed in v2.0",
+        ReplaceWith("true")
+    )
+    fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: QrCodeMatrix) : Boolean = true
     
     object Default : QrShape {
         override val shapeSizeIncrease: Float = 1f
 
         override fun apply(matrix: QrCodeMatrix) = matrix
 
-        override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix)  = true
     }
 
-
-    
     data class Circle(
         @FloatRange(from = 1.0, to = 2.0)
         val padding : Float = 1.1f,
-        override val seed: Long = 233
-    ) : QrShape, RandomBased {
+    ) : QrShape {
 
+        @Deprecated(
+            "Used only in deprecated Raster QR codes. Will be removed in v2.0",
+            replaceWith = ReplaceWith("true")
+        )
         override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix): Boolean =
             with(modifiedByteMatrix) {
                 val center = size/2f
@@ -68,7 +65,7 @@ interface QrShape {
 
             val center = newSize / 2f
 
-            val random = Random(seed)
+            val random = Random
 
             for (i in 0 until newSize) {
                 for (j in 0 until newSize) {

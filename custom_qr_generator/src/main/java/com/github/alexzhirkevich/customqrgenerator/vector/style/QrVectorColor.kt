@@ -1,7 +1,6 @@
 package com.github.alexzhirkevich.customqrgenerator.vector.style
 
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
@@ -9,9 +8,9 @@ import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
 import androidx.core.graphics.alpha
 import com.github.alexzhirkevich.customqrgenerator.style.Color
-import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor.Transparent.paint
 import kotlin.math.sqrt
 import kotlin.random.Random
+
 
 enum class QrPaintMode {
 
