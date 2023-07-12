@@ -1,19 +1,18 @@
 package com.github.alexzhirkevich.customqrgenerator.vector.style
 
 import android.graphics.Path
+import androidx.core.graphics.minus
+import androidx.core.graphics.plus
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 
-interface QrVectorShapeModifier {
+fun interface QrVectorShapeModifier {
 
     /**
      * Apply shape to a path
      *
      * @return The same instance if possible
      * */
-    fun Path.shape(size : Float, neighbors: Neighbors) : Path
+    fun Path.shape(size : Float, neighbors: Neighbors)
 
 }
 
-fun QrVectorShapeModifier.createPath(size : Float, neighbors: Neighbors) : Path = Path().apply {
-    shape(size, neighbors)
-}

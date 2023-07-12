@@ -2,7 +2,7 @@ package com.github.alexzhirkevich.customqrgenerator.vector.style
 
 import androidx.annotation.FloatRange
 
-interface QrVectorLogoShape : QrVectorShapeModifier {
+fun interface QrVectorLogoShape : QrVectorShapeModifier {
 
     
     object Default : QrVectorLogoShape, QrVectorShapeModifier by DefaultVectorShape

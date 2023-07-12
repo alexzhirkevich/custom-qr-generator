@@ -62,7 +62,8 @@ sealed interface QrVectorOptionsBuilderScope  {
 
     /**
      * Highlight anchor QR code elements for better recognition.
-     * Has the most impact when using a background image or color
+     * Can shape and paint anchor elements separately from other pixels.
+     * Has the most impact when using a background image or color.
      * */
     fun highlighting(block : QrHighlightingBuilderScope.() -> Unit)
 }

@@ -1,8 +1,15 @@
 package com.github.alexzhirkevich.customqrgenerator
 
+import android.graphics.Color
 import androidx.annotation.FloatRange
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorBallShape
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorFrameShape
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorPixelShape
 import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorShapeModifier
+import com.github.alexzhirkevich.customqrgenerator.vector.style.isSpecified
+import com.github.alexzhirkevich.customqrgenerator.vector.style.plus
+import com.github.alexzhirkevich.customqrgenerator.vector.style.scale
 
 
 interface IAnchorsHighlighting {
@@ -30,15 +37,57 @@ data class QrHighlighting(
 ) : IAnchorsHighlighting
 
 
-
+/**
+ * Create eye shepe for styled [QrHighlighting.versionEyes].
+ *
+ * @param frame must be created with [QrVectorFrameShape.size] = 5
+ * @param ball with any size
+ * */
+fun QrVersionEyeShape(
+    frame : QrVectorFrameShape = QrVectorFrameShape.Default,
+    ball : QrVectorBallShape = QrVectorBallShape.Default
+) : QrVectorShapeModifier {
+    require(frame.size == 5){
+        "Frame for QrVersionEyeShape must be created with the size = 5"
+    }
+    return frame + ball.scale(1 / 5f)
+}
 sealed interface HighlightingType {
 
     object None : HighlightingType
 
     object Default : HighlightingType
 
+    /**
+     * @param shape shape of the highlighting
+     * @param shape color of the highlighting
+     * @param elementShape shape of the element being highlighted
+     * @param elementColor color of the element being highlighted
+     *
+     * @see QrVersionEyeShape
+     * */
     class Styled(
-        val shape : QrVectorShapeModifier? = null,
-        val color : QrVectorColor? = null
+        val shape : QrVectorShapeModifier = QrVectorPixelShape.Default,
+        val color : QrVectorColor = QrVectorColor.Solid(Color.WHITE),
+        val elementShape : QrVectorShapeModifier? = null,
+        val elementColor : QrVectorColor = QrVectorColor.Solid(Color.BLACK),
     ) : HighlightingType
 }
+
+internal val HighlightingType.color : QrVectorColor?
+    get() = (this as? HighlightingType.Styled)?.color?.takeIf { it.isSpecified }
+
+internal val HighlightingType.shape : QrVectorShapeModifier
+    get() = (this as? HighlightingType.Styled)?.shape ?: QrVectorPixelShape.Default
+internal val HighlightingType.elementColor : QrVectorColor?
+    get() = (this as? HighlightingType.Styled)?.elementColor?.takeIf { it.isSpecified }
+
+internal val HighlightingType.elementShape : QrVectorShapeModifier?
+    get() = (this as? HighlightingType.Styled)?.elementShape
+
+internal val HighlightingType.isStyledWithElShape : Boolean
+    get() = (this as? HighlightingType.Styled)?.elementShape != null
+
+
+internal val HighlightingType.isStyledWithElColor : Boolean
+    get() = (this as? HighlightingType.Styled)?.elementColor?.isSpecified == true

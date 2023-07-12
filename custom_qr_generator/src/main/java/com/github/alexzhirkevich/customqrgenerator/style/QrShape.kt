@@ -8,6 +8,10 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 
+interface RandomBased {
+    val seed : Long
+}
+
 /**
  * Shape of the QR-code pattern.
  * */
@@ -25,27 +29,26 @@ interface QrShape {
      * Decide if pixel fits inside a QR code shape.
      * [modifiedByteMatrix] is already changed by [apply].
      * */
-    @Deprecated("Used only in deprecated Raster QR codes. Will be removed in v2.0",
-        ReplaceWith("true")
-    )
-    fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: QrCodeMatrix) : Boolean = true
-    
+    fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: QrCodeMatrix) : Boolean
+
+
+
     object Default : QrShape {
         override val shapeSizeIncrease: Float = 1f
 
         override fun apply(matrix: QrCodeMatrix) = matrix
 
+        override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix)  = true
     }
+
+
 
     data class Circle(
         @FloatRange(from = 1.0, to = 2.0)
         val padding : Float = 1.1f,
-    ) : QrShape {
+        override val seed: Long = 233
+    ) : QrShape, RandomBased {
 
-        @Deprecated(
-            "Used only in deprecated Raster QR codes. Will be removed in v2.0",
-            replaceWith = ReplaceWith("true")
-        )
         override fun pixelInShape(i: Int, j: Int, modifiedByteMatrix: QrCodeMatrix): Boolean =
             with(modifiedByteMatrix) {
                 val center = size/2f
@@ -53,7 +56,7 @@ interface QrShape {
             }
 
         override val shapeSizeIncrease: Float =
-             1 + (padding * sqrt(2.0) - 1).toFloat()
+            1 + (padding * sqrt(2.0) - 1).toFloat()
 
         override fun apply(matrix: QrCodeMatrix): QrCodeMatrix = with(matrix){
 
@@ -65,7 +68,7 @@ interface QrShape {
 
             val center = newSize / 2f
 
-            val random = Random
+            val random = Random(seed)
 
             for (i in 0 until newSize) {
                 for (j in 0 until newSize) {
@@ -76,7 +79,7 @@ interface QrShape {
                         sqrt((center-i) *(center-i)+(center-j)*(center-j)) <= center
                     ){
                         newMatrix[i, j] = if (random.nextBoolean()) QrCodeMatrix.PixelType.DarkPixel
-                            else QrCodeMatrix.PixelType.LightPixel
+                        else QrCodeMatrix.PixelType.LightPixel
                     }
                 }
             }

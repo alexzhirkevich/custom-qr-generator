@@ -3,7 +3,6 @@ package com.github.alexzhirkevich.customqrgenerator.vector.style
 import android.graphics.drawable.Drawable
 import androidx.annotation.FloatRange
 import com.github.alexzhirkevich.customqrgenerator.style.BitmapScale
-import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
 
 interface IQRVectorLogo {
     val drawable: Drawable?
@@ -30,7 +29,7 @@ data class QrVectorLogo(
 
     class Builder : IQRVectorLogo {
 
-        override var drawable: Drawable = EmptyDrawable
+        override var drawable: Drawable? = null
         @FloatRange(from = 0.0, to = 1/3.0)
         override var size: Float = 0.2f
         override var padding: QrVectorLogoPadding = QrVectorLogoPadding.Empty
@@ -38,7 +37,7 @@ data class QrVectorLogo(
         override var scale: BitmapScale = BitmapScale.FitXY
         override var backgroundColor: QrVectorColor = QrVectorColor.Unspecified
 
-        fun drawable(drawable: Drawable) = apply {
+        fun drawable(drawable: Drawable?) = apply {
             this.drawable = drawable
         }
 

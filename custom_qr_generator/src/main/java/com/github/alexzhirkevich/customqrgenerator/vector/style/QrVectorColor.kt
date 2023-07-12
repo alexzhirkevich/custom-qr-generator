@@ -8,6 +8,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
 import androidx.core.graphics.alpha
 import com.github.alexzhirkevich.customqrgenerator.style.Color
+import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -45,10 +46,10 @@ interface QrVectorColor {
      * */
     val mode : QrPaintMode get() = QrPaintMode.Combine
 
-    fun Paint.paint(width: Float, height: Float)
+    fun Paint.paint(width: Float, height: Float, neighbors: Neighbors)
 
     object Transparent : QrVectorColor {
-        override fun Paint.paint(width: Float, height: Float) {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             color = Color(0)
             xfermode = PorterDuffXfermode(PorterDuff.Mode.DST)
         }
@@ -59,7 +60,7 @@ interface QrVectorColor {
      * Makes it transparent, ignoring background color and image.
      * */
     object Eraser : QrVectorColor {
-        override fun Paint.paint(width: Float, height: Float) {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             alpha = 0
             xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
         }
@@ -71,7 +72,7 @@ interface QrVectorColor {
     data class Solid constructor(
         @ColorInt val color: Int,
     ) : QrVectorColor {
-        override fun Paint.paint(width: Float, height: Float) {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             color = this@Solid.color
         }
     }
@@ -99,7 +100,7 @@ interface QrVectorColor {
         override val mode: QrPaintMode
             get() = QrPaintMode.Separate
 
-        override fun Paint.paint(width: Float, height: Float) {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             val random = random.nextFloat() * _probabilities.last().first.endInclusive
 
             val idx = _probabilities.binarySearch {
@@ -130,7 +131,7 @@ interface QrVectorColor {
             RightDiagonal({ _, h -> 0f to h }, { w, _ -> w to 0f })
         }
 
-        override fun Paint.paint(width: Float, height: Float) {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             val (x0, y0) = orientation.start(width, height)
             val (x1, y1) = orientation.end(width, height)
             shader = android.graphics.LinearGradient(
@@ -149,7 +150,7 @@ interface QrVectorColor {
         @FloatRange(from = 0.0)
         val radius: Float = sqrt(2f)
     ) : QrVectorColor {
-        override fun Paint.paint(width: Float, height: Float) {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             shader = android.graphics.RadialGradient(
                 width / 2, height / 2,
                 maxOf(width, height) / 2 * radius.coerceAtLeast(0f),
@@ -165,7 +166,7 @@ interface QrVectorColor {
         val colors: List<Pair<Float, Int>>,
     ) : QrVectorColor {
 
-        override fun Paint.paint(width: Float, height: Float) {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             shader = android.graphics.SweepGradient(
                 width / 2, height / 2,
                 colors.map { it.second }.toIntArray(),
@@ -176,12 +177,18 @@ interface QrVectorColor {
 }
 
 internal val QrVectorColor.isTransparent : Boolean
-    get() = this is QrVectorColor.Transparent || this is QrVectorColor.Unspecified ||
+    get() = this is QrVectorColor.Transparent || isNotSpecified ||
             this is QrVectorColor.Solid && this.color.alpha == 0
 
 internal val QrVectorColor.isSpecified : Boolean
     get() = this !is QrVectorColor.Unspecified
+internal val QrVectorColor.isNotSpecified : Boolean
+    get() = !isSpecified
 
-fun QrVectorColor.createPaint(width: Float, height: Float): Paint = Paint().apply {
-    paint(width, height)
+fun QrVectorColor.createPaint(
+    width: Float,
+    height: Float,
+    neighbors: Neighbors = Neighbors.Empty
+): Paint = Paint().apply {
+    paint(width = width, height = height, neighbors = neighbors)
 }

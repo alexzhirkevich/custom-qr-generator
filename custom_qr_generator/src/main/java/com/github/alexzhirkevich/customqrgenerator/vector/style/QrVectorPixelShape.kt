@@ -5,7 +5,7 @@ import androidx.annotation.FloatRange
 /**
  * Style of the qr-code pixels.
  * */
-interface QrVectorPixelShape : QrVectorShapeModifier {
+fun interface QrVectorPixelShape : QrVectorShapeModifier {
 
     
     object Default : QrVectorPixelShape, QrVectorShapeModifier by DefaultVectorShape
