@@ -20,23 +20,6 @@ data class Neighbors(
     val bottomRight: Boolean=false,
 ) {
 
-    var info : QrComponentInfo? = null
-        private set
-
-    constructor(
-        topLeft : Boolean=false,
-        topRight : Boolean=false,
-        left : Boolean=false,
-        top : Boolean=false,
-        right : Boolean=false,
-        bottomLeft: Boolean=false,
-        bottom: Boolean=false,
-        bottomRight: Boolean=false,
-        info : QrComponentInfo? = null
-    ) : this(topLeft, topRight, left, top, right, bottomLeft, bottom, bottomRight){
-        this.info = info
-    }
-
     companion object {
         val Empty = Neighbors()
     }
@@ -52,14 +35,6 @@ data class Neighbors(
         get() = topLeft && topRight && left && top &&
             right && bottomLeft && bottom && bottomRight
 
-}
-
-sealed interface QrComponentInfo {
-    class SinglePixel(
-        val type : QrCodeMatrix.PixelType
-    ) : QrComponentInfo {
-
-    }
 }
 
 internal fun Neighbors.Companion.forEyeWithNumber(number : Int, fourthEyeEnabled : Boolean) : Neighbors {
