@@ -57,6 +57,9 @@ dependencyResolutionManagement {
 ```gradle
 dependencies {
     implementation 'com.github.alexzhirkevich:custom-qr-generator:1.6.2'
+
+    // or new v2.0 alpha
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
 }
 
 ```
