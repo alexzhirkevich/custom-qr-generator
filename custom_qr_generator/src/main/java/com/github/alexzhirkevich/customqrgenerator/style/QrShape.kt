@@ -32,7 +32,7 @@ interface QrShape {
     fun pixelInShape(i : Int, j : Int, modifiedByteMatrix: QrCodeMatrix) : Boolean
 
 
-    
+
     object Default : QrShape {
         override val shapeSizeIncrease: Float = 1f
 
@@ -42,7 +42,7 @@ interface QrShape {
     }
 
 
-    
+
     data class Circle(
         @FloatRange(from = 1.0, to = 2.0)
         val padding : Float = 1.1f,
@@ -56,7 +56,7 @@ interface QrShape {
             }
 
         override val shapeSizeIncrease: Float =
-             1 + (padding * sqrt(2.0) - 1).toFloat()
+            1 + (padding * sqrt(2.0) - 1).toFloat()
 
         override fun apply(matrix: QrCodeMatrix): QrCodeMatrix = with(matrix){
 
@@ -79,7 +79,7 @@ interface QrShape {
                         sqrt((center-i) *(center-i)+(center-j)*(center-j)) <= center
                     ){
                         newMatrix[i, j] = if (random.nextBoolean()) QrCodeMatrix.PixelType.DarkPixel
-                            else QrCodeMatrix.PixelType.LightPixel
+                        else QrCodeMatrix.PixelType.LightPixel
                     }
                 }
             }

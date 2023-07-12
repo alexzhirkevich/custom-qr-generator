@@ -2,7 +2,6 @@ package com.github.alexzhirkevich.customqrgenerator.vector.style
 
 import android.graphics.drawable.Drawable
 import com.github.alexzhirkevich.customqrgenerator.style.BitmapScale
-import com.github.alexzhirkevich.customqrgenerator.style.EmptyDrawable
 
 interface IQrVectorBackground  {
 

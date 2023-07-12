@@ -7,21 +7,25 @@ import androidx.core.graphics.*
 import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import kotlin.math.sqrt
 
-internal object DefaultVectorShape : QrVectorShapeModifier {
+internal object DefaultVectorShape : QrVectorShapeModifier by RectVectorShape()
+internal class RectVectorShape(
+    @FloatRange(from = 0.0, to=1.0)
+    val size : Float = 1f
+) : QrVectorShapeModifier{
+    override fun Path.shape(size: Float, neighbors: Neighbors) {
 
+        val s = this@RectVectorShape.size.coerceIn(0f, 1f) * size
 
-    override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-        addRect(0f,0f, size,size, Path.Direction.CW)
+        addRect((size - s)/2, (size - s)/2, (size + s)/2,(size + s)/2, Path.Direction.CW)
     }
 }
 
 internal class CircleVectorShape(
     @FloatRange(from = 0.0, to = 1.0) val size: Float
     ) : QrVectorShapeModifier {
-
-
-    override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-        addCircle(size/2f, size/2f, size/2 * this@CircleVectorShape.size.coerceIn(0f,1f), Path.Direction.CW)
+    override fun Path.shape(size: Float, neighbors: Neighbors) {
+        addCircle(size/2f, size/2f,
+            size/2 * this@CircleVectorShape.size.coerceIn(0f,1f), Path.Direction.CW)
     }
 }
 
@@ -34,10 +38,7 @@ internal class RoundCornersVectorShape(
     val topRight: Boolean = true,
     val bottomRight: Boolean = true,
 )  : QrVectorShapeModifier {
-
-
-    override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-
+    override fun Path.shape(size: Float, neighbors: Neighbors) {
         val corner = cornerRadius.coerceIn(0f, .5f) * size
 
         addRoundRect(
@@ -60,9 +61,7 @@ internal class RoundCornersVectorShape(
 internal class RoundCornersVerticalVectorShape(
     @FloatRange(from = 0.0, to = 1.0) val radius : Float
 ) : QrVectorShapeModifier {
-
-    override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-
+    override fun Path.shape(size: Float, neighbors: Neighbors) {
         val padding = (size * (1 - radius.coerceIn(0f,1f)))
 
         if (neighbors.top){
@@ -82,10 +81,7 @@ internal class RoundCornersHorizontalVectorShape(
     @FloatRange(from = 0.0, to = 1.0) val radius : Float
 ) : QrVectorShapeModifier {
 
-
-
-    override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-
+    override fun Path.shape(size: Float, neighbors: Neighbors) {
         val padding = (size * (1 - radius.coerceIn(0f,1f)))
 
         if (neighbors.left){
@@ -103,45 +99,43 @@ internal class RoundCornersHorizontalVectorShape(
 
 internal object StarVectorShape : QrVectorShapeModifier {
 
-    override fun createPath(size: Float, neighbors: Neighbors): Path =
-        Path().apply { addRect(0f, 0f, size, size, Path.Direction.CW) } -
-            Path().apply {
-                repeat(4) {
-                    addCircle(size, size, size / 2, Path.Direction.CW)
-                    transform(rotationMatrix(90f, size/2, size/2))
-                }
+    override fun Path.shape(size: Float, neighbors: Neighbors) {
+        addRect(0f, 0f, size, size, Path.Direction.CW)
+        op(Path().apply {
+            repeat(4) {
+                addCircle(size, size, size / 2, Path.Direction.CW)
+                transform(rotationMatrix(90f, size / 2, size / 2))
             }
+        }, Path.Op.DIFFERENCE)
+    }
 }
 
 internal class RhombusVectorShape(
     @FloatRange(from = 0.0, to = 1.0) private val scale : Float
 ) : QrVectorShapeModifier {
 
-    override fun createPath(size: Float, neighbors: Neighbors): Path =
-        Path().apply {
+    override fun Path.shape(size: Float, neighbors: Neighbors) {
+        addRect(0f, 0f, size, size, Path.Direction.CW)
 
-            addRect(0f, 0f, size, size, Path.Direction.CW)
-
-            val s = 1 / sqrt(2f)
-            transform(
-                scaleMatrix(
-                    sx = s,
-                    sy = s
-                )
+        val s = 1 / sqrt(2f)
+        transform(
+            scaleMatrix(
+                sx = s,
+                sy = s
             )
-            transform(
-                translationMatrix(
-                    size * (1 - s) / 2,
-                    size * (1 - s) / 2
-                )
+        )
+        transform(
+            translationMatrix(
+                size * (1 - s) / 2,
+                size * (1 - s) / 2
             )
-            transform(
-                scaleMatrix(
-                    sx = scale.coerceIn(0f, 1f),
-                    sy = scale.coerceIn(0f, 1f)
-                )
+        )
+        transform(
+            scaleMatrix(
+                sx = scale.coerceIn(0f, 1f),
+                sy = scale.coerceIn(0f, 1f)
             )
-            transform(rotationMatrix(45f, size / 2f, size / 2f))
-
-        }
+        )
+        transform(rotationMatrix(45f, size / 2f, size / 2f))
+    }
 }

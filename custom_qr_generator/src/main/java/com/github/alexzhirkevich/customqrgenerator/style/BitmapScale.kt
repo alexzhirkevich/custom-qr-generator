@@ -18,7 +18,7 @@ fun interface BitmapScale {
     /**
      * Resize given image. Image's aspect ratio can be broken
      * */
-    
+
     object FitXY : BitmapScale {
         override fun scale(drawable: Drawable, width: Int, height: Int): Bitmap {
             return drawable.toBitmap(
@@ -31,7 +31,7 @@ fun interface BitmapScale {
     /**
      * Crop given image and cut necessary bitmap from center. Image's aspect ratio will be kept.
      * */
-    
+
     object CenterCrop : BitmapScale {
         override fun scale(drawable: Drawable, width: Int, height: Int): Bitmap {
             var iWidth = drawable.intrinsicWidth
@@ -70,4 +70,3 @@ fun interface BitmapScale {
         }
     }
 }
-

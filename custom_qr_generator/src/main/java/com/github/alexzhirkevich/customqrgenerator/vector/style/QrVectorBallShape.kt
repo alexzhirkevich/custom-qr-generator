@@ -10,50 +10,37 @@ import com.google.zxing.qrcode.encoder.ByteMatrix
 /**
  * Style of the qr-code eye internal ball.
  * */
-interface QrVectorBallShape : QrVectorShapeModifier {
-
-
+fun interface QrVectorBallShape : QrVectorShapeModifier {
     
     object Default : QrVectorBallShape, QrVectorShapeModifier by DefaultVectorShape
 
-    /**
-     * Special style for QR code ball.
-     *
-     * [AsPixelShape] with the shape of dark pixels will be used.
-     * */
-    
-    object AsDarkPixels : QrVectorBallShape {
-        override fun createPath(size: Float, neighbors: Neighbors): Path {
-            return Path()
-        }
-    }
-
-    
     data class AsPixelShape(
         val pixelShape: QrVectorPixelShape
     ) : QrVectorBallShape {
 
-        override fun createPath(size: Float, neighbors: Neighbors): Path = Path().apply {
-
-            val matrix =  ByteMatrix(3,3).apply { clear(1) }
+        override fun Path.shape(size: Float, neighbors: Neighbors) {
+            val matrix = ByteMatrix(3, 3).apply { clear(1) }
                 .toQrMatrix()
-            repeat(3){ i ->
-                repeat(3){ j ->
+            repeat(3) { i ->
+                repeat(3) { j ->
                     addPath(
                         pixelShape.createPath(
                             size / 3,
-                            matrix.neighbors(i,j)
+                            matrix.neighbors(i, j)
                         ),
-                        size/3 * i, size/3 * j
+                        size / 3 * i, size / 3 * j
                     )
                 }
             }
         }
     }
 
-    
+    class Rect(
+        @FloatRange(from = 0.0, to = 1.0) val size: Float = 1f
+    ) : QrVectorBallShape, QrVectorShapeModifier by RectVectorShape(size)
+
     data class Circle(
-        @FloatRange(from = 0.0, to = 1.0) val size: Float
+        @FloatRange(from = 0.0, to = 1.0) val size: Float = 1f
     ) : QrVectorBallShape, QrVectorShapeModifier by CircleVectorShape(size)
 
     

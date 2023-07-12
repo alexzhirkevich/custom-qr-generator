@@ -5,12 +5,14 @@ import androidx.annotation.FloatRange
 /**
  * Style of the qr-code pixels.
  * */
-interface QrVectorPixelShape : QrVectorShapeModifier {
+fun interface QrVectorPixelShape : QrVectorShapeModifier {
 
     
     object Default : QrVectorPixelShape, QrVectorShapeModifier by DefaultVectorShape
+    class Rect(
+        @FloatRange(from = 0.0, to = 1.0) val size: Float = 1f
+    ) : QrVectorPixelShape, QrVectorShapeModifier by RectVectorShape(size)
 
-    
     data class Circle(
         @FloatRange(from = 0.0, to = 1.0) val size: Float = 1f
     ) : QrVectorPixelShape, QrVectorShapeModifier by CircleVectorShape(size)

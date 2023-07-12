@@ -8,19 +8,50 @@ import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
 import androidx.core.graphics.alpha
 import com.github.alexzhirkevich.customqrgenerator.style.Color
+import com.github.alexzhirkevich.customqrgenerator.style.Neighbors
 import kotlin.math.sqrt
+import kotlin.random.Random
+
+
+enum class QrPaintMode {
+
+    /**
+     * Default behavior.
+     *
+     * - For dots(pixels): All pixels will be combined to a single path.
+     * [QrVectorColor.createPaint] will be called 1 time with the size of the whole QR code payload.
+     *
+     * - For frames/balls: If color is not specified and pixels painting mode is [Combine] then
+     * frame/ball paths will be combined with dots path.
+     * Otherwise, [QrVectorColor.createPaint] will be called 3(4) times - for each corner
+     * */
+    Combine,
+
+    /**
+     * Allows to paint each part individually
+     *
+     * - For dots(pixels): All pixels will be drawn separately.
+     * [QrVectorColor.createPaint] will be called for each dark/light dot.
+     *
+     * - For frames/balls: Each frame/ball will be shaped and painted separately.
+     * [QrVectorColor.createPaint] and [QrVectorShapeModifier.createPath] will be called 3(4) times - for each corner
+     * */
+    Separate
+}
 
 interface QrVectorColor {
 
-    fun createPaint(width: Float, height: Float): Paint
+    /**
+     * Painting mode of the QR code element.
+     * */
+    val mode : QrPaintMode get() = QrPaintMode.Combine
 
-    
+    fun Paint.paint(width: Float, height: Float, neighbors: Neighbors)
+
     object Transparent : QrVectorColor {
-        override fun createPaint(width: Float, height: Float): Paint {
-            return Paint().apply {
-                color = Color(0)
-                xfermode = PorterDuffXfermode(PorterDuff.Mode.DST)
-            }
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
+            color = Color(0)
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST)
         }
     }
 
@@ -29,25 +60,63 @@ interface QrVectorColor {
      * Makes it transparent, ignoring background color and image.
      * */
     object Eraser : QrVectorColor {
-        override fun createPaint(width: Float, height: Float): Paint {
-            return Paint().apply {
-                alpha = 0
-                xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
-            }
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
+            alpha = 0
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
         }
     }
     
     object Unspecified : QrVectorColor by Transparent
 
-    
-    data class Solid(@ColorInt val color: Int) : QrVectorColor {
-        override fun createPaint(width: Float, height: Float) = Paint().apply {
+
+    data class Solid constructor(
+        @ColorInt val color: Int,
+    ) : QrVectorColor {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             color = this@Solid.color
         }
     }
 
-    
-    data class LinearGradient(
+    class SolidRandom constructor(
+        private val probabilities : List<Pair<Float, Int>>,
+        private val random: Random = Random
+    ) : QrVectorColor {
+
+        private val _probabilities = mutableListOf<Pair<ClosedFloatingPointRange<Float>,Int>>()
+        init {
+            assert(probabilities.isNotEmpty()) {
+                "SolidRandom color list can't be empty"
+            }
+            (listOf(0f) + probabilities.map { it.first }).reduceIndexed { index, sum, i ->
+                _probabilities.add(sum..(sum + i) to probabilities[index - 1].second)
+                sum + i
+            }
+        }
+
+        constructor(
+            @ColorInt colors : List<Int>,
+        ) : this(colors.map { 1f to it }, Random)
+
+        override val mode: QrPaintMode
+            get() = QrPaintMode.Separate
+
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
+            val random = random.nextFloat() * _probabilities.last().first.endInclusive
+
+            val idx = _probabilities.binarySearch {
+                when {
+                    random < it.first.start -> 1
+                    random > it.first.endInclusive -> -1
+                    else -> 0
+                }
+            }
+
+            color = probabilities[idx].second
+        }
+    }
+
+
+    data class LinearGradient constructor(
         val colors: List<Pair<Float, Int>>,
         val orientation: Orientation
     ) : QrVectorColor {
@@ -62,27 +131,26 @@ interface QrVectorColor {
             RightDiagonal({ _, h -> 0f to h }, { w, _ -> w to 0f })
         }
 
-        override fun createPaint(width: Float, height: Float): Paint {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             val (x0, y0) = orientation.start(width, height)
             val (x1, y1) = orientation.end(width, height)
-            return Paint().apply {
-                shader = android.graphics.LinearGradient(
-                    x0, y0, x1, y1,
-                    colors.map { it.second }.toIntArray(),
-                    colors.map { it.first }.toFloatArray(),
-                    Shader.TileMode.CLAMP
-                )
-            }
+            shader = android.graphics.LinearGradient(
+                x0, y0, x1, y1,
+                colors.map { it.second }.toIntArray(),
+                colors.map { it.first }.toFloatArray(),
+                Shader.TileMode.CLAMP
+            )
+
         }
     }
 
     
-    data class RadialGradient(
+    data class RadialGradient constructor(
         val colors: List<Pair<Float, Int>>,
         @FloatRange(from = 0.0)
-        val radius: Float = sqrt(2f),
+        val radius: Float = sqrt(2f)
     ) : QrVectorColor {
-        override fun createPaint(width: Float, height: Float): Paint = Paint().apply {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             shader = android.graphics.RadialGradient(
                 width / 2, height / 2,
                 maxOf(width, height) / 2 * radius.coerceAtLeast(0f),
@@ -94,11 +162,11 @@ interface QrVectorColor {
     }
 
     
-    data class SweepGradient(
-        val colors: List<Pair<Float, Int>>
+    data class SweepGradient constructor(
+        val colors: List<Pair<Float, Int>>,
     ) : QrVectorColor {
 
-        override fun createPaint(width: Float, height: Float): Paint = Paint().apply {
+        override fun Paint.paint(width: Float, height: Float, neighbors: Neighbors) {
             shader = android.graphics.SweepGradient(
                 width / 2, height / 2,
                 colors.map { it.second }.toIntArray(),
@@ -109,5 +177,18 @@ interface QrVectorColor {
 }
 
 internal val QrVectorColor.isTransparent : Boolean
-    get() = this is QrVectorColor.Transparent || this is QrVectorColor.Unspecified ||
+    get() = this is QrVectorColor.Transparent || isNotSpecified ||
             this is QrVectorColor.Solid && this.color.alpha == 0
+
+internal val QrVectorColor.isSpecified : Boolean
+    get() = this !is QrVectorColor.Unspecified
+internal val QrVectorColor.isNotSpecified : Boolean
+    get() = !isSpecified
+
+fun QrVectorColor.createPaint(
+    width: Float,
+    height: Float,
+    neighbors: Neighbors = Neighbors.Empty
+): Paint = Paint().apply {
+    paint(width = width, height = height, neighbors = neighbors)
+}
