@@ -176,7 +176,7 @@ For example, this is an implementation of circle pixels:
 ```kotlin
 object Circle : QrVectorPixelShape {
 
-    override fun Path.path(size: Float, neighbors: Neighbors) {
+    override fun Path.shape(size: Float, neighbors: Neighbors) {
         addCircle(size/2f, size/2f, size/2, Path.Direction.CW)
     }
 }
