@@ -35,7 +35,7 @@ data class QrHighlighting(
 ) : IAnchorsHighlighting
 
 /**
- * Create eye shepe for styled [QrHighlighting.versionEyes].
+ * Create eye shape for styled [QrHighlighting.versionEyes].
  *
  * @param frame must be created with [QrVectorFrameShape.size] = 5
  * @param ball with any size
