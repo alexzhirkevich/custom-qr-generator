@@ -19,8 +19,6 @@ interface IAnchorsHighlighting {
     val alpha : Float
 }
 
-
-
 /**
  * Highlighting of the anchor QR code elements.
  * Has the most impact when using a background image or color
@@ -35,7 +33,6 @@ data class QrHighlighting(
     override val timingLines : HighlightingType = HighlightingType.None,
     @FloatRange(from = 0.0, to = 1.0) override val alpha: Float = .75f
 ) : IAnchorsHighlighting
-
 
 /**
  * Create eye shepe for styled [QrHighlighting.versionEyes].
@@ -52,6 +49,7 @@ fun QrVersionEyeShape(
     }
     return frame + ball.scale(1 / 5f)
 }
+    
 sealed interface HighlightingType {
 
     object None : HighlightingType
@@ -74,6 +72,8 @@ sealed interface HighlightingType {
     ) : HighlightingType
 }
 
+
+
 internal val HighlightingType.color : QrVectorColor?
     get() = (this as? HighlightingType.Styled)?.color?.takeIf { it.isSpecified }
 
@@ -87,7 +87,6 @@ internal val HighlightingType.elementShape : QrVectorShapeModifier?
 
 internal val HighlightingType.isStyledWithElShape : Boolean
     get() = (this as? HighlightingType.Styled)?.elementShape != null
-
 
 internal val HighlightingType.isStyledWithElColor : Boolean
     get() = (this as? HighlightingType.Styled)?.elementColor?.isSpecified == true
