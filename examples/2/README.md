@@ -1,5 +1,6 @@
 <img src="../../screenshots/gradients.png" width="512" height="512">
 
+```kotlin
 val options = createQrVectorOptions {
 
     fourthEyeEnabled = true
@@ -77,3 +78,4 @@ val options = createQrVectorOptions {
         )
     }
 }
+```
