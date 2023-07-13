@@ -58,7 +58,7 @@ sealed interface HighlightingType {
 
     /**
      * @param shape shape of the highlighting
-     * @param shape color of the highlighting
+     * @param color color of the highlighting
      * @param elementShape shape of the element being highlighted
      * @param elementColor color of the element being highlighted
      *
