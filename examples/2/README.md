@@ -69,7 +69,7 @@ val options = createQrVectorOptions {
         lightPixel = QrVectorPixelShape
             .Circle(.75f)
         // you also can create custom shapes and colors inline.
-        // for pixels it's better to create classes to increase performance
+        // for QrVectorPixelShape it's better to create classes and reuse objects to increase performance
         ball = QrVectorBallShape { size, neighbors ->
             val path = if (neighbors.bottom & neighbors.right)
                 QrVectorBallShape.RoundCorners(
