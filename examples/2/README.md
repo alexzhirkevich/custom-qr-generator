@@ -68,14 +68,38 @@ val options = createQrVectorOptions {
             .Rect(.75f)
         lightPixel = QrVectorPixelShape
             .Circle(.75f)
-        ball = SeparateShapeForTopLeftBall(
-            topLeft = QrVectorBallShape.RoundCorners(
-                .25f,
-                topLeft = false,
-                bottomRight = false
-            ),
-            other = QrVectorBallShape.Circle()
-        )
+        // you also can create custom shapes and colors inline.
+        // for pixels it's better to create classes to increase performance
+        ball = QrVectorBallShape { size, neighbors ->
+            val path = if (neighbors.bottom & neighbors.right)
+                QrVectorBallShape.RoundCorners(
+                    radius = .25f,
+                    topLeft = false,
+                    bottomRight = false
+                )
+            else QrVectorBallShape.Circle()
+
+            path.run {
+                shape(size, neighbors)
+            }
+        }
+    }
+}
+```
+```kotlin
+class SeparateColorForBottomRightBall(
+    private val bottomRight : QrVectorColor,
+    private val other : QrVectorColor
+) : QrVectorColor {
+
+    override fun Paint.paint(width: Float, height: Float, neighbors : Neighbors) {
+        val color = if (neighbors.topLeft)
+            bottomRight
+        else other
+
+        color.run {
+            paint(width, height, neighbors)
+        }
     }
 }
 ```
