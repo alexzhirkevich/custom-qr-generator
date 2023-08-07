@@ -116,7 +116,7 @@ val options = createQrVectorOptions {
             ContextCompat.getColor(context, R.color.your_color)
         )
         frame = QrVectorColor.LinearGradient(
-            color = listOf(
+            colors = listOf(
                 0f to android.graphics.Color.RED,
                 1f to android.graphics.Color.BLUE,
             ),
@@ -164,7 +164,7 @@ val options = QrVectorOptions.Builder()
                 ContextCompat.getColor(context, R.color.your_color)
             ),
             frame = QrVectorColor.LinearGradient(
-                color = listOf(
+                colors = listOf(
                     0f to android.graphics.Color.RED,
                     1f to android.graphics.Color.BLUE,
                 ),
