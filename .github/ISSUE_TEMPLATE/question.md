@@ -1,15 +1,11 @@
 ---
 name: Question
-about: Ask if you are not sure how to implement something
+about: Ask if you are not sure how to implement something. Please check FAQ section in README before. Maybe it already has an answer.
 title: ''
 labels: question
 assignees: alexzhirkevich
 
 ---
-
-**Check [FAQ section](https://github.com/alexzhirkevich/custom-qr-generator)**
-
-May be it already has an answer.
 
 **Describe the option you are trying to implement**
 
