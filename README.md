@@ -114,6 +114,14 @@ val options = createQrVectorOptions {
             .Solid(Color(0xff345288))
         ball = QrVectorColor.Solid(
             ContextCompat.getColor(context, R.color.your_color)
+        ),
+        frame = QrVectorColor.LinearGradient(
+            color = listOf(
+                0f to android.graphics.Color.RED,
+                1f to android.graphics.Color.BLUE,
+            ),
+            orientation = QrVectorColor.LinearGradient
+                .Orientation.LeftDiagonal
         )
     }
     shapes {
@@ -154,6 +162,14 @@ val options = QrVectorOptions.Builder()
                 .Solid(Color(0xff345288)),
             ball = QrVectorColor.Solid(
                 ContextCompat.getColor(context, R.color.your_color)
+            ),
+            frame = QrVectorColor.LinearGradient(
+                color = listOf(
+                    0f to android.graphics.Color.RED,
+                    1f to android.graphics.Color.BLUE,
+                ),
+                orientation = QrVectorColor.LinearGradient
+                    .Orientation.LeftDiagonal
             )
         )
     )
