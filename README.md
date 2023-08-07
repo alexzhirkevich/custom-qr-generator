@@ -563,6 +563,10 @@ val options =  createQrOptions(1024, .2f) {
 
 See [Issue #6](https://github.com/alexzhirkevich/custom-qr-generator/issues/6)
 
+### I want a logo/background from device (file system, gallery)
+
+You just need to resolve Drawable form file system. See [this](https://github.com/alexzhirkevich/custom-qr-generator)
+
 ---
 
 ### I want to create shapes for frame or ball with central symmetry
