@@ -17,8 +17,9 @@ Try library features on live app example
 
 I'll be glad, if you leave a positive review for it in Google Play 😊
 
-Some useful links:
-- [Version for Flutter](https://github.com/alexzhirkevich/custom-qr-generator-flutter) with limited functionality
+Library is also available for:
+- [Version for Compose Multiplatform](https://github.com/alexzhirkevich/qrose)
+- [Version for Flutter](https://github.com/alexzhirkevich/custom-qr-generator-flutter)
 
 ## Table of contents
 - [Installation](#installation)
